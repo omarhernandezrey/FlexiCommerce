@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlexiCommerce | Premium E-Commerce Experience</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-primary font-display">
+<!-- Sticky Header -->
+<header class="sticky top-0 z-50 w-full bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10 shadow-sm">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<!-- Top Bar -->
+<div class="flex items-center justify-between h-16 gap-8">
+<!-- Logo -->
+<div class="flex items-center gap-2 shrink-0">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">shopping_bag</span>
+</div>
+<h1 class="text-xl font-800 tracking-tight text-primary dark:text-white uppercase">Flexi<span class="font-normal">Commerce</span></h1>
+</div>
+<!-- Search Bar -->
+<div class="flex-1 max-w-2xl hidden md:block">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/40">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none bg-primary/5 rounded-lg focus:ring-2 focus:ring-primary/20 placeholder-primary/40 text-sm transition-all" placeholder="Search products, brands, or features..." type="text"/>
+</div>
+</div>
+<!-- User Actions -->
+<div class="flex items-center gap-1 sm:gap-4">
+<button class="p-2 text-primary hover:bg-primary/5 rounded-full relative">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="p-2 text-primary hover:bg-primary/5 rounded-full relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
+</button>
+<button class="flex items-center gap-2 p-1 pl-1 pr-3 hover:bg-primary/5 rounded-full border border-primary/10">
+<div class="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+<img alt="User Profile" data-alt="Close up portrait of a smiling user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUS6FsNkRc1s6_lXrtdQ9DkZwYF2SKw2RRL61uYzb0TEmAZxluqOjqUpJXkJfOm8BJjc9ANsD55pN47zvZr3-BaTPwDdfYyu3Kc7xqel3jkko11wlbJhawopEWUJ-OzyYMvZuI-POvBLbDQAA9hhNAz3iBvSZ-4tlINDqdqrnrand5e-BO8YgsDdeuF1lqPZE9OFny25-TwsOmTc1wA7qB-oO19VPA8USJdT9DhRp6d8t9w1tznOpIX5tto3B1K57Ma-0421cUB_k"/>
+</div>
+<span class="text-sm font-semibold hidden lg:inline">Account</span>
+</button>
+</div>
+</div>
+<!-- Mega Menu Nav -->
+<nav class="hidden lg:flex items-center gap-8 py-3 text-sm font-medium border-t border-primary/5">
+<a class="text-primary hover:text-primary/70 flex items-center gap-1" href="#">Electronics <span class="material-symbols-outlined text-xs">expand_more</span></a>
+<a class="text-primary hover:text-primary/70 flex items-center gap-1" href="#">Fashion <span class="material-symbols-outlined text-xs">expand_more</span></a>
+<a class="text-primary hover:text-primary/70" href="#">Home &amp; Living</a>
+<a class="text-primary hover:text-primary/70" href="#">Beauty</a>
+<a class="text-primary hover:text-primary/70" href="#">Sports</a>
+<div class="h-4 w-px bg-primary/10 mx-2"></div>
+<a class="text-primary/60 hover:text-primary font-semibold" href="#">New Arrivals</a>
+<a class="text-red-600 font-semibold italic" href="#">Clearance Sale</a>
+</nav>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-12">
+<!-- Hero Slider Section -->
+<section class="relative rounded-xl overflow-hidden aspect-[21/9] lg:aspect-[25/9] group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent z-10"></div>
+<img alt="Storefront Hero" class="absolute inset-0 w-full h-full object-cover" data-alt="Cinematic wide shot of a luxury retail clothing store interior" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_1Sie96e41ErWsdj8J7B7nGRPhe1SUhAfa-TTEgtrsDGNFxUxy90qZFQ5-As4UHVaD_RZhlR5Eb5bV8QBx94Tqqxoru602-RRLiK7vGj77xj_mwUSrg27g1Xe6URohoyy5yDYmvSAcm5W1aa3uIPE9ERADvbOrerJj493RosqlqLO83m-XR1_OfdmDzwS_k9MdUZvgTCQuwJPRDmLe26kyCWjyaL4EzbueU5hsZZGaRMiZdljCZg2g1YxYBdxqJe_B3auzV2HX44"/>
+<div class="relative z-20 h-full flex flex-col justify-center px-8 lg:px-16 max-w-2xl text-white">
+<span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 inline-block w-fit">Summer Collection 2024</span>
+<h2 class="text-4xl lg:text-6xl font-800 leading-tight mb-6">Elevate Your Everyday Style</h2>
+<p class="text-lg text-white/80 mb-8 font-light">Experience the perfect blend of performance and aesthetics with our curated premium arrivals.</p>
+<div class="flex gap-4">
+<button class="bg-white text-primary px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">Shop Now</button>
+<button class="border border-white/30 backdrop-blur-md px-8 py-3 rounded-lg font-bold hover:bg-white/10 transition-colors">Platform Features</button>
+</div>
+</div>
+<!-- Slider Controls Mock -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+<div class="w-12 h-1 bg-white rounded-full"></div>
+<div class="w-8 h-1 bg-white/30 rounded-full"></div>
+<div class="w-8 h-1 bg-white/30 rounded-full"></div>
+</div>
+</section>
+<!-- Featured Categories Grid -->
+<section>
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-2xl font-800 text-primary">Browse Categories</h2>
+<p class="text-primary/60 text-sm">Discover the best of every department</p>
+</div>
+<a class="text-primary font-semibold text-sm flex items-center gap-1 group" href="#">
+                    View All <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="group relative rounded-xl overflow-hidden aspect-square cursor-pointer">
+<img alt="Electronics" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="High-end sleek headphones and modern gadgets on a desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqQhrhSQDw2c2s85SnDW8214Jht8Qkd8MxRx3L9OMCC7MHCp9f8fl31kpG-pciw_EoxNt8NNWiVxAxMnkaHLPaxEpka1w4DKSpbWBgF2uZIAt5jaC-MN6dVXtCOUxzRvO-Ykx5f1geVlkXDZlccb7uny5-5E2JjsPYMYTACs905CbfXuUKIwOglQGU1r--_oBrph6G5yWgdehmJS9eVB2rXtWpON65M7m8wqN8qxikt7Ru7_lt2OM1ZQG4HA1hEQR8bU3ESBs4qlo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent flex flex-col justify-end p-6">
+<h3 class="text-white font-bold text-xl">Electronics</h3>
+<p class="text-white/70 text-sm opacity-0 group-hover:opacity-100 transition-opacity">1.2k+ Items</p>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden aspect-square cursor-pointer">
+<img alt="Fashion" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Trendy fashion apparel hanging on a wooden rack" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACCX4x-MyluX35o1uhl607qynsXtf0cw-5u6coEsw1fpqedijXVN5sdDduchqjFwUS5cf53rhjpxi78YAgM_-7tvBG7oaRrwExh61l2xrh7HQkPO1JE-FQUqmt66F3bkjH3bRoXCmXtwylVkXOoqGrouBst4Y2H_xKDHgdkSWBh2wCtSvtrn9fNhwv4EeH9XAc3hjcaULK4wP3bVE68zZP83OX9OUl5qlcGtcDRlWIpuwQs5Xz6BhXHUkABqknSEj_bKbrn_3qhQg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent flex flex-col justify-end p-6">
+<h3 class="text-white font-bold text-xl">Fashion</h3>
+<p class="text-white/70 text-sm opacity-0 group-hover:opacity-100 transition-opacity">3.5k+ Items</p>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden aspect-square cursor-pointer">
+<img alt="Home Decor" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Modern minimalist living room interior with designer furniture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhDmsJV7cztEXFlKYjUMAtq6dTpGxy6DKZE0C8dQPKOzoHbPoL2bqncIpyBdKQi8C10Sn6xvSYNzE-by9810xRF9rls_g7tXL9gRJYXhseAIoUoIYnr1lmkS1Z_C60dGW4w7FuxrKmWsiNKbw7ea0jQzjxIRoz94O3h6EDtUnThCN9u9bFeWWJPyk5PFm_s8Bgv97dZ_QoomeKiQogpVgSwGCxKuXHtWdS1B2Q-4S5QUEHd3sssWi9Tqve7lLLYtULFnCdaa9pLso"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent flex flex-col justify-end p-6">
+<h3 class="text-white font-bold text-xl">Home Decor</h3>
+<p class="text-white/70 text-sm opacity-0 group-hover:opacity-100 transition-opacity">800+ Items</p>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden aspect-square cursor-pointer">
+<img alt="Gadgets" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Collection of smart home devices and tech accessories" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB40ADmCL3ZGNn9LOW7r_kZiY7hVabvbzsieP81spovW_3iPuVXSz9LRWbvc0JjkP7irrF8WumgAvC5MFsZOVOIG6narz1aINM06ZOh5c8Tn9c7mKYW3QL-d7xOhGi1w5S8q0fvADhIgww1ujEGHP_FBR8hKgT0uYxhu-RgIMCBL0uLUtdTsKulkvJ7fFwTbgtQilL0ORtVpaQN1piV1ng3eAuoMsO_kdTwDaovPMicycXOaOk5SiQ5FPMYxR-jjsPqg5vcgJMtthM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent flex flex-col justify-end p-6">
+<h3 class="text-white font-bold text-xl">Smart Gadgets</h3>
+<p class="text-white/70 text-sm opacity-0 group-hover:opacity-100 transition-opacity">450+ Items</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Trending Now Product Slider -->
+<section>
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-2xl font-800 text-primary">Trending Now</h2>
+<p class="text-primary/60 text-sm">Most popular items this week</p>
+</div>
+<div class="flex gap-2">
+<button class="size-10 rounded-full border border-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="size-10 rounded-full border border-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Product Card 1 -->
+<div class="group bg-white rounded-xl border border-primary/5 p-4 shadow-sm hover:shadow-xl transition-all">
+<div class="relative rounded-lg overflow-hidden aspect-square mb-4 bg-gray-50">
+<img alt="Premium Headphones" class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="Over-ear wireless noise-canceling headphones in matte black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGsRLZqCj7FPTBBjxRBIsAeCWi9IS2fOgBb2GtswkIb91SPBGd67oY_qXeVNoLs7hxAHHKLkm62G8xRgmoQkPpuq9R196SIDVxGNaMuFjgga0h4mZtpp6UJ7fLI9vFIYumBkt6P0jaXsGtkRlV5MgVDKzZ564IOgSSPeFkbHLtotiT1inZGj1NcudW1L_f8bJidqpsWVXE9N0dCy8hyXOqggp-4W7MS2tUQpBnlznJ4cTgrmyAvVVIgtq3118P9cs-U8l_uWZD6pc"/>
+<button class="absolute top-2 right-2 size-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-primary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-wider text-primary/40 font-bold">Electronics</p>
+<h3 class="font-bold text-primary group-hover:text-primary/70 transition-colors truncate">Acoustic Pro-X Wireless</h3>
+<div class="flex items-center gap-2">
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm">star_half</span>
+</div>
+<span class="text-[11px] text-primary/40">(128 reviews)</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xl font-800 text-primary">$299.00</span>
+<button class="size-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group bg-white rounded-xl border border-primary/5 p-4 shadow-sm hover:shadow-xl transition-all">
+<div class="relative rounded-lg overflow-hidden aspect-square mb-4 bg-gray-50">
+<img alt="Smart Watch" class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="Minimalist white smart watch with metallic frame" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXTpVfxs1db62dokgKW758D77TDsVrhik1b_aLd5Ye3ogBXIo1XStPxpPoknzerd4ofRur1xQRSQvBrmSCsc0kprITAkRNjKvMbEH-6bXmBnzSt9h1Fym9uxPBvTJOiIp0FKH0IHFhjvXLqiKGIxwsKqp1xn0h15lbyR8THDHy8yGkqmZt9lRaaeuM0244zooz2tK5pLu8E2WY0RypRMtT_3_SBKAqBSuX7Rxu99KljBMAoT0vODTpz3_s_bLVYjjIv99WRTpQskk"/>
+<button class="absolute top-2 right-2 size-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-primary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-wider text-primary/40 font-bold">Tech</p>
+<h3 class="font-bold text-primary group-hover:text-primary/70 transition-colors truncate">Series 8 Fusion Watch</h3>
+<div class="flex items-center gap-2">
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+</div>
+<span class="text-[11px] text-primary/40">(45 reviews)</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xl font-800 text-primary">$189.50</span>
+<button class="size-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group bg-white rounded-xl border border-primary/5 p-4 shadow-sm hover:shadow-xl transition-all">
+<div class="relative rounded-lg overflow-hidden aspect-square mb-4 bg-gray-50">
+<img alt="Sports Shoes" class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="Red vibrant professional running shoes in dynamic profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3STeNq8civLDlVuPkmcTIQ4SDguNu93vf1LqpN1q4q-I2_Ko_hjWygl9plMApINyRVzOeWPmjmfoNBLH6Zg1hb_O5Ns03-I6A9938zh2TTXfwdCOZAviCeCRhPKXZTaOokCxgbsEekLITcAsWOSR29RwNeru0mUDeOAJSj7YGEOKdTKLz5Kr7mX2IJ3z0HsKqieOn47XbSTb2j9mBJbQ8A9eI4rJdwrw-2uQaj5F-61WjYBKdmDOZorXciPE3JuF38UIDNCfxvWw"/>
+<button class="absolute top-2 right-2 size-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-primary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-wider text-primary/40 font-bold">Sports</p>
+<h3 class="font-bold text-primary group-hover:text-primary/70 transition-colors truncate">Apex Runner V2</h3>
+<div class="flex items-center gap-2">
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+</div>
+<span class="text-[11px] text-primary/40">(92 reviews)</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xl font-800 text-primary">$120.00</span>
+<button class="size-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group bg-white rounded-xl border border-primary/5 p-4 shadow-sm hover:shadow-xl transition-all">
+<div class="relative rounded-lg overflow-hidden aspect-square mb-4 bg-gray-50">
+<img alt="Canvas Shoes" class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="Classic street style high-top canvas sneakers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk0b44OIdiuwXlXuwCj5ZV6koSwVR_i755DwBvADCbY3y5fJ4bp_V4G1IwwjQJvoc8Cy1R4r4zduQdrh4R2x09X4nPcR2P3mNf99iSfmAvJVu1M5phK7-8ZWfMP8tu_1ExZI1ZkwB3EDzxdvI6l9FLC5w_WGqkGSNSQQEFW_TPQ1r2u6ujUB4FFwS3mubBb9YG_IsHGJVLRV9_01sw5av817xaQ08Uiz34mDwLGD7Rzw7JIb6GxhWeS3y1Iv9KHU6M5SxlrsFFI5o"/>
+<button class="absolute top-2 right-2 size-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-primary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-wider text-primary/40 font-bold">Lifestyle</p>
+<h3 class="font-bold text-primary group-hover:text-primary/70 transition-colors truncate">Urban Canvas Loafers</h3>
+<div class="flex items-center gap-2">
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+</div>
+<span class="text-[11px] text-primary/40">(210 reviews)</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="text-xl font-800 text-primary">$65.00</span>
+<button class="size-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Why Choose Us / Platform Features -->
+<section class="bg-primary text-white rounded-2xl p-8 lg:p-16 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-[-20deg] translate-x-1/2"></div>
+<div class="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+<div>
+<span class="text-white/60 font-bold tracking-widest uppercase text-xs">Enterprise Ready</span>
+<h2 class="text-3xl lg:text-5xl font-800 mt-4 leading-tight">Engineered for Scale, Built for Success</h2>
+<p class="text-white/70 mt-6 text-lg leading-relaxed">FlexiCommerce isn't just a shop; it's a multi-tenant powerhouse designed for global brands requiring high performance, security, and infinite scalability.</p>
+<div class="mt-10 grid sm:grid-cols-2 gap-6">
+<div class="flex gap-4">
+<div class="size-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">hub</span>
+</div>
+<div>
+<h4 class="font-bold mb-1">Multi-Tenant</h4>
+<p class="text-sm text-white/50">Manage hundreds of stores from a single unified hub.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="size-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">speed</span>
+</div>
+<div>
+<h4 class="font-bold mb-1">Ultra Fast</h4>
+<p class="text-sm text-white/50">99.9% Uptime with sub-second page load speeds.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="size-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<h4 class="font-bold mb-1">Encrypted</h4>
+<p class="text-sm text-white/50">PCI-DSS Level 1 compliant secure transactions.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="size-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">cloud_sync</span>
+</div>
+<div>
+<h4 class="font-bold mb-1">Live Sync</h4>
+<p class="text-sm text-white/50">Real-time inventory and logistics tracking.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden lg:block relative">
+<img alt="Analytics" class="rounded-xl shadow-2xl rotate-3" data-alt="Modern business analytics dashboard displayed on a clean laptop screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIy0gcHjwNSDqx62eBXIDCkKKbr1ZP1NYQJHKwE_bqBESTOE3udHLpRSACwXaeKlkW-TntKk5O5qedbaXfYis_tMoZ_RgQgTZCJHEuv_Mn_GSEUSZ3Jpfta0YO-i_0hmNHU6AbziO7hSPgHoEnsesnFDiE1piapFsOtIx5OpbX1U5Cby65f4KoV7L45cdYVrTOoAWt6MW_2Fxl-865DYWADWDC6e2eiW7_c2cU8FpLBAo6eXPRQ24nk9uF_DEtemAnHbLe5Ax4GiA"/>
+<div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-xl text-primary max-w-[240px]">
+<div class="flex items-center gap-2 mb-2">
+<div class="size-3 bg-green-500 rounded-full animate-pulse"></div>
+<span class="text-[10px] font-800 uppercase text-primary/40">Global Traffic</span>
+</div>
+<p class="text-2xl font-800">4.2M+</p>
+<p class="text-xs text-primary/60 font-medium italic">Active Daily Transactions</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Newsletter Signup -->
+<section class="bg-primary/5 rounded-2xl p-8 lg:p-12 text-center border border-primary/10">
+<h2 class="text-3xl font-800 text-primary mb-2">Join the Elite Commerce Club</h2>
+<p class="text-primary/60 mb-8">Get exclusive early access to drops, tech insights, and premium deals.</p>
+<form class="max-w-md mx-auto flex flex-col sm:flex-row gap-2">
+<input class="flex-1 rounded-lg border-primary/10 focus:ring-primary/20 text-sm py-3" placeholder="Enter your email address" type="email"/>
+<button class="bg-primary text-white px-8 py-3 rounded-lg font-bold hover:bg-primary/90 transition-all">Subscribe</button>
+</form>
+<p class="text-[10px] text-primary/40 mt-4">By subscribing, you agree to our Privacy Policy and Terms of Service.</p>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-white border-t border-primary/10 pt-16 pb-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+<div>
+<div class="flex items-center gap-2 mb-6">
+<div class="size-6 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-lg">shopping_bag</span>
+</div>
+<h2 class="text-lg font-800 text-primary uppercase">FlexiCommerce</h2>
+</div>
+<p class="text-primary/60 text-sm leading-relaxed mb-6">Redefining the digital shopping landscape with scalable, enterprise-grade technology and premium user experiences.</p>
+<div class="flex gap-4">
+<a class="text-primary/40 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-primary/40 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">forum</span></a>
+<a class="text-primary/40 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+</div>
+</div>
+<div>
+<h3 class="font-800 text-primary mb-6 text-sm uppercase tracking-wider">Shop</h3>
+<ul class="space-y-4 text-sm text-primary/60">
+<li><a class="hover:text-primary" href="#">Featured Arrivals</a></li>
+<li><a class="hover:text-primary" href="#">Electronic Gadgets</a></li>
+<li><a class="hover:text-primary" href="#">Luxury Fashion</a></li>
+<li><a class="hover:text-primary" href="#">Home Interior</a></li>
+<li><a class="hover:text-primary" href="#">Exclusive Collections</a></li>
+</ul>
+</div>
+<div>
+<h3 class="font-800 text-primary mb-6 text-sm uppercase tracking-wider">Company</h3>
+<ul class="space-y-4 text-sm text-primary/60">
+<li><a class="hover:text-primary" href="#">About FlexiCommerce</a></li>
+<li><a class="hover:text-primary" href="#">Platform Features</a></li>
+<li><a class="hover:text-primary" href="#">Partner Program</a></li>
+<li><a class="hover:text-primary" href="#">B2B Solutions</a></li>
+<li><a class="hover:text-primary" href="#">Careers</a></li>
+</ul>
+</div>
+<div>
+<h3 class="font-800 text-primary mb-6 text-sm uppercase tracking-wider">Support</h3>
+<ul class="space-y-4 text-sm text-primary/60">
+<li><a class="hover:text-primary" href="#">Customer Center</a></li>
+<li><a class="hover:text-primary" href="#">Shipping &amp; Delivery</a></li>
+<li><a class="hover:text-primary" href="#">Returns Policy</a></li>
+<li><a class="hover:text-primary" href="#">Secure Payments</a></li>
+<li><a class="hover:text-primary" href="#">Contact Us</a></li>
+</ul>
+</div>
+</div>
+<div class="pt-8 border-t border-primary/5 flex flex-col md:row items-center justify-between gap-4">
+<p class="text-xs text-primary/40">© 2024 FlexiCommerce Inc. All rights reserved.</p>
+<div class="flex gap-6 text-[10px] font-bold text-primary/40 uppercase tracking-widest">
+<a class="hover:text-primary" href="#">Privacy</a>
+<a class="hover:text-primary" href="#">Terms</a>
+<a class="hover:text-primary" href="#">Cookies</a>
+<a class="hover:text-primary" href="#">Accessibility</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- Back to top floating button -->
+<button class="fixed bottom-8 right-8 size-12 bg-white text-primary rounded-full shadow-xl border border-primary/10 flex items-center justify-center hover:bg-primary hover:text-white transition-all z-40">
+<span class="material-symbols-outlined">arrow_upward</span>
+</button>
+</body></html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlexiCommerce Storefront - Tablet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-primary min-h-screen">
+<!-- Sticky Navigation Bar -->
+<header class="sticky top-0 z-50 w-full bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-primary/10 px-6 py-4">
+<div class="max-w-[1024px] mx-auto flex items-center justify-between gap-4">
+<!-- Logo -->
+<div class="flex items-center gap-2">
+<div class="bg-primary text-white p-1.5 rounded-lg">
+<span class="material-symbols-outlined !text-xl">layers</span>
+</div>
+<h1 class="text-primary dark:text-white text-xl font-bold tracking-tight">FlexiCommerce</h1>
+</div>
+<!-- Tablet Nav (Key Categories) -->
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-semibold text-primary/70 hover:text-primary transition-colors" href="#">Electronics</a>
+<a class="text-sm font-semibold text-primary/70 hover:text-primary transition-colors" href="#">Apparel</a>
+<a class="text-sm font-semibold text-primary/70 hover:text-primary transition-colors" href="#">Home</a>
+</nav>
+<!-- Search & Actions -->
+<div class="flex items-center gap-3 flex-1 justify-end max-w-md">
+<div class="relative w-full max-w-[240px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-primary/5 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search products..." type="text"/>
+</div>
+<button class="p-2 hover:bg-primary/5 rounded-lg relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-primary/5 rounded-lg">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-[1024px] mx-auto px-6 py-8">
+<!-- Hero Section - Scaled for Tablet -->
+<section class="relative rounded-2xl overflow-hidden bg-primary mb-12">
+<div class="absolute inset-0 opacity-40">
+<div class="w-full h-full bg-cover bg-center" data-alt="Modern retail store interior with aesthetic lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSA8YUsdXGzgpphGpofUa6pwGDSbnjBDdgPj0Kgcszd7scPNvjh_GQIcAAEA4OrO51c-kb0AekHjfRbKBX2kvIMyGKNqDdwQ_fQsuL6oFC5YRBRVKRWxw3f_CKofIIicOwrFexNi1gCmFZrx6eVYJOp5adtAANY-pvqfPqrm7gKFi5SqojfwaoaDj5-VMkwat0VL3daic7hXloqkfnJRbr1rfWcPAplhtlhPL2pTgCFLCpL4fLUwbHJ3dtFwuwSCeTRa5mtl1tWxQ')"></div>
+</div>
+<div class="relative z-10 p-10 md:p-16 flex flex-col items-start gap-6 max-w-2xl">
+<span class="bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase">New Collection 2024</span>
+<h2 class="text-white text-4xl md:text-5xl font-black leading-tight">The Future of Commerce, Scaled for You</h2>
+<p class="text-white/80 text-lg">Experience the next generation of digital storefronts with our lightning-fast commerce platform.</p>
+<button class="bg-white text-primary px-8 py-3.5 rounded-lg font-bold hover:bg-gray-100 transition-all flex items-center gap-2">
+                    Shop Now
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Browse Categories - Touch Friendly Sizing -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-2xl font-bold text-primary dark:text-white">Browse Categories</h3>
+<a class="text-sm font-bold text-primary/60 hover:text-primary transition-colors flex items-center gap-1" href="#">
+                    View All <span class="material-symbols-outlined !text-sm">chevron_right</span>
+</a>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="group relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-sm">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="High-end electronic gadgets on a desk" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9mgYpU9xWOr7t3GRmiXr_T9O0i2iM4sM68FipNt6QHVP2xpPXOhP2E10oktgCYGPjLm5HVvrbp5uNNUJ2gmdviHcVJZabpDbNFpF3ugJOQODaoBBrQ84Y4vgJykGdY_iLBrPpxANj2wU_96gJsP0FwViG6sa86hCQEsifPyjxLsB4pwJ0II-vVYb8CYUYoE_vjpsy39trmS6JdqPYPTskHI6q0hyo--TN_78S05PJeBWhBe5vD3AiXwbVbuZ-n5ozLpXIMcugANI')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-bold text-lg">Electronics</p>
+</div>
+</div>
+<div class="group relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-sm">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Stylish clothing hanging on a rack" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCQ-V1j9noZenW_55VbMh3hnLjiYkT4l2_2C3N8DdXq7l21LgPdO2DbKkyUreoCvH1WnH69ua0u8Kt7aIhL3ypnnl3qcnO_i70xtkKQY6AfJlFTusHPLCmiPQJFGiav7PtOBF8YSrQBZEDzCw6EEFp0Do6XdTekBHQTVgaZ-Rb6Met4cvhuKCS1y2DC2OuOtCdOOjI-j66C5WTc4eqUJXkDR3945zqTlQIVsxYXP_v6-hPT-Kv5o_D9tE-Q3sBNhSUvoDuVHlMeH90')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-bold text-lg">Apparel</p>
+</div>
+</div>
+<div class="group relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-sm">
+<div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Modern living room interior furniture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA6RVbriUn9xJtaPvNvDvo5QAnQJt-FVn6pjbHiVmoLk9t8HplAOslvLPyzxB02NHyV7JSpIk_196zeqgCDoBEhtuhus9naz3a88g9GjGm3fV70YhdgiGLjJvul05wlRDjN8qBWqcS027AD7ByIw6VsJMYq0tWaGAozy5207w5kNlyWuNM92qd6UsuJ6g6MSclnLWUFgWgv2CJIAOr3n_qEGtHTc0EkV5DuNBVApxyidkNSVWfAEAVNP9gJBFJLi_CVuwpVfo5cTyo')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<p class="text-white font-bold text-lg">Home &amp; Living</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Trending Now - 3 Column Grid -->
+<section class="mb-16">
+<h3 class="text-2xl font-bold text-primary dark:text-white mb-6">Trending Now</h3>
+<div class="grid grid-cols-3 gap-6">
+<!-- Product 1 -->
+<div class="flex flex-col gap-3 group">
+<div class="aspect-[4/5] bg-primary/5 rounded-xl overflow-hidden relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Premium wireless noise cancelling headphones" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAT7OZdQsGOvElNjAL9UJ4uZMx1VpphXS44hF-J0fL4n42Z_BBuGL6leTeeFhm1gMpTf152_rpDYY6_dsdQh0BL97r0ZyHhyxg6HaURtOi1OqWKkAhqVl6_AOIS9GrxlPS3iHkZObdqSNTP0bncIFjHIg-osvjxqAIm1pN-nqfP4tz4NczzlfaxYUp0UoMLlfYwDgprjH7n2hvMITxwumYvYu3QWP02wbtQ1WvrUM1qIhjt0xoEwJWuzLxTr3wZM2HDyIQSvsIL5mg')"></div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 rounded-full shadow-md text-primary/40 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined !text-xl">favorite</span>
+</button>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1 text-yellow-500">
+<span class="material-symbols-outlined !text-xs">star</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary/40">4.9 (124 reviews)</span>
+</div>
+<h4 class="font-bold text-primary dark:text-white group-hover:text-primary/60 transition-colors">Acoustic Pro Headphones</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-lg font-black text-primary dark:text-white">$249.00</span>
+<button class="bg-primary text-white p-2 rounded-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined !text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product 2 -->
+<div class="flex flex-col gap-3 group">
+<div class="aspect-[4/5] bg-primary/5 rounded-xl overflow-hidden relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Minimalist white wristwatch with leather strap" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCqFzvI231N9e1a1QxkT10zmd5pJOB4fvrRUAUxwrth2L9NIGo22Rvkxxjm-VH0fWVwYE5Ci8O1idwHG_G_EIjXoNg2zBMqmkU_nBZFqkS6I7ubFGM-5soYJqWlF-cWZAFQQz3V5PxBdVFw66vSu8BbX1WcF8w0PosK6rwSBnRXOBU0NRPOyVeSC3DnZcl1FpC6NR6sU0Ry5aGQVLTCoW5i0fIk9quW-s4h75NS3-3O8Db7Y9Eu8netTDQz_QZ2IuDqf9LvQPHEAfc')"></div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 rounded-full shadow-md text-primary/40">
+<span class="material-symbols-outlined !text-xl">favorite</span>
+</button>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1 text-yellow-500">
+<span class="material-symbols-outlined !text-xs">star</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary/40">4.8 (89 reviews)</span>
+</div>
+<h4 class="font-bold text-primary dark:text-white group-hover:text-primary/60 transition-colors">Nordic Minimalist Watch</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-lg font-black text-primary dark:text-white">$185.00</span>
+<button class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined !text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product 3 -->
+<div class="flex flex-col gap-3 group">
+<div class="aspect-[4/5] bg-primary/5 rounded-xl overflow-hidden relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Vintage style analog instant camera" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC_jpzzkLxBYE1Ej9Leu7JUrGs5CZzmuiJEDYi6oLXR1Wsb0RMmWlGehgk-8XjzsRsv85t0VOKhygUW3TAN6am-wC6xltORWKzCC3eiGLELIVWxH-AcMqjsva6k1fWvAgln9SdsANJTDtRL4eDEvX77Z6FhSkyuLR-Ab0pxFr6Jj1goyDSu_wuTpgdlISgH3eduh1jgienO5EMGx7bPzO5k6MsJmOJtd0Ve_ipuVL48iAiCsuuf08i7RmJ853vPkN-b0heG69xcWdw')"></div>
+<span class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">HOT SALE</span>
+<button class="absolute top-3 right-3 p-2 bg-white/90 rounded-full shadow-md text-primary/40">
+<span class="material-symbols-outlined !text-xl">favorite</span>
+</button>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1 text-yellow-500">
+<span class="material-symbols-outlined !text-xs">star</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary/40">4.7 (215 reviews)</span>
+</div>
+<h4 class="font-bold text-primary dark:text-white group-hover:text-primary/60 transition-colors">Instant View Camera</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-lg font-black text-primary dark:text-white">$99.00</span>
+<button class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined !text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Engineered for Scale - 2x2 Grid -->
+<section class="bg-primary/5 rounded-2xl p-8 mb-16">
+<div class="text-center mb-10">
+<h3 class="text-2xl font-bold text-primary dark:text-white">Engineered for Scale</h3>
+<p class="text-primary/60 mt-2">Enterprise-grade infrastructure for your digital commerce.</p>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<!-- Feature 1 -->
+<div class="flex items-start gap-4 bg-white dark:bg-background-dark/50 p-6 rounded-xl shadow-sm">
+<div class="bg-primary/10 text-primary p-3 rounded-lg">
+<span class="material-symbols-outlined">public</span>
+</div>
+<div>
+<h5 class="font-bold text-primary dark:text-white">Global CDN</h5>
+<p class="text-sm text-primary/60 mt-1 leading-relaxed">Lightning fast performance delivered via 200+ edge locations worldwide.</p>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="flex items-start gap-4 bg-white dark:bg-background-dark/50 p-6 rounded-xl shadow-sm">
+<div class="bg-primary/10 text-primary p-3 rounded-lg">
+<span class="material-symbols-outlined">api</span>
+</div>
+<div>
+<h5 class="font-bold text-primary dark:text-white">API-First Design</h5>
+<p class="text-sm text-primary/60 mt-1 leading-relaxed">Headless architecture that scales with your growing business needs seamlessly.</p>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="flex items-start gap-4 bg-white dark:bg-background-dark/50 p-6 rounded-xl shadow-sm">
+<div class="bg-primary/10 text-primary p-3 rounded-lg">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<div>
+<h5 class="font-bold text-primary dark:text-white">99.99% Uptime</h5>
+<p class="text-sm text-primary/60 mt-1 leading-relaxed">Redundant infrastructure ensuring your store is always open for business.</p>
+</div>
+</div>
+<!-- Feature 4 -->
+<div class="flex items-start gap-4 bg-white dark:bg-background-dark/50 p-6 rounded-xl shadow-sm">
+<div class="bg-primary/10 text-primary p-3 rounded-lg">
+<span class="material-symbols-outlined">auto_mode</span>
+</div>
+<div>
+<h5 class="font-bold text-primary dark:text-white">Auto-Scaling</h5>
+<p class="text-sm text-primary/60 mt-1 leading-relaxed">Handles traffic spikes automatically without manual intervention or crashes.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Newsletter Opt-in -->
+<section class="mb-16">
+<div class="bg-primary text-white rounded-2xl p-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+<div class="flex-1">
+<h4 class="text-2xl font-black mb-2">Join the commerce revolution</h4>
+<p class="text-white/70">Get weekly insights on scaling your digital storefront directly in your inbox.</p>
+</div>
+<div class="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+<input class="w-full sm:w-64 px-4 py-3 rounded-lg bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:ring-white/20" placeholder="Enter your email" type="email"/>
+<button class="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-gray-100 whitespace-nowrap">Subscribe</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-white dark:bg-background-dark border-t border-primary/10 py-12 px-6">
+<div class="max-w-[1024px] mx-auto">
+<div class="grid grid-cols-4 gap-8 mb-12">
+<div class="col-span-1">
+<div class="flex items-center gap-2 mb-4">
+<div class="bg-primary text-white p-1 rounded-lg">
+<span class="material-symbols-outlined !text-base">layers</span>
+</div>
+<span class="font-bold text-primary dark:text-white">FlexiCommerce</span>
+</div>
+<p class="text-xs text-primary/60 leading-relaxed">
+                        The ultimate commerce infrastructure for modern brands. Build, launch, and scale with confidence.
+                    </p>
+</div>
+<div>
+<h6 class="font-bold text-sm mb-4 text-primary dark:text-white uppercase tracking-wider">Shop</h6>
+<ul class="text-sm text-primary/60 flex flex-col gap-2">
+<li><a class="hover:text-primary" href="#">Electronics</a></li>
+<li><a class="hover:text-primary" href="#">Apparel</a></li>
+<li><a class="hover:text-primary" href="#">Home Goods</a></li>
+<li><a class="hover:text-primary" href="#">Gift Cards</a></li>
+</ul>
+</div>
+<div>
+<h6 class="font-bold text-sm mb-4 text-primary dark:text-white uppercase tracking-wider">Support</h6>
+<ul class="text-sm text-primary/60 flex flex-col gap-2">
+<li><a class="hover:text-primary" href="#">Help Center</a></li>
+<li><a class="hover:text-primary" href="#">Shipping Info</a></li>
+<li><a class="hover:text-primary" href="#">Returns</a></li>
+<li><a class="hover:text-primary" href="#">Contact Us</a></li>
+</ul>
+</div>
+<div>
+<h6 class="font-bold text-sm mb-4 text-primary dark:text-white uppercase tracking-wider">Legal</h6>
+<ul class="text-sm text-primary/60 flex flex-col gap-2">
+<li><a class="hover:text-primary" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary" href="#">Terms of Service</a></li>
+<li><a class="hover:text-primary" href="#">Cookie Policy</a></li>
+</ul>
+</div>
+</div>
+<div class="pt-8 border-t border-primary/5 flex items-center justify-between text-xs text-primary/40 font-medium">
+<p>© 2024 FlexiCommerce Inc. All rights reserved.</p>
+<div class="flex items-center gap-4">
+<a class="hover:text-primary" href="#">Twitter</a>
+<a class="hover:text-primary" href="#">Instagram</a>
+<a class="hover:text-primary" href="#">LinkedIn</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

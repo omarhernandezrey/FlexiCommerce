@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Checkout | FlexiCommerce</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .step-active {
+            @apply border-primary text-primary font-bold;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-primary min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-2">
+<div class="text-primary">
+<svg class="w-8 h-8" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
+<path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<span class="text-xl font-black tracking-tight">FlexiCommerce</span>
+</div>
+<div class="hidden md:flex gap-8 text-sm font-medium">
+<a class="hover:text-primary/70" href="#">Shop</a>
+<a class="hover:text-primary/70" href="#">Categories</a>
+<a class="hover:text-primary/70" href="#">Deals</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200">
+<span class="material-symbols-outlined text-xl">shopping_basket</span>
+</button>
+<button class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200">
+<span class="material-symbols-outlined text-xl">person</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+<!-- Breadcrumbs -->
+<nav class="flex mb-8 text-sm font-medium text-gray-500 gap-2">
+<a class="hover:text-primary" href="#">Cart</a>
+<span>/</span>
+<span class="text-primary">Checkout</span>
+<span>/</span>
+<span>Confirmation</span>
+</nav>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Column: Checkout Details -->
+<div class="lg:col-span-7 space-y-10">
+<h1 class="text-4xl font-black tracking-tight mb-2">Checkout</h1>
+<p class="text-gray-500 mb-8">Please complete your purchase by providing your details below.</p>
+<!-- Section 1: Shipping Address -->
+<section class="space-y-6">
+<div class="flex items-center gap-4">
+<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm font-bold">1</span>
+<h2 class="text-2xl font-bold">Shipping Address</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold uppercase tracking-wider text-gray-600">First Name</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="John" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold uppercase tracking-wider text-gray-600">Last Name</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="Doe" type="text"/>
+</div>
+<div class="md:col-span-2 space-y-2">
+<label class="text-sm font-semibold uppercase tracking-wider text-gray-600">Address</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="123 Modern Ave" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold uppercase tracking-wider text-gray-600">City</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="New York" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold uppercase tracking-wider text-gray-600">State</label>
+<select class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all">
+<option>NY</option>
+<option>CA</option>
+<option>TX</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold uppercase tracking-wider text-gray-600">ZIP</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="10001" type="text"/>
+</div>
+</div>
+</div>
+</section>
+<hr class="border-gray-200"/>
+<!-- Section 2: Shipping Method -->
+<section class="space-y-6">
+<div class="flex items-center gap-4">
+<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm font-bold">2</span>
+<h2 class="text-2xl font-bold">Shipping Method</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<label class="relative flex cursor-pointer rounded-xl border-2 border-primary bg-primary/5 p-4 focus:outline-none">
+<input checked="" class="sr-only" name="shipping" type="radio" value="standard"/>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-primary">Standard Shipping</span>
+<span class="text-xs text-gray-500">3-5 Business Days</span>
+<span class="mt-2 text-sm font-black">FREE</span>
+</div>
+<span class="material-symbols-outlined absolute top-4 right-4 text-primary">check_circle</span>
+</label>
+<label class="relative flex cursor-pointer rounded-xl border-2 border-gray-200 p-4 hover:border-primary/50 transition-all">
+<input class="sr-only" name="shipping" type="radio" value="express"/>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-gray-800">Express Delivery</span>
+<span class="text-xs text-gray-500">Next Business Day</span>
+<span class="mt-2 text-sm font-black">$15.00</span>
+</div>
+</label>
+</div>
+</section>
+<hr class="border-gray-200"/>
+<!-- Section 3: Payment -->
+<section class="space-y-6 pb-12">
+<div class="flex items-center gap-4">
+<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm font-bold">3</span>
+<h2 class="text-2xl font-bold">Payment Method</h2>
+</div>
+<div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+<div class="flex border-b border-gray-200">
+<button class="flex-1 py-4 text-sm font-bold border-b-2 border-primary bg-gray-50 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">credit_card</span>
+                                Credit Card
+                            </button>
+<button class="flex-1 py-4 text-sm font-bold text-gray-400 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+<span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+                                PayPal
+                            </button>
+</div>
+<div class="p-6 space-y-4">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-gray-500">Cardholder Name</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="John Doe" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-gray-500">Card Number</label>
+<div class="relative">
+<input class="w-full h-12 pl-4 pr-12 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="0000 0000 0000 0000" type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+<div class="w-6 h-4 bg-gray-200 rounded-sm"></div>
+<div class="w-6 h-4 bg-gray-300 rounded-sm"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-gray-500">Expiry Date</label>
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="MM / YY" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase text-gray-500">CVC</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all" placeholder="123" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-help" title="3-digit security code">info</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Order Summary (Sticky) -->
+<div class="lg:col-span-5">
+<div class="sticky top-24 space-y-6">
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+<h3 class="text-xl font-bold mb-6">Order Summary</h3>
+<!-- Product List -->
+<div class="space-y-4 mb-8">
+<div class="flex gap-4">
+<div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" data-alt="Modern red running shoes on gray background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArgMtdnJ3_J6s050x5tZHeO9xEjHAX8z8YlTcfdXI6cwb8aRxX3jjh3bekdRClR4pvjatVAwK4m1NPL9_xiZTf39pvV9iqaOsj6u9kblcpF-jMwZqd2iHgy8nZY5nStWPklxMuRfEPlmM0Kygn4bb8os_zXM99thgeXRdhma8J-nV1l-xM9rbV4pzy9Xi3ZlDPsFJdEaNXkiHWmJWv665Z-ZwYt4oE0lnrHs2MLKMfFPlGtERQ0qSdPQOND_7EbqXUiam_D0QMgMQ"/>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<h4 class="font-bold text-sm">FlexiStride Pro Max</h4>
+<p class="text-xs text-gray-500">Midnight Blue / Size 10</p>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-xs text-gray-500">Qty: 1</span>
+<span class="font-bold">$129.00</span>
+</div>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" data-alt="Minimalist white smart watch on light surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQSvkwrsr31ip0XzQCnHLsEHTSWhLb2Uvvwije7fwBlxGxyMDfyd0MOW1YjnqRqy4jb5-yKt47pkyQK0PROeZ2wPSfpJJUE5BiACaNSS6agozw4V1usubUyEYZPnIEtMkwicVK2Lc24ee4ss4jqavQuDaBEFItbb2GI276AbpSwkFxWVLVem5kZ1L04-UXlLuIJmFaPhfSKIxqwV5G9w2S7FC8-h0MJm8tdCNmMBK3ts8qSrwwhDthHK6HkzrHlIOJBa9L4hysxV4"/>
+</div>
+<div class="flex-1 flex flex-col justify-between">
+<div>
+<h4 class="font-bold text-sm">FlexiWatch Series 5</h4>
+<p class="text-xs text-gray-500">Titanium Silver</p>
+</div>
+<div class="flex justify-between items-end">
+<span class="text-xs text-gray-500">Qty: 1</span>
+<span class="font-bold">$299.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Promo Code -->
+<div class="flex gap-2 mb-8">
+<input class="flex-1 h-11 px-4 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition-all text-sm" placeholder="Promo code" type="text"/>
+<button class="px-6 h-11 bg-gray-200 text-primary font-bold rounded-lg hover:bg-gray-300 transition-colors text-sm">Apply</button>
+</div>
+<!-- Pricing Table -->
+<div class="space-y-3 border-t border-gray-100 pt-6 text-sm font-medium">
+<div class="flex justify-between text-gray-500">
+<span>Subtotal</span>
+<span>$428.00</span>
+</div>
+<div class="flex justify-between text-gray-500">
+<span>Shipping</span>
+<span class="text-green-600">FREE</span>
+</div>
+<div class="flex justify-between text-gray-500">
+<span>Estimated Tax (8%)</span>
+<span>$34.24</span>
+</div>
+<div class="flex justify-between text-xl font-black pt-4 border-t border-gray-100 text-primary">
+<span>Total</span>
+<span>$462.24</span>
+</div>
+</div>
+<button class="w-full mt-8 h-14 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-primary/20">
+                            Complete Purchase
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<p class="text-center text-[10px] text-gray-400 mt-6 leading-relaxed">
+                            By placing your order, you agree to FlexiCommerce's <br/>
+<a class="underline hover:text-primary" href="#">Terms of Service</a> and <br/>
+<a class="underline hover:text-primary" href="#">Refund Policy</a>.
+                        </p>
+</div>
+<!-- Trust Elements -->
+<div class="flex items-center justify-center gap-6 text-gray-400">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-lg">lock</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Secure SSL</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-lg">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Guaranteed</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-lg">local_shipping</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Fast Delivery</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-white border-t border-gray-200 py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2 opacity-40 grayscale">
+<svg class="w-6 h-6" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
+<path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+<span class="text-sm font-bold tracking-tight">FlexiCommerce</span>
+</div>
+<p class="text-xs text-gray-500">© 2024 FlexiCommerce Inc. All rights reserved.</p>
+<div class="flex gap-4">
+<div class="w-8 h-5 bg-gray-100 rounded"></div>
+<div class="w-8 h-5 bg-gray-100 rounded"></div>
+<div class="w-8 h-5 bg-gray-100 rounded"></div>
+</div>
+</div>
+</footer>
+</body></html>

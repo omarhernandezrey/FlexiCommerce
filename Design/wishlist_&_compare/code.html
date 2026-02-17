@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlexiCommerce | Wishlist &amp; Compare</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-primary min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#eaecf1] bg-white px-6 lg:px-20 py-4 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary text-white flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<h2 class="text-primary text-xl font-bold leading-tight tracking-tight">FlexiCommerce</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary/70 hover:text-primary text-sm font-semibold transition-colors" href="#">Shop</a>
+<a class="text-primary/70 hover:text-primary text-sm font-semibold transition-colors" href="#">Categories</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary" href="#">Wishlist</a>
+<a class="text-primary/70 hover:text-primary text-sm font-semibold transition-colors" href="#">Compare</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden sm:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-[#eaecf1] bg-gray-50">
+<div class="text-primary/50 flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 placeholder:text-primary/40 px-3 text-sm font-normal" placeholder="Search premium tech..." value=""/>
+</div>
+</label>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-primary/70 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+</button>
+<div class="h-10 w-10 rounded-full bg-primary/10 border border-primary/5 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar smiling professional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChtEpNRDn9O8cQyb5aQZIWitRB2lNZXEOq_Rt9pDeuP9F-Qu6-69R7js13xr8-ApP2PTWFS5Bz3aHniOsmzecqqpE-M_QJSiTEUOSXLDUX_Stvc0yk8fzor08zTPurdTWlilXUN7p99yDR3rNMQk05hMvaifEtb80cGu2wTRIHRKwgWO_JevM965QHvDMPTtgVECOBCucnCexOyinBDuRArDpnBQQ02ziMwR-TDlFnCo7FXJ5KqGsORAAM4kgzuV1Ryp6EwZj90PY"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+<!-- Breadcrumbs & Header -->
+<div class="flex flex-col gap-2 mb-8">
+<div class="flex items-center gap-2 text-xs font-medium text-primary/50 uppercase tracking-widest">
+<a class="hover:text-primary" href="#">Account</a>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-primary">Wishlist &amp; Comparison</span>
+</div>
+<div class="flex flex-wrap justify-between items-end gap-4 mt-2">
+<div>
+<h1 class="text-4xl font-black text-primary tracking-tight">My Collections</h1>
+<p class="text-primary/60 mt-1 font-medium">12 premium items saved for later consideration.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-primary/10 bg-white text-primary text-sm font-bold hover:bg-gray-50 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">share</span> Share List
+                            </button>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-md">
+<span class="material-symbols-outlined text-[20px]">compare_arrows</span> Compare Selection
+                            </button>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-primary/10 mb-8 overflow-x-auto whitespace-nowrap no-scrollbar">
+<button class="px-8 py-4 border-b-2 border-primary text-primary font-bold text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">favorite</span> Wishlist Items (12)
+                    </button>
+<button class="px-8 py-4 border-b-2 border-transparent text-primary/40 hover:text-primary font-bold text-sm flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[20px]">grid_view</span> Specification Matrix
+                    </button>
+<button class="px-8 py-4 border-b-2 border-transparent text-primary/40 hover:text-primary font-bold text-sm flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[20px]">history</span> Price Alerts
+                    </button>
+</div>
+<!-- Wishlist Grid Section -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+<!-- Item Card 1 -->
+<div class="group bg-white rounded-xl border border-primary/5 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+<div class="relative aspect-square overflow-hidden bg-gray-50">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Silver laptop on a clean white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqMLlmj3FYQmiRhg0srAnGXl0Aec7kC4gJAVSqW-2H4597zCVHcmdoDba_krlu24DcmC_gW6SWtlgY4qxUvV3kZRITC3hW9Hc_d8lh6-kLvIkU2N7y2HdH7TK-k7NBSRpfNMcF-Ft61JWeSPpb_iYqVeuHGHU3dZUOPHirv_H3R2pHVwG_HYiKlamzP4NdjBGHeNwrVGso7SuCaE1mYxABFakJKE3fLojzXI40Fl4vkRwUAsAZ9hLEB4dhJmPrbNwgWcBAUI8hNsw"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined filled-icon">favorite</span>
+</button>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded">In Stock</span>
+</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<p class="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1">Apple</p>
+<h3 class="text-primary font-bold text-base line-clamp-1 mb-2">MacBook Pro 14" M3 Chip</h3>
+<div class="flex items-center gap-2 mb-4">
+<span class="text-primary font-black text-lg">$1,599.00</span>
+<span class="text-primary/30 text-sm line-through">$1,799.00</span>
+</div>
+<div class="mt-auto space-y-2">
+<button class="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span> Quick Add
+                                </button>
+<label class="flex items-center justify-center gap-2 w-full py-2 border border-primary/10 rounded-lg text-xs font-semibold text-primary/60 cursor-pointer hover:bg-gray-50 transition-all">
+<input checked="" class="rounded text-primary focus:ring-primary size-4 border-gray-300" type="checkbox"/>
+                                    Add to Compare
+                                </label>
+</div>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="group bg-white rounded-xl border border-primary/5 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+<div class="relative aspect-square overflow-hidden bg-gray-50">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="High-end gaming laptop with RGB keyboard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBovGw3eGY-VGo6_QuHzmTesifcfJd9jkAxN6_1bQwMtWJ2gEub9z2eitdE2EvGlmLSPjPG58SR7GIcR21PYewa0suk4qfAFjRFfKBvOOMcXkzXQbV0g_AJJvgs-_A8hPw0fobSsq8ecHYqoU5paDmO_1vaQjcNxBwIRHpzNoAVRWc0jScPyXeqWN9-N8YX4cn2rk2lgiYc44Z_1Rukd5wjEPwH7sn6typgoyxuAtUkdTNyKGCJZHJrkfg_JXI73d4Q4ohQ670IraM"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined filled-icon">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<p class="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1">Razer</p>
+<h3 class="text-primary font-bold text-base line-clamp-1 mb-2">Blade 16 Gaming Laptop</h3>
+<div class="flex items-center gap-2 mb-4">
+<span class="text-primary font-black text-lg">$2,999.00</span>
+</div>
+<div class="mt-auto space-y-2">
+<button class="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span> Quick Add
+                                </button>
+<label class="flex items-center justify-center gap-2 w-full py-2 border border-primary/10 rounded-lg text-xs font-semibold text-primary/60 cursor-pointer hover:bg-gray-50 transition-all">
+<input checked="" class="rounded text-primary focus:ring-primary size-4 border-gray-300" type="checkbox"/>
+                                    Add to Compare
+                                </label>
+</div>
+</div>
+</div>
+<!-- Item Card 3 -->
+<div class="group bg-white rounded-xl border border-primary/5 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col opacity-70">
+<div class="relative aspect-square overflow-hidden bg-gray-50 grayscale">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Slim professional ultrabook laptop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmT4UpClfecEYI_Ua71XQfdMRDPTxrSjqqJm1Mvr4w1BawJOHo6mz7wt8170dIY-GodDBj_KxMkv6CFcd9tuqmJgIfSQVklpdgshQQuQ011ghwESdwFKyHlJUBd7gLpvL49dYicJ4PDEMM_Bat7zGKYvnWelZudBB21qDT3AUlxdSJGRFTs5z7ZOJYeaKbuCVklX-mcl93b9YD8UAFKtIPp0KwToOjnlBmmOYQAOghQoBrRwjOFBOY3_mD-10yftkYeV77lGc527U"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined filled-icon">favorite</span>
+</button>
+<div class="absolute inset-0 bg-primary/40 flex items-center justify-center">
+<span class="px-4 py-2 bg-white text-primary text-xs font-bold uppercase tracking-widest rounded-lg">Out of Stock</span>
+</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<p class="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1">Dell</p>
+<h3 class="text-primary font-bold text-base line-clamp-1 mb-2">XPS 15 InfinityEdge</h3>
+<div class="flex items-center gap-2 mb-4">
+<span class="text-primary font-black text-lg">$1,899.00</span>
+</div>
+<div class="mt-auto space-y-2">
+<button class="w-full py-2.5 bg-primary/20 text-primary/40 cursor-not-allowed rounded-lg text-sm font-bold flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined text-[18px]">notifications</span> Notify Me
+                                </button>
+<label class="flex items-center justify-center gap-2 w-full py-2 border border-primary/10 rounded-lg text-xs font-semibold text-primary/60 cursor-pointer hover:bg-gray-50 transition-all">
+<input class="rounded text-primary focus:ring-primary size-4 border-gray-300" type="checkbox"/>
+                                    Add to Compare
+                                </label>
+</div>
+</div>
+</div>
+<!-- Item Card 4 (Comparison Selection) -->
+<div class="group bg-white rounded-xl border-2 border-primary shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+<div class="relative aspect-square overflow-hidden bg-gray-50">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Microsoft Surface Studio laptop in minimalist studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1d-VioxPXzkrnh6bbxzd8MIMnE8EvGb72QfvcZOsNe8rBuKf0YKq_LXbyG0fbm4FLN4vzoQjaZaQewSxLbW_ldnR2pDOSHPD6fGcoFfgOajeLj0qteiuF-CNS0uXJx_nICJQLbhODCQZAhU3hqjZ0zPHctx3nvmkGvh2MG6umYPCd8jq65YJj5Otm47vI7q4q74QaJv7adsbm8rDmZNwdFHAPEQC1Z-pstAQxAuAVxmTQ68ZSodJKMEcqNegSq5mAfMhKIHiCfis"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined filled-icon">favorite</span>
+</button>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<p class="text-[10px] font-bold text-primary/40 uppercase tracking-widest mb-1">Microsoft</p>
+<h3 class="text-primary font-bold text-base line-clamp-1 mb-2">Surface Laptop Studio 2</h3>
+<div class="flex items-center gap-2 mb-4">
+<span class="text-primary font-black text-lg">$2,399.00</span>
+</div>
+<div class="mt-auto space-y-2">
+<button class="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span> Quick Add
+                                </button>
+<label class="flex items-center justify-center gap-2 w-full py-2 border border-primary/10 rounded-lg text-xs font-semibold text-primary/60 cursor-pointer hover:bg-gray-50 transition-all">
+<input checked="" class="rounded text-primary focus:ring-primary size-4 border-gray-300" type="checkbox"/>
+                                    Add to Compare
+                                </label>
+</div>
+</div>
+</div>
+</div>
+<!-- Comparison Table Section -->
+<div class="mb-20">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-2xl font-black text-primary tracking-tight">Technical Comparison</h2>
+<p class="text-primary/60 font-medium">Side-by-side technical specification matrix.</p>
+</div>
+<div class="flex items-center gap-4 bg-white p-1 rounded-lg border border-primary/10">
+<button class="px-4 py-2 bg-primary text-white rounded-md text-xs font-bold uppercase tracking-wider">All Specs</button>
+<button class="px-4 py-2 text-primary/60 hover:text-primary rounded-md text-xs font-bold uppercase tracking-wider transition-colors">Only Differences</button>
+</div>
+</div>
+<div class="overflow-x-auto rounded-xl border border-primary/10 bg-white shadow-sm">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="bg-primary text-white">
+<th class="p-6 text-sm font-bold w-1/4 sticky left-0 bg-primary z-10 border-r border-white/10 uppercase tracking-widest">Specifications</th>
+<th class="p-6 text-center w-1/4">
+<div class="flex flex-col items-center gap-3">
+<img class="h-16 w-16 object-cover rounded-lg border border-white/20" data-alt="Thumbnail of Apple MacBook Pro" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhq61WWKMI2ljUJLoHow2ugnXShXDRHPvhfOatilaaA6Y5BZkQFi29WcJQ2wT6e2LjStzb6FLTFmEN4ChoLRu5hQNC6UAWUtg2wATthmbZGEj2wHq6FFE5Vy4WqOIQxTlwsYQ3yCn-8ki5Lx8DrGKXqgMVwq4_9e5CHc0sPRutLK0yVB3n_t2juTb2EjnMePhDPFZCvAayC7M92OLf6-sl5GY7w2zcu7OxdG3WGfvNOEgj6SzkNdOEvCyN5QPpbOBLqzwNJMVXUYQ"/>
+<span class="text-xs uppercase font-bold tracking-tight">MacBook Pro 14"</span>
+</div>
+</th>
+<th class="p-6 text-center w-1/4">
+<div class="flex flex-col items-center gap-3">
+<img class="h-16 w-16 object-cover rounded-lg border border-white/20" data-alt="Thumbnail of Razer Blade laptop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVXtcZhal9rul72AZw8xFjGw146Pc2iPBiFzstaBJdJZgS6maGFs_NvxvYOWPqUy4JzmIkX9J8wnTpYMoD8kBhW6FkQwG_7nzL0fUXANRlFt3vJICWeEszhThpVYbNEZltOMMz1Lq8y0-zyMsUUWzn6CJoYfnhKnMa9QdM-UNkTWRg1hKWZ322cpbH7gkT0UpIsuGfodQFDpC30C5zaCAxkYeBLmtP0mniceuMsXw695YEEwBurBnjLnGJgVKYBGmd9QTU084kpEc"/>
+<span class="text-xs uppercase font-bold tracking-tight">Razer Blade 16</span>
+</div>
+</th>
+<th class="p-6 text-center w-1/4">
+<div class="flex flex-col items-center gap-3">
+<img class="h-16 w-16 object-cover rounded-lg border border-white/20" data-alt="Thumbnail of Surface Studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrNnMCTGbwEOBnr12-Jb9eybcBXPy8dVjrWpL-WpWZYIWEb9uK9igOetuqrKUqu2wj1a1m7r5o05n_jR0z2O4TIU0aLY4uHpTPdsel_3z01MhWK2icT-fH2Ho06c9IhN5ptGEVB7qB1DMftHnABaIBaed7ghvUEAuL-rvN7GNWZsqhrkR2XQdyYGFtFnv0aDQlf3Sp16VC-7uFJTqfHTYG0dnWE6u5lOHHeiMv3PTMuSJILf8lmhptmZBZk0dpUSLfryZE4lkDxXo"/>
+<span class="text-xs uppercase font-bold tracking-tight">Surface Studio 2</span>
+</div>
+</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<!-- Group 1: Performance -->
+<tr class="bg-gray-50/50">
+<td class="px-6 py-3 text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] sticky left-0" colspan="4">Core Performance</td>
+</tr>
+<tr>
+<td class="p-6 font-bold text-sm text-primary/70 sticky left-0 bg-white border-r border-primary/5">Processor</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Apple M3 Pro / Max</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Intel Core i9-14900HX</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Intel Core i7-13700H</td>
+</tr>
+<tr>
+<td class="p-6 font-bold text-sm text-primary/70 sticky left-0 bg-white border-r border-primary/5">Graphics</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Up to 40-core GPU</td>
+<td class="p-6 text-sm text-primary font-medium text-center">NVIDIA RTX 4090</td>
+<td class="p-6 text-sm text-primary font-medium text-center">NVIDIA RTX 4060</td>
+</tr>
+<tr>
+<td class="p-6 font-bold text-sm text-primary/70 sticky left-0 bg-white border-r border-primary/5">Unified Memory</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Up to 128GB</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Up to 64GB DDR5</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Up to 64GB LPDDR5x</td>
+</tr>
+<!-- Group 2: Display -->
+<tr class="bg-gray-50/50">
+<td class="px-6 py-3 text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] sticky left-0" colspan="4">Visual Display</td>
+</tr>
+<tr>
+<td class="p-6 font-bold text-sm text-primary/70 sticky left-0 bg-white border-r border-primary/5">Panel Technology</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Liquid Retina XDR</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Dual Mode Mini-LED</td>
+<td class="p-6 text-sm text-primary font-medium text-center">PixelSense Flow</td>
+</tr>
+<tr>
+<td class="p-6 font-bold text-sm text-primary/70 sticky left-0 bg-white border-r border-primary/5">Refresh Rate</td>
+<td class="p-6 text-sm text-primary font-medium text-center">ProMotion (120Hz)</td>
+<td class="p-6 text-sm text-primary font-medium text-center">240Hz / 4K 120Hz</td>
+<td class="p-6 text-sm text-primary font-medium text-center">Up to 120Hz</td>
+</tr>
+<tr>
+<td class="p-6 font-bold text-sm text-primary/70 sticky left-0 bg-white border-r border-primary/5">Peak Brightness</td>
+<td class="p-6 text-sm text-primary font-medium text-center">1600 nits</td>
+<td class="p-6 text-sm text-primary font-medium text-center">1000 nits</td>
+<td class="p-6 text-sm text-primary font-medium text-center">650 nits</td>
+</tr>
+<!-- Footer Actions -->
+<tr class="bg-gray-50">
+<td class="p-6 sticky left-0 bg-gray-50 border-r border-primary/5"></td>
+<td class="p-6">
+<button class="w-full py-3 bg-primary text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-primary/90 shadow-md">Buy Now</button>
+</td>
+<td class="p-6">
+<button class="w-full py-3 bg-primary text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-primary/90 shadow-md">Buy Now</button>
+</td>
+<td class="p-6">
+<button class="w-full py-3 bg-primary text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-primary/90 shadow-md">Buy Now</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Empty State Example (Hidden by default, shown for concept) -->
+<div class="hidden flex flex-col items-center justify-center py-24 text-center">
+<div class="size-32 bg-primary/5 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary/20 text-6xl">heart_broken</span>
+</div>
+<h2 class="text-2xl font-black text-primary tracking-tight">Your Wishlist is Empty</h2>
+<p class="text-primary/60 max-w-sm mt-2 font-medium">Start saving your favorite premium electronics to compare them side-by-side later.</p>
+<button class="mt-8 px-10 py-4 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-xl">
+                        Explore Catalog
+                    </button>
+</div>
+</main>
+<!-- Bottom Persistent Comparison Drawer (Mobile) -->
+<div class="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-primary/10 p-4 shadow-2xl z-50">
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-3">
+<img class="size-8 rounded-full border-2 border-white object-cover" data-alt="Small thumbnail laptop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKlBjXQskjYc6NGeA6NVOlndysmHRwYBVvQrdyqNDtinYbT-Rn4KJ5_A0xEPdZA_WJflDe40a5GCbZyNhZuf7qdprufKa7jxExz4Cel0DgzAYKZOAnQ9G2ZoZkDvYvnLRF_dzxutgP9daJurujUlCHw2f9ySDWK6Uk4Eq0NNdvX4G8meD_IHGw_DKW4BiF50OvBDXSmrEpwHOj-EE4HByOHoeGGWPgK7bymsuTHVq_4-17cR6kX2eHFXHFh25fteoD5811YJjhn_g"/>
+<img class="size-8 rounded-full border-2 border-white object-cover" data-alt="Small thumbnail gaming laptop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUtHaH4USyQNkWKm4uxNSd6SwLAD6EJakWTZBpsICMlU4Pd5KB5kqtCkhyyfWer9E6uHu_piFDWAVnBkvK2Y5ULtaNBvog3kxn0khgO9NTG8JDnxHRiiRjCeTb2LNCul_aapZPvU875m2ipVwj4Cm7ynEbwLtsb-bT4jK02jOgf0KlrFQITMG3MdbVq-R_2zMSTTjyp1gLkrYFtiM8q-3PXvFadjJIW6i0wrlEV-gsG_702QoZcEHt5np23pCPkbyr1GU5rzrgobQ"/>
+<div class="size-8 rounded-full border-2 border-white bg-primary text-white flex items-center justify-center text-[10px] font-bold">+1</div>
+</div>
+<span class="text-xs font-bold text-primary">3 Items Selected</span>
+</div>
+<button class="px-6 py-2 bg-primary text-white rounded-lg text-xs font-bold uppercase tracking-widest">Compare</button>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-white border-t border-[#eaecf1] py-12 px-6 lg:px-20">
+<div class="max-w-7xl mx-auto flex flex-wrap justify-between gap-10">
+<div class="max-w-xs">
+<div class="flex items-center gap-3 text-primary mb-4">
+<div class="size-6 bg-primary text-white flex items-center justify-center rounded">
+<span class="material-symbols-outlined text-[16px]">shopping_bag</span>
+</div>
+<h2 class="text-primary text-lg font-bold">FlexiCommerce</h2>
+</div>
+<p class="text-primary/60 text-sm leading-relaxed">The ultimate destination for luxury electronics and high-performance lifestyle technology.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-10">
+<div class="flex flex-col gap-4">
+<h4 class="text-primary font-black text-xs uppercase tracking-widest">Support</h4>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Help Center</a>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Returns</a>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Contact</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="text-primary font-black text-xs uppercase tracking-widest">Company</h4>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">About Us</a>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Careers</a>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Store Locator</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="text-primary font-black text-xs uppercase tracking-widest">Legal</h4>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="text-primary/60 text-sm hover:text-primary transition-colors" href="#">Terms</a>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto border-t border-primary/5 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-primary/40 text-xs">© 2024 FlexiCommerce Inc. All rights reserved.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-primary/40 hover:text-primary cursor-pointer transition-colors">brand_awareness</span>
+<span class="material-symbols-outlined text-primary/40 hover:text-primary cursor-pointer transition-colors">language</span>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Store Settings - FlexiCommerce Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab {
+            border-bottom: 2px solid #0f1729;
+            color: #0f1729;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-primary">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 bg-white px-10 py-3 z-10">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-lg">polymer</span>
+</div>
+<h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">FlexiCommerce Admin</h2>
+</div>
+<div class="flex items-center gap-9">
+<a class="text-primary/60 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Dashboard</a>
+<a class="text-primary/60 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Orders</a>
+<a class="text-primary/60 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Products</a>
+<a class="text-primary/60 hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Customers</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end gap-6">
+<label class="flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-primary/50 flex border-none bg-primary/5 items-center justify-center pl-4 rounded-l-lg" data-icon="search">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-primary focus:outline-0 focus:ring-0 border-none bg-primary/5 placeholder:text-primary/40 px-4 rounded-l-none pl-2 text-sm font-normal" placeholder="Search settings..." value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-primary/10" data-alt="Admin User Profile Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAHDT0DoMrQg8PNKuXCPq-Xv2nSwaZVD-uziqrCMEQuNHiRUeSwdFZSGIpqUpzN2Fv0ptO0-fI4U28W9AqpculwDouSVhWpnrZkMj9j1f2pgXnpxJcxurd7i5r2M0wxFLJJiSU9LsYqHK212XZhY1Kp6Flht93q8nc4TC_G7DqoswJpkUQj7GQcjvCdLTRA4VbBaEhkDpTUigG8gBHhlIl3-i-nbVbk4fU4LCcrAUoUkwthACdb-NXohwH7GWXdl-ulezlF5f8uxhA");'></div>
+</div>
+</header>
+<div class="flex flex-1">
+<!-- Sidebar Navigation -->
+<aside class="w-64 flex flex-col justify-between border-r border-primary/10 bg-white p-4">
+<div class="flex flex-col gap-6">
+<div class="flex flex-col px-3 py-2 bg-primary/5 rounded-lg border border-primary/10">
+<h1 class="text-primary text-sm font-semibold leading-normal">Main Store Tenant</h1>
+<p class="text-primary/50 text-xs font-medium">Enterprise Plan • ID: #4402</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/60 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white shadow-md" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<p class="text-sm font-medium">Store Settings</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/60 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<p class="text-sm font-medium">Inventory</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/60 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<p class="text-sm font-medium">Analytics</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary/60 hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<p class="text-sm font-medium">Staff &amp; Roles</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+<p class="text-xs font-bold text-blue-900 mb-1">Need help?</p>
+<p class="text-[10px] text-blue-700">Check our multi-tenant setup guide.</p>
+</div>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-lg hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-sm">swap_horiz</span>
+<span class="truncate">Switch Store</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-y-auto max-h-[calc(100vh-64px)] bg-background-light">
+<div class="max-w-5xl w-full mx-auto px-8 py-8">
+<!-- Header -->
+<div class="mb-8">
+<h2 class="text-primary text-3xl font-black leading-tight tracking-tight">Store Settings</h2>
+<p class="text-primary/50 text-base mt-1">Configure your instance's unique identity, financial gateways, and operational logic.</p>
+</div>
+<!-- Horizontal Tabs -->
+<div class="flex border-b border-primary/10 gap-8 mb-8 overflow-x-auto">
+<a class="active-tab flex items-center gap-2 pb-4 px-1" href="#">
+<span class="material-symbols-outlined text-sm">info</span>
+<span class="text-sm font-bold">General Info</span>
+</a>
+<a class="flex items-center gap-2 pb-4 px-1 text-primary/40 border-b-2 border-transparent hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">payments</span>
+<span class="text-sm font-bold">Payment Gateways</span>
+</a>
+<a class="flex items-center gap-2 pb-4 px-1 text-primary/40 border-b-2 border-transparent hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">local_shipping</span>
+<span class="text-sm font-bold">Shipping Rules</span>
+</a>
+<a class="flex items-center gap-2 pb-4 px-1 text-primary/40 border-b-2 border-transparent hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">account_balance_wallet</span>
+<span class="text-sm font-bold">Tax Configurations</span>
+</a>
+</div>
+<!-- Form Content -->
+<div class="space-y-8 pb-24">
+<!-- General Store Info Card -->
+<div class="bg-white rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-primary/5">
+<h3 class="text-primary text-lg font-bold">Store Branding</h3>
+<p class="text-primary/50 text-sm">Identity settings for the Main Store Tenant storefront.</p>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-primary">Store Name</label>
+<input class="w-full rounded-lg border border-primary/10 bg-white px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="text" value="Main Store Tenant"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-primary">Support Email</label>
+<input class="w-full rounded-lg border border-primary/10 bg-white px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="email" value="support@tenant-one.com"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-primary">Currency</label>
+<select class="w-full rounded-lg border border-primary/10 bg-white px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all">
+<option>USD - United States Dollar</option>
+<option>EUR - Euro</option>
+<option>GBP - British Pound</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<label class="text-sm font-semibold text-primary">Store Logo</label>
+<div class="border-2 border-dashed border-primary/10 rounded-xl p-8 flex flex-col items-center justify-center bg-primary/[0.02] hover:bg-primary/[0.04] transition-colors cursor-pointer group">
+<div class="size-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-primary/5 mb-4 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-primary/40 text-3xl">upload_file</span>
+</div>
+<p class="text-sm font-bold text-primary">Drop files to upload</p>
+<p class="text-xs text-primary/40 mt-1">SVG, PNG, JPG up to 10MB</p>
+</div>
+<div class="flex items-center gap-4 mt-2 p-3 border border-primary/5 rounded-lg bg-white">
+<div class="size-12 rounded bg-primary/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/20">image</span>
+</div>
+<div class="flex-1">
+<p class="text-xs font-bold text-primary">logo_primary.svg</p>
+<p class="text-[10px] text-primary/40">124 KB • Uploaded 2 days ago</p>
+</div>
+<button class="text-red-500 hover:text-red-600">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Gateways Card (Preview of next tab) -->
+<div class="bg-white rounded-xl border border-primary/10 shadow-sm overflow-hidden opacity-90">
+<div class="p-6 border-b border-primary/5 flex justify-between items-center">
+<div>
+<h3 class="text-primary text-lg font-bold">Payment Methods</h3>
+<p class="text-primary/50 text-sm">Configure how your customers pay for orders.</p>
+</div>
+<span class="px-2.5 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Live</span>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between p-4 border border-primary/10 rounded-xl hover:bg-primary/[0.01] transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-8 bg-primary/5 rounded flex items-center justify-center overflow-hidden border border-primary/5">
+<img alt="Stripe Logo" class="h-4 object-contain" data-alt="Stripe Payment Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB30T_xIQcCnWfZO85YjKebcktTULqzVo4J4_D0ysQaDIU2ypz4k-nMmA0ch8GYxStK0gYd-bXxJljKwrSFbeKQWKFrq6QDQp2o6q4hi6lxdjxT4mrGeYdVyr5B3fLPL8rGDk3SnHywDpsZFPqTOaJRlRJtVJ5xOn6EhwVWYjLfh6CG2o0FfJ-VGqCSfG-Jtxhxhhqps_saZLwEQDPR3U8ZCxXH2qw64xLewLos8PSc8qDGI9TAsUmYHCVFu5FdtUYuY8jluingMJM"/>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Stripe</p>
+<p class="text-xs text-primary/40">Connected to acct_1Hj3X2L...</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-xs font-bold text-primary hover:underline">Manage</button>
+<div class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 border border-primary/10 rounded-xl hover:bg-primary/[0.01] transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-8 bg-primary/5 rounded flex items-center justify-center overflow-hidden border border-primary/5">
+<img alt="PayPal Logo" class="h-4 object-contain" data-alt="PayPal Payment Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvODfEA7NB6jizrQPWZm5aat3mPihhK7epOFYuL9kQ4tjDveDo6pGPDTVTzY2By9ZPaKv80pHGGuRfUNyEXzjuvMSxk56gZJ2x_MfSvOL2EtigCjddvy68ZprCfxHYlIAJxhiup-s58dOMosq2YZXzWO2-LkncyZNBUHl3eUWLneZSUTlo24zZbMK_wDvYPrhtLFIAlVTKyc2qnJXGOiuKFKLzZeWt0v9cR5xkzUhGtkgMLNhal2RitctJwYouRtzsXHrmW576R70"/>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">PayPal</p>
+<p class="text-xs text-primary/40">Not connected</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-xs font-bold text-primary hover:underline">Connect</button>
+<div class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none">
+<span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Shipping Rules Card -->
+<div class="bg-white rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-primary/5">
+<h3 class="text-primary text-lg font-bold">Shipping Logic</h3>
+<p class="text-primary/50 text-sm">Define delivery rates and multi-tenant logic for regional shipping.</p>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<label class="text-sm font-semibold text-primary block">Domestic Shipping (Flat Rate)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm">$</span>
+<input class="w-full rounded-lg border border-primary/10 bg-white pl-8 pr-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="number" value="15.00"/>
+</div>
+</div>
+<div class="space-y-4">
+<label class="text-sm font-semibold text-primary block">Free Shipping Threshold</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm">$</span>
+<input class="w-full rounded-lg border border-primary/10 bg-white pl-8 pr-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" type="number" value="100.00"/>
+</div>
+<p class="text-[10px] text-primary/40 leading-tight">Orders above this value will bypass the flat rate logic automatically.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Save Bar -->
+<div class="sticky bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-primary/10 p-4 z-20">
+<div class="max-w-5xl mx-auto px-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-green-500">check_circle</span>
+<p class="text-sm font-medium text-primary">Last autosaved at 14:23</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2.5 rounded-lg text-primary text-sm font-bold border border-primary/10 hover:bg-primary/5 transition-colors">Discard</button>
+<button class="px-8 py-2.5 rounded-lg bg-primary text-white text-sm font-bold shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

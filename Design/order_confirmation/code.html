@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Order Success - FlexiCommerce</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #0f1729;
+            opacity: 0.6;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-primary">
+<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+<!-- Navigation Bar -->
+<header class="flex items-center justify-between border-b border-solid border-primary/10 bg-white dark:bg-background-dark px-6 md:px-20 py-4">
+<div class="flex items-center gap-4">
+<div class="text-primary size-8">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
+<path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-primary text-xl font-bold tracking-tight">FlexiCommerce</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex size-10 items-center justify-center rounded-lg bg-primary/5 text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="size-10 rounded-full bg-primary/10 bg-cover bg-center" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDjWtGuUZQ-gt25hKpKA9-gpVlVQlNk6uyHlNwdiTmNlpnqc_eqJ450nNBQYxPZdPBoWGr-XLNWL-zs6hVzWmRdnaQxreKxnFMMwI8y6jL5PnNOWk3bS5AnerSf4MoJUA0H3xNieo_YVf4mfmKcxoDF8_r7cTMwK4Tt18P3XI_l2S8WFy3Mr6GWUglEefOKWz0QcYaIxd6lLXQPWz7cquwOhk5pBJXQUCNt-H3lxKi6mbsZ65Y1DcM_fEpAh8pEP70-5iatzr2McI8");'></div>
+</div>
+</header>
+<main class="flex flex-1 flex-col items-center justify-center px-4 py-12 md:py-20">
+<!-- Celebration/Confetti Background Element -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+<div class="confetti-piece top-10 left-[10%]" style="transform: rotate(45deg); background-color: #0f1729;"></div>
+<div class="confetti-piece top-20 left-[80%]" style="width: 12px; height: 12px; transform: rotate(-15deg); background-color: #3b82f6;"></div>
+<div class="confetti-piece top-[40%] left-[5%]" style="transform: rotate(110deg); background-color: #10b981;"></div>
+<div class="confetti-piece top-[60%] left-[90%]" style="width: 6px; height: 10px; transform: rotate(30deg); background-color: #f59e0b;"></div>
+<div class="confetti-piece top-[80%] left-[15%]" style="transform: rotate(-45deg); background-color: #ef4444;"></div>
+</div>
+<!-- Success Header -->
+<div class="z-10 flex flex-col items-center text-center mb-10 max-w-2xl">
+<div class="mb-6 flex size-20 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/20">
+<span class="material-symbols-outlined !text-4xl">check</span>
+</div>
+<h1 class="text-3xl md:text-5xl font-bold text-primary mb-3">Thank You for Your Purchase!</h1>
+<p class="text-primary/60 text-lg">Order <span class="font-semibold text-primary">#FC-82910</span> has been placed successfully.</p>
+<p class="text-primary/40 text-sm mt-1">A confirmation email has been sent to alex.j@example.com</p>
+</div>
+<!-- Main Order Card -->
+<div class="z-10 w-full max-w-2xl bg-white dark:bg-background-dark/50 rounded-xl shadow-2xl shadow-primary/5 border border-primary/5 overflow-hidden">
+<!-- Status Banner -->
+<div class="bg-primary/5 px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-primary/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+<div>
+<p class="text-xs uppercase tracking-wider font-bold text-primary/40">Estimated Delivery</p>
+<p class="font-semibold text-primary">Thursday, October 24th, 2024</p>
+</div>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                        Track Order
+                    </button>
+</div>
+<!-- Order Summary -->
+<div class="p-8">
+<h3 class="text-lg font-bold text-primary mb-6">Order Summary</h3>
+<div class="space-y-6">
+<!-- Item 1 -->
+<div class="flex items-center gap-4">
+<div class="size-20 rounded-lg bg-primary/5 bg-cover bg-center border border-primary/10 shrink-0" data-alt="Red running sneaker on white background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRjmBLCVrmKvEGErlER1GUBbkWjK_SVWB7ixlk5XSI9BP17KqYkYNCN-Pmpqz1-soaYxO0fsvAXQeslGcWKDfFrjEI1F3tgNZeoFCdVwVHjZef111OSU5PwC-c_2GSHjWlGyX_Zh6FZPvNlU2nnh73c_ZF-70Ts4UDD4jvr3Rbo3LebE8K-s0FV8S0QOgDjFJARvk22OMB5s9gJk3HR09lgFYnre5reOWdw8lrtw9VqT6epqzC9rSrhjxQqcdL8mZOGYeHoYqEZz4");'></div>
+<div class="flex-1 min-w-0">
+<h4 class="font-semibold text-primary truncate">Velocity Pro Sneakers</h4>
+<p class="text-sm text-primary/50">Midnight Blue / Size 10</p>
+<p class="text-sm font-medium text-primary mt-1">Qty: 1</p>
+</div>
+<p class="font-bold text-primary">$129.00</p>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4">
+<div class="size-20 rounded-lg bg-primary/5 bg-cover bg-center border border-primary/10 shrink-0" data-alt="Minimalist white wristwatch" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDx1eagFjD6cNsFhGCLV4UV_D_7wbTsEWV6Xc2HR1GUTEAipyJiNGxYCz98z7cbz80qRqtS8WfikS9lL3gN20edfrKnjXnwRB0WpQ921R9wf6FslaIIDn8zWpAUR-bhdycyeKuogA_D3AJ4DF2hLkh37EEr5tNaFjY1xtIOgSdyK0pfSMf4w7hJBBlaUJ5TPFYa77jt_ufAI9bRIzNZqNZToYd-CVeaBgas4NiZalVmDGpAQCgVSnIDWGQ0Yg2JaWtDPzrq7JAwo3U");'></div>
+<div class="flex-1 min-w-0">
+<h4 class="font-semibold text-primary truncate">Aura Chronograph Watch</h4>
+<p class="text-sm text-primary/50">Silver Mesh Strap</p>
+<p class="text-sm font-medium text-primary mt-1">Qty: 1</p>
+</div>
+<p class="font-bold text-primary">$85.00</p>
+</div>
+</div>
+<!-- Totals -->
+<div class="mt-8 pt-6 border-t border-primary/5 space-y-3">
+<div class="flex justify-between text-primary/60 text-sm">
+<span>Subtotal</span>
+<span>$214.00</span>
+</div>
+<div class="flex justify-between text-primary/60 text-sm">
+<span>Shipping</span>
+<span class="text-green-600 font-medium">Free</span>
+</div>
+<div class="flex justify-between text-primary/60 text-sm">
+<span>Estimated Tax</span>
+<span>$17.12</span>
+</div>
+<div class="flex justify-between text-primary text-xl font-bold pt-2">
+<span>Total</span>
+<span>$231.12</span>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="px-8 pb-8 flex flex-col gap-3">
+<button class="w-full py-4 text-primary font-bold border-2 border-primary/10 rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">shopping_bag</span>
+                        Continue Shopping
+                    </button>
+<p class="text-center text-primary/40 text-xs px-4">
+                        Need help? <a class="underline font-medium hover:text-primary transition-colors" href="#">Contact Support</a> or visit our <a class="underline font-medium hover:text-primary transition-colors" href="#">Help Center</a>.
+                    </p>
+</div>
+</div>
+<!-- Secondary Info -->
+<div class="z-10 mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+<div class="p-6 bg-white/50 dark:bg-background-dark/30 rounded-xl border border-primary/5 text-center">
+<span class="material-symbols-outlined text-primary mb-2">verified_user</span>
+<h5 class="font-bold text-primary text-sm">Secure Payment</h5>
+<p class="text-xs text-primary/50 mt-1">Your transaction is encrypted and secure.</p>
+</div>
+<div class="p-6 bg-white/50 dark:bg-background-dark/30 rounded-xl border border-primary/5 text-center">
+<span class="material-symbols-outlined text-primary mb-2">assignment_return</span>
+<h5 class="font-bold text-primary text-sm">Easy Returns</h5>
+<p class="text-xs text-primary/50 mt-1">30-day hassle-free return policy.</p>
+</div>
+<div class="p-6 bg-white/50 dark:bg-background-dark/30 rounded-xl border border-primary/5 text-center">
+<span class="material-symbols-outlined text-primary mb-2">support_agent</span>
+<h5 class="font-bold text-primary text-sm">24/7 Support</h5>
+<p class="text-xs text-primary/50 mt-1">Our team is here to help anytime.</p>
+</div>
+</div>
+</main>
+<footer class="mt-auto py-8 text-center text-primary/30 text-sm">
+<p>© 2024 FlexiCommerce Inc. All rights reserved.</p>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Order History - FlexiCommerce</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0f1729",
+              "background-light": "#f6f7f8",
+              "background-dark": "#14171e",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-primary min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 bg-white px-6 md:px-10 py-3 dark:bg-background-dark dark:border-gray-800">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary dark:text-white">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">package_2</span>
+</div>
+<h2 class="text-primary dark:text-white text-lg font-extrabold leading-tight tracking-tight">FlexiCommerce</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white text-sm font-semibold transition-colors" href="#">Dashboard</a>
+<a class="text-primary dark:text-white text-sm font-semibold border-b-2 border-primary" href="#">Orders</a>
+<a class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white text-sm font-semibold transition-colors" href="#">Products</a>
+<a class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white text-sm font-semibold transition-colors" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-4 items-center">
+<div class="hidden sm:flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1.5 w-64">
+<span class="material-symbols-outlined text-gray-400 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-gray-500" placeholder="Search orders..." type="text"/>
+</div>
+<button class="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="User profile circular avatar image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVA0lph6qkRkFXLKVJ72n8VRxBwMr0bWB0c6I4oQ19DgPGuTU605jdTlgGQ68k7po_MU4dA7UNNV0hRn9bnge2TlgjAk73RPg9EGtl34jPtmf4BYPy9cPh1ambsxFgbzBKZYmlkX1gAB7WCqQ6mCLmcAnByAXxwPykhh1rOYo8MVOop-CyXBxBzV5Hhhqbu7ZyGZ8rM4SOVVWNm6fbFD15l-Ubo9W6oAbcpexcWk8R8HI7f81GdDLZ0eSbzlbJ9zKF0jKkyGEl4IY"/>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-6xl mx-auto w-full px-4 md:px-10 py-8">
+<!-- Header & Summary -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div class="space-y-1">
+<h1 class="text-primary dark:text-white text-3xl font-black tracking-tight">Order History</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm">Manage and track your recent purchases (Showing 24 orders)</p>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                            Export CSV
+                        </button>
+</div>
+</div>
+<!-- Filters & Search Toolbar -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
+<div class="flex flex-col lg:flex-row gap-4">
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-primary focus:border-primary text-sm" placeholder="Search by Order ID or product name..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2">
+<select class="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg py-2.5 pl-4 pr-10 text-sm font-medium focus:ring-primary">
+<option>Status: All Orders</option>
+<option>Processing</option>
+<option>Shipped</option>
+<option>Delivered</option>
+<option>Cancelled</option>
+</select>
+<select class="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg py-2.5 pl-4 pr-10 text-sm font-medium focus:ring-primary">
+<option>Time: Last 30 days</option>
+<option>Last 3 months</option>
+<option>2023</option>
+<option>2022</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Orders List -->
+<div class="space-y-4">
+<!-- Order Item 1 -->
+<div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-start gap-4 flex-1">
+<div class="size-16 rounded-lg bg-gray-100 dark:bg-gray-900 flex-shrink-0 flex items-center justify-center overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Red athletic sneaker running shoe" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDrbB8mfAeBxEAkJVogXjgLz84krm2XJjHjz0Ygyk9rGNhJU2m6ekiIb96Ro2mh4nPHsGc9Eh6Z1dRjlLosigDvMoEFJUZKuzxzWSEPAiNcfYewTNvMeptoBcHHKj_n4fL6KiE4SaTVWua4ayhP5Mk1jY-RECkeyn0Wvob1boKnXpndj2pLaEUgge5mHhwvWcHelNuDXjMZFUncjAEjb6z2SCEglsef1LTo1yBs3I2evFA_IO9rtss5xjkL8_0gkGMapOUxOH2VRcU')"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</span>
+<h3 class="text-primary dark:text-white font-bold text-base">#FX-92834</h3>
+<p class="text-gray-500 text-sm mt-0.5">Purchased on Oct 24, 2023 • 2 Items</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:flex md:items-center md:gap-12 flex-shrink-0">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount</span>
+<span class="text-primary dark:text-white font-extrabold text-lg">$124.50</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 w-fit uppercase">
+<span class="size-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                                        Delivered
+                                    </span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 md:flex-none px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+                                    View Details
+                                </button>
+</div>
+</div>
+</div>
+<!-- Order Item 2 -->
+<div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-start gap-4 flex-1">
+<div class="size-16 rounded-lg bg-gray-100 dark:bg-gray-900 flex-shrink-0 flex items-center justify-center overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Classic minimalist watch on table" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAwenrcTDk8VmmaoCYByjMf_aKosoazibIktxZXyE0M4WeFB855MLa1g3ZXpLWMhR2Xr7Lu-uSoF4Mqp_1JDTfIqrrxt5yppErH53wqw3JjI7kh6pNkHsRAyi1Aa_UV3Q6_qVSC6-7y39EMaCkocQp8VUPPuxjexldPNYMjxWXn1ethVuJxuVvs04bHN3UdbNdBx2N19sICk8dL9_zXEf9CubpTmMslLJ6AjwnygMOGbmTQbxOI2b-4OnmPnfiMNWA4TIFIry59RoI')"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</span>
+<h3 class="text-primary dark:text-white font-bold text-base">#FX-92711</h3>
+<p class="text-gray-500 text-sm mt-0.5">Purchased on Oct 18, 2023 • 1 Item</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:flex md:items-center md:gap-12 flex-shrink-0">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount</span>
+<span class="text-primary dark:text-white font-extrabold text-lg">$289.00</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 w-fit uppercase">
+<span class="size-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                                        Shipped
+                                    </span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 md:flex-none px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+                                    View Details
+                                </button>
+</div>
+</div>
+</div>
+<!-- Order Item 3 -->
+<div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-start gap-4 flex-1">
+<div class="size-16 rounded-lg bg-gray-100 dark:bg-gray-900 flex-shrink-0 flex items-center justify-center overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="High quality overhead wireless headphones" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBVL99Tk_G3SOdd5CcP59Dmn5l13maax6AIOS3PyopVcYVkHYtZLx-Ldik6FC-VY6KkE5jB0Ubb2yPZn5fUwSHjYm1O1OgXhh8MnATCbAWIMsICNex39b-V3jCjLRIu9Z-E0V_AVT-Da06Au-HfDvFo1ewKrShZ4-pl1R2fVr3E2vqdEz1ZdwXgqDOxAH8j0AtaZ17pbIm2g79YY-aAlqmeLFjq34Khhf9hKdeX43lF0UXDlRQ7MvKiMTVPfy4YCjlIbV6UkjElTGc')"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</span>
+<h3 class="text-primary dark:text-white font-bold text-base">#FX-91204</h3>
+<p class="text-gray-500 text-sm mt-0.5">Purchased on Sep 29, 2023 • 3 Items</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:flex md:items-center md:gap-12 flex-shrink-0">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount</span>
+<span class="text-primary dark:text-white font-extrabold text-lg">$412.20</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 w-fit uppercase">
+<span class="size-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                                        Processing
+                                    </span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 md:flex-none px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+                                    View Details
+                                </button>
+</div>
+</div>
+</div>
+<!-- Order Item 4 (Cancelled) -->
+<div class="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all opacity-75">
+<div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex items-start gap-4 flex-1">
+<div class="size-16 rounded-lg bg-gray-100 dark:bg-gray-900 flex-shrink-0 flex items-center justify-center overflow-hidden grayscale">
+<div class="w-full h-full bg-cover bg-center" data-alt="Classic black Wayfarer sunglasses" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAYkOdbt2nRfT0jCjeVFMIN39r2skcl7aWAU2euuZV9WWT_uV75UxhXfEVsbi4-0sBU1SIsAMktpQBSH-kgZLNagDvkam82G50mgC7QIBbBSr8VcvSpdd-4hKbCgFOadCbJ5hiqQMOAnwlCIuPzvMRSWYHvNyEvWHkJY9Yx_hBvGpGLWTQeAetf-k9SNmYxen7wgQiJT92v-j6Svbly6SE85YD1LThZB3YcHbpnqgT3DngBEnOVmFXRZ6K9U5UxxLHcOQOnD3SwlfU')"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</span>
+<h3 class="text-primary dark:text-white font-bold text-base">#FX-90042</h3>
+<p class="text-gray-500 text-sm mt-0.5">Purchased on Aug 12, 2023 • 1 Item</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:flex md:items-center md:gap-12 flex-shrink-0">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount</span>
+<span class="text-primary dark:text-white font-extrabold text-lg">$55.00</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400 w-fit uppercase">
+<span class="size-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+                                        Cancelled
+                                    </span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 md:flex-none px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-primary dark:text-white text-sm font-bold rounded-lg hover:bg-gray-300 transition-colors shadow-sm">
+                                    View Details
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-10 flex items-center justify-between border-t border-gray-200 dark:border-gray-800 pt-6">
+<button class="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-primary transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+                        Previous
+                    </button>
+<div class="flex items-center gap-1">
+<button class="size-9 rounded-lg bg-primary text-white text-sm font-bold">1</button>
+<button class="size-9 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-bold transition-all">2</button>
+<button class="size-9 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-bold transition-all">3</button>
+<span class="px-2 text-gray-400">...</span>
+<button class="size-9 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-bold transition-all">8</button>
+</div>
+<button class="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
+                        Next
+                        <span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<!-- Featured Support Section -->
+<div class="mt-16 bg-primary/5 dark:bg-primary/20 rounded-2xl p-8 border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex flex-col gap-2 max-w-lg text-center md:text-left">
+<h2 class="text-primary dark:text-white text-xl font-extrabold tracking-tight">Need help with an order?</h2>
+<p class="text-gray-600 dark:text-gray-400">Our customer experience team is available 24/7 to assist with returns, shipping inquiries, and payment issues.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-3 bg-white dark:bg-gray-800 text-primary dark:text-white font-bold rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 transition-all">
+                            Visit Help Center
+                        </button>
+<button class="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-sm hover:bg-slate-800 transition-all">
+                            Chat with Support
+                        </button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="border-t border-gray-200 dark:border-gray-800 py-10 px-4 md:px-10 bg-white dark:bg-background-dark">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="size-6 bg-primary/20 rounded flex items-center justify-center text-primary dark:text-white">
+<span class="material-symbols-outlined text-sm">package_2</span>
+</div>
+<span class="font-bold text-primary dark:text-white">FlexiCommerce</span>
+</div>
+<div class="flex gap-8 text-sm text-gray-500 font-medium">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Refund Policy</a>
+</div>
+<p class="text-sm text-gray-400">© 2023 FlexiCommerce Inc. All rights reserved.</p>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

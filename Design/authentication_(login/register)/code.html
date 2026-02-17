@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlexiCommerce | Sign In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#0f1729",
+                "background-light": "#f6f7f8",
+                "background-dark": "#14171e",
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-primary font-display">
+<div class="flex min-h-screen">
+<!-- Left Side: Hero Image Section (Hidden on mobile) -->
+<div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary">
+<div class="absolute inset-0 z-10 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent"></div>
+<img alt="Modern luxury lifestyle product display" class="absolute inset-0 object-cover w-full h-full" data-alt="Modern luxury lifestyle product display" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWzMkSQ3Qbikk9OEjcL2O8CZ8xOuTyXGIP2P3Y4YqoL300mokjEPD183wvJvmbkOSNAhBnyTOoroF85GRTFR_hAzZPamMNmitHBivpg1GUkniPBQqMlya0Vvy4JtKgjH_BNMExCbffDBnhnTRYZ11miSnyc_tjypQtyZ2Iwp6A9eVawjplh0aGNm4MYN7LYjuItb7tX0ck27SOMDVjWbS3d78mv3CT4ZjqIiUliXKodqP58rCUrjR8o4vWjrGgmp16U2aQZcny5Ns"/>
+<div class="relative z-20 flex flex-col justify-end p-16 h-full text-white">
+<div class="flex items-center gap-2 mb-8">
+<div class="size-10 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/20">
+<span class="material-symbols-outlined text-white">shopping_bag</span>
+</div>
+<span class="text-2xl font-black tracking-tight">FlexiCommerce</span>
+</div>
+<h1 class="text-5xl font-black leading-tight mb-6">
+                    Elevate your <br/>shopping experience.
+                </h1>
+<p class="text-lg text-white/80 max-w-md leading-relaxed">
+                    Join thousands of shoppers and store owners who trust FlexiCommerce for a seamless, modern retail journey.
+                </p>
+<div class="mt-12 flex items-center gap-4">
+<div class="flex -space-x-3">
+<img alt="User" class="size-10 rounded-full border-2 border-primary object-cover" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8n1RCvtF_AT_11V-Rif9uWT886kFhQFju-7evtq2qx4SpQ6dAPTJ9rV_erw9E1eItVznhaDQZNJT6i8omAQONqz1K3iBMg5ZbO2bWYFffPobuftQMNWxfzHdLWfQPdZLr5ZorYy0jex1VP8wJpvl4OpxDepVEkaSaaRclb8Jt4NdF12kDdBtqBblWTBQ1IZRY4FbrTEQkon8hFsOo4WCjGbwldUFrFkAX-fgWWfoTrBWc_fmrGOZ_wZeamd_45sv1iO6eFdLX8NI"/>
+<img alt="User" class="size-10 rounded-full border-2 border-primary object-cover" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIJ1HZNNVTD_HF8VUhXVqTMNUuYNePNRaKG4lMNd77PULT3ySFfVMa8uRLaQayGbfFbsJUvEPfKsD82xzAfNHQPfJmijtbLvmRz3UApx3on8kNn5QgY4OmtU8AEklPgrb0hsVdK5f-9k06fYx6wQAkIKe8kPpYAt250Aa32Qe9jaCGBdp80Yb8iNekAEGUb45PGxFFSIZW0BbgoHAMXsFgUlIGWbvI48IH4yIV89nNbzb9JVHf8iKGngfCA98khmQHebuurQZNkBc"/>
+<img alt="User" class="size-10 rounded-full border-2 border-primary object-cover" data-alt="User avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOpBMpvGtK7g89_jBKR0dfznm_XJPAW70lIAlmfE8JIryde3WUqZgKc8mh9VEyBeNee-8RGCHxW7jIt0yI1QJRoUHQlHeWVx6hjueB5wQH6qDoZ2DAYuBom9yD6E09Fq1rj607ey4dsVt9wWlcsP4kRobhrWgby5Syrv-iW_9Vzha7nqKkTnCZXigP5Hu2HKfZEYI1cTjaFVpecx1Zz_jWBPjKsmCIrzbXEtHxeTDmn3MqJNCJ26uNQUg22OIXWnBzPgVWQ4tExGA"/>
+</div>
+<p class="text-sm font-medium text-white/90">Trusted by over 10k+ active users</p>
+</div>
+</div>
+</div>
+<!-- Right Side: Auth Form Section -->
+<div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 lg:p-24 bg-white dark:bg-background-dark">
+<div class="w-full max-w-[420px]">
+<!-- Mobile Logo (Shown only on small screens) -->
+<div class="flex lg:hidden items-center gap-2 mb-10">
+<div class="size-8 bg-primary rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm">shopping_bag</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-primary">FlexiCommerce</span>
+</div>
+<div class="mb-10 text-center lg:text-left">
+<h2 class="text-3xl font-black text-primary mb-3">Sign In</h2>
+<p class="text-[#5d6a89] font-medium">Welcome back! Please enter your details.</p>
+</div>
+<!-- Tab Switcher -->
+<div class="flex border-b border-[#eaecf1] mb-8">
+<button class="flex-1 pb-4 text-sm font-bold border-b-2 border-primary text-primary">Sign In</button>
+<button class="flex-1 pb-4 text-sm font-bold border-b-2 border-transparent text-[#5d6a89] hover:text-primary transition-colors">Create Account</button>
+</div>
+<!-- Social Login Group -->
+<div class="grid grid-cols-2 gap-4 mb-8">
+<button class="flex items-center justify-center gap-2 h-12 px-4 border border-[#eaecf1] rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-bold text-primary">
+<svg class="size-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span>Google</span>
+</button>
+<button class="flex items-center justify-center gap-2 h-12 px-4 border border-[#eaecf1] rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-bold text-primary">
+<svg class="size-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M17.05 20.28c-.96.95-2.04 1.44-3.23 1.44-1.15 0-2.11-.44-3.15-1.44-1.07-1.03-2.16-1.53-3.28-1.53-1.12 0-2.21.5-3.28 1.53-1.03 1-2 1.44-3.15 1.44-1.18 0-2.26-.49-3.22-1.44C3.82 19.34 3 18.25 3 17.15c0-1.15.54-2.22 1.44-3.11.9-.89 1.94-1.34 3.11-1.34 1.15 0 2.14.44 3.14 1.34.99.9 2.05 1.35 3.16 1.35 1.12 0 2.18-.45 3.17-1.35 1-.89 1.99-1.34 3.14-1.34 1.17 0 2.21.45 3.11 1.34.89.89 1.44 1.96 1.44 3.11 0 1.11-.82 2.2-1.71 3.13zM12 2C9.43 2 7.15 3.35 5.86 5.51c-.69 1.15-1.03 2.45-1.03 3.82 0 1.5.42 2.92 1.25 4.19.83 1.28 1.98 2.25 3.38 2.86.41.17.82.26 1.24.26s.83-.09 1.24-.26c1.4-.61 2.55-1.58 3.38-2.86.83-1.27 1.25-2.69 1.25-4.19 0-1.37-.34-2.67-1.03-3.82C16.85 3.35 14.57 2 12 2z" fill="currentColor"></path>
+</svg>
+<span>Apple</span>
+</button>
+</div>
+<!-- Divider -->
+<div class="relative mb-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-[#eaecf1]"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase">
+<span class="bg-white dark:bg-background-dark px-4 text-[#5d6a89] font-semibold tracking-wider">Or continue with email</span>
+</div>
+</div>
+<!-- Auth Form -->
+<form class="space-y-6">
+<div>
+<label class="block text-sm font-bold text-primary mb-2" for="email">Email Address</label>
+<input class="w-full h-12 px-4 bg-white border border-[#eaecf1] rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400" id="email" name="email" placeholder="name@company.com" required="" type="email"/>
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<label class="block text-sm font-bold text-primary" for="password">Password</label>
+<a class="text-sm font-bold text-primary hover:underline underline-offset-4" href="#">Forgot password?</a>
+</div>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-white border border-[#eaecf1] rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary" type="button">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center">
+<input class="size-4 rounded border-[#eaecf1] text-primary focus:ring-primary transition-all" id="remember" type="checkbox"/>
+<label class="ml-2 text-sm font-medium text-[#5d6a89]" for="remember">Remember me for 30 days</label>
+</div>
+<button class="w-full h-12 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all shadow-lg shadow-primary/10" type="submit">
+                        Sign In
+                    </button>
+</form>
+<p class="mt-8 text-center text-sm text-[#5d6a89] font-medium">
+                    Don't have an account? 
+                    <a class="text-primary font-bold hover:underline underline-offset-4 ml-1" href="#">Sign up for free</a>
+</p>
+<footer class="mt-16 text-center text-xs text-gray-400 space-x-4">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+</footer>
+</div>
+</div>
+</div>
+</body></html>
