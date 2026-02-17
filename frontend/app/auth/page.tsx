@@ -1,10 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
+import { useAuthAPI } from '@/hooks/useAuthAPI';
+import { useToast } from '@/hooks/useToast';
+import { validationPatterns } from '@/lib/validation';
 
 export default function AuthPage() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -12,10 +17,104 @@ export default function AuthPage() {
     confirmPassword: '',
     name: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const { login, register, loading, error: authError } = useAuthAPI();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Si el usuario ya está autenticado, redirigir a home
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      router.push('/');
+    }
+  }, [router]);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = 'Email es requerido';
+    } else if (!validationPatterns.email.value.test(formData.email)) {
+      newErrors.email = 'Email inválido';
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Contraseña es requerida';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+
+    if (!isLogin) {
+      // Name validation for registration
+      if (!formData.name) {
+        newErrors.name = 'Nombre es requerido';
+      } else if (formData.name.length < 2) {
+        newErrors.name = 'El nombre debe tener al menos 2 caracteres';
+      }
+
+      // Confirm password validation
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Confirmar contraseña es requerido';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        await login({
+          email: formData.email,
+          password: formData.password,
+        });
+        toast({
+          message: '¡Bienvenido!',
+          type: 'success',
+        });
+        router.push('/');
+      } else {
+        await register({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        });
+        toast({
+          message: 'Cuenta creada exitosamente',
+          type: 'success',
+        });
+        router.push('/');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error en autenticación';
+      toast({
+        message,
+        type: 'error',
+      });
+    }
+  };
+
+  const handleTabSwitch = () => {
+    setIsLogin(!isLogin);
+    setErrors({});
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      name: '',
+    });
   };
 
   return (
@@ -42,8 +141,11 @@ export default function AuthPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                    errors.name ? 'border-red-500' : 'border-slate-200'
+                  }`}
                 />
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>
             )}
 
@@ -58,8 +160,11 @@ export default function AuthPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                  errors.email ? 'border-red-500' : 'border-slate-200'
+                }`}
               />
+              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </div>
 
             <div>
@@ -73,8 +178,11 @@ export default function AuthPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                  errors.password ? 'border-red-500' : 'border-slate-200'
+                }`}
               />
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
 
             {!isLogin && (
@@ -89,16 +197,35 @@ export default function AuthPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, confirmPassword: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-slate-200'
+                  }`}
                 />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                )}
+              </div>
+            )}
+
+            {authError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+                {authError}
               </div>
             )}
 
             <button
               type="submit"
-              className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors"
+              disabled={loading}
+              className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+              {loading && <MaterialIcon name="hourglass_bottom" />}
+              {loading
+                ? isLogin
+                  ? 'Iniciando sesión...'
+                  : 'Creando cuenta...'
+                : isLogin
+                ? 'Iniciar Sesión'
+                : 'Crear Cuenta'}
             </button>
           </form>
 
@@ -106,7 +233,8 @@ export default function AuthPage() {
             <p className="text-center text-sm text-slate-600">
               {isLogin ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={handleTabSwitch}
+                type="button"
                 className="text-primary font-semibold hover:underline"
               >
                 {isLogin ? 'Registrate' : 'Inicia sesión'}
@@ -126,11 +254,11 @@ export default function AuthPage() {
           </div>
 
           <div className="flex gap-4">
-            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+            <button type="button" className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
               <MaterialIcon name="mail" />
               <span className="text-sm font-medium text-slate-600">Google</span>
             </button>
-            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+            <button type="button" className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
               <MaterialIcon name="mail" />
               <span className="text-sm font-medium text-slate-600">Facebook</span>
             </button>
