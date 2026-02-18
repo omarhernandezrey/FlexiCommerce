@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../store/auth';
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,6 +23,7 @@ export default function SplashScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>FlexiCommerce</Text>
       <Text style={styles.subtitle}>Mobile</Text>
+      <ActivityIndicator size="large" color="#2563eb" style={styles.loader} />
     </View>
   );
 }
@@ -43,5 +44,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af',
     marginTop: 8,
+  },
+  loader: {
+    marginTop: 24,
   },
 });

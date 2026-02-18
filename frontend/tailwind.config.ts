@@ -16,7 +16,7 @@ module.exports = {
         error: '#ef4444',
       },
       fontFamily: {
-        display: ['Inter', 'sans-serif'],
+        display: ['var(--font-inter)', 'Inter', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '0.25rem',
