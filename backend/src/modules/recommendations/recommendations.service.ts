@@ -1,4 +1,3 @@
-import BaseRequest from '../../utils/base-request.js';
 import prisma from '../../database/prisma.js';
 
 // Simple cosine similarity for ML recommendations
@@ -108,7 +107,6 @@ export class RecommendationService {
             take: 100,
           },
           orderItems: {
-            orderBy: { createdAt: 'desc' },
             take: 10,
           },
         },

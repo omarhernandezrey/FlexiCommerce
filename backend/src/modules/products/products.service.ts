@@ -1,4 +1,5 @@
 import prisma from '../../database/prisma.js';
+import { Prisma } from '@prisma/client';
 
 export class ProductsService {
   async getAll(page: number, limit: number, categoryId?: string) {
@@ -54,12 +55,12 @@ export class ProductsService {
 
   async search(query: string, page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
-    const where = {
+    const where: Prisma.ProductWhereInput = {
       isActive: true,
       OR: [
-        { name: { contains: query, mode: 'insensitive' } },
-        { description: { contains: query, mode: 'insensitive' } },
-        { category: { name: { contains: query, mode: 'insensitive' } } },
+        { name: { contains: query, mode: 'insensitive' as const } },
+        { description: { contains: query, mode: 'insensitive' as const } },
+        { category: { name: { contains: query, mode: 'insensitive' as const } } },
       ],
     };
 

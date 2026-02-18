@@ -6,6 +6,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger.js';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 export interface RequestLog {
   id: string;
   timestamp: string;
@@ -82,7 +84,7 @@ export function errorTrackingMiddleware(
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   const errorLog = {
     requestId: (req as any).id,

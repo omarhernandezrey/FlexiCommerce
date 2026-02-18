@@ -1,82 +1,129 @@
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Stack } from 'expo-router';
 import React from 'react';
-import { View, Text } from 'react-native';
-
-// Placeholder screens
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home</Text>
-    </View>
-  );
-}
-
-function SearchScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Search</Text>
-    </View>
-  );
-}
-
-function CartScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Cart</Text>
-    </View>
-  );
-}
-
-function ProfileScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Profile</Text>
-    </View>
-  );
-}
+import { colors } from '../../styles/theme';
 
 const Tab = createBottomTabNavigator();
+
+function HomeStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="products/[id]" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="reviews/[id]" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
+
+function SearchStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="search" />
+      <Stack.Screen name="products/[id]" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
+
+function CartStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="cart" />
+      <Stack.Screen name="checkout" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
+
+function OrdersStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="orders" />
+      <Stack.Screen name="orders/[id]" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
+
+function ProfileStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="profile" />
+    </Stack>
+  );
+}
 
 export default function AppLayout() {
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2563eb',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.gray,
+        tabBarStyle: {
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          marginTop: 4,
+        },
       }}
     >
       <Tab.Screen
-        name="index"
-        component={HomeScreen}
+        name="home"
+        component={HomeStack}
         options={{
           title: 'Inicio',
           tabBarLabel: 'Inicio',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
-        name="search"
-        component={SearchScreen}
+        name="search-tab"
+        component={SearchStack}
         options={{
           title: 'Buscar',
           tabBarLabel: 'Buscar',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
-        name="cart"
-        component={CartScreen}
+        name="cart-tab"
+        component={CartStack}
         options={{
           title: 'Carrito',
           tabBarLabel: 'Carrito',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bag" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
-        name="profile"
-        component={ProfileScreen}
+        name="orders-tab"
+        component={OrdersStack}
+        options={{
+          title: 'Pedidos',
+          tabBarLabel: 'Pedidos',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="receipt" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="profile-tab"
+        component={ProfileStack}
         options={{
           title: 'Perfil',
           tabBarLabel: 'Perfil',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>

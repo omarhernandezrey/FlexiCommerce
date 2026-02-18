@@ -2,30 +2,16 @@ import { Request, Response } from 'express';
 import { prisma } from '../../database/prisma.js';
 
 export class WishlistController {
-  /**
-   * Get user's wishlist
-   */
-  static async getWishlist(req: Request, res: Response) {
+  static async getWishlist(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
-
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
       const wishlist = await prisma.wishlist.findMany({
         where: { userId },
         include: {
           product: {
-            select: {
-              id: true,
-              name: true,
-              price: true,
-              images: true,
-              category: {
-                select: { name: true },
-              },
-            },
+            select: { id: true, name: true, price: true, images: true, category: { select: { name: true } } },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -43,68 +29,30 @@ export class WishlistController {
 
       res.json(formatted);
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Error fetching wishlist',
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error fetching wishlist' });
     }
   }
 
-  /**
-   * Add product to wishlist
-   */
-  static async addToWishlist(req: Request, res: Response) {
+  static async addToWishlist(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
       const { productId } = req.body;
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+      if (!productId) { res.status(400).json({ error: 'Product ID required' }); return; }
 
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      if (!productId) {
-        return res.status(400).json({ error: 'Product ID required' });
-      }
-
-      // Check if already in wishlist
       const existing = await prisma.wishlist.findUnique({
-        where: {
-          userId_productId: {
-            userId,
-            productId,
-          },
-        },
+        where: { userId_productId: { userId, productId } },
       });
+      if (existing) { res.status(400).json({ error: 'Product already in wishlist' }); return; }
 
-      if (existing) {
-        return res.status(400).json({ error: 'Product already in wishlist' });
-      }
+      const product = await prisma.product.findUnique({ where: { id: productId } });
+      if (!product) { res.status(404).json({ error: 'Product not found' }); return; }
 
-      // Verify product exists
-      const product = await prisma.product.findUnique({
-        where: { id: productId },
-      });
-
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-
-      // Add to wishlist
       const wishlistItem = await prisma.wishlist.create({
-        data: {
-          userId,
-          productId,
-        },
+        data: { userId, productId },
         include: {
           product: {
-            select: {
-              id: true,
-              name: true,
-              price: true,
-              images: true,
-              category: {
-                select: { name: true },
-              },
-            },
+            select: { id: true, name: true, price: true, images: true, category: { select: { name: true } } },
           },
         },
       });
@@ -119,121 +67,63 @@ export class WishlistController {
         addedAt: wishlistItem.createdAt,
       });
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Error adding to wishlist',
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error adding to wishlist' });
     }
   }
 
-  /**
-   * Remove from wishlist
-   */
-  static async removeFromWishlist(req: Request, res: Response) {
+  static async removeFromWishlist(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
       const { id } = req.params;
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+      const wishlistItem = await prisma.wishlist.findUnique({ where: { id } });
+      if (!wishlistItem) { res.status(404).json({ error: 'Wishlist item not found' }); return; }
+      if (wishlistItem.userId !== userId) { res.status(403).json({ error: 'Forbidden' }); return; }
 
-      // Verify ownership
-      const wishlistItem = await prisma.wishlist.findUnique({
-        where: { id },
-      });
-
-      if (!wishlistItem) {
-        return res.status(404).json({ error: 'Wishlist item not found' });
-      }
-
-      if (wishlistItem.userId !== userId) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-
-      await prisma.wishlist.delete({
-        where: { id },
-      });
-
+      await prisma.wishlist.delete({ where: { id } });
       res.json({ message: 'Removed from wishlist' });
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Error removing from wishlist',
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error removing from wishlist' });
     }
   }
 
-  /**
-   * Check if product is in wishlist
-   */
-  static async isInWishlist(req: Request, res: Response) {
+  static async isInWishlist(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
       const { productId } = req.params;
-
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
       const inWishlist = await prisma.wishlist.findUnique({
-        where: {
-          userId_productId: {
-            userId,
-            productId,
-          },
-        },
+        where: { userId_productId: { userId, productId } },
       });
-
       res.json({ inWishlist: !!inWishlist });
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Error checking wishlist',
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error checking wishlist' });
     }
   }
 
-  /**
-   * Clear entire wishlist
-   */
-  static async clearWishlist(req: Request, res: Response) {
+  static async clearWishlist(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      await prisma.wishlist.deleteMany({
-        where: { userId },
-      });
-
+      await prisma.wishlist.deleteMany({ where: { userId } });
       res.json({ message: 'Wishlist cleared' });
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Error clearing wishlist',
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error clearing wishlist' });
     }
   }
 
-  /**
-   * Get wishlist count
-   */
-  static async getWishlistCount(req: Request, res: Response) {
+  static async getWishlistCount(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.id;
+      if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
 
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const count = await prisma.wishlist.count({
-        where: { userId },
-      });
-
+      const count = await prisma.wishlist.count({ where: { userId } });
       res.json({ count });
     } catch (error) {
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Error getting wishlist count',
-      });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error getting wishlist count' });
     }
   }
 }

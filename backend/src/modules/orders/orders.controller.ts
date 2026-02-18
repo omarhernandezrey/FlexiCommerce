@@ -32,26 +32,26 @@ export class OrdersController {
   create = async (req: Request, res: Response): Promise<void> => {
     try {
       const order = await this.service.create(req.user.id, req.body.items);
-      
+
       // Send confirmation email
       try {
         await emailService.sendOrderConfirmation({
           orderId: order.id,
-          customerName: req.user.name || 'Cliente',
+          customerName: req.user.firstName || 'Cliente',
           customerEmail: req.user.email,
-          total: order.total,
+          total: Number(order.total),
           items: order.items.map((item: any) => ({
             name: `Producto ${item.productId}`,
             quantity: item.quantity,
-            price: item.price,
+            price: Number(item.price),
           })),
           shippingAddress: req.body.shippingAddress || 'No especificada',
           paymentMethod: req.body.paymentMethod || 'No especificado',
         });
-      } catch (emailError) {
-        console.error('Error sending confirmation email:', emailError);
+      } catch (_emailError) {
+        // Email sending is non-critical
       }
-      
+
       res.status(201).json({ success: true, data: order });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al crear orden';
@@ -62,7 +62,7 @@ export class OrdersController {
   updateStatus = async (req: Request, res: Response): Promise<void> => {
     try {
       const order = await this.service.updateStatus(req.params.id, req.body.status);
-      
+
       // Send status update emails
       try {
         if (req.body.status === 'shipped') {
@@ -74,10 +74,10 @@ export class OrdersController {
         } else if (req.body.status === 'delivered') {
           await emailService.sendOrderDelivered(order.id, req.user.email);
         }
-      } catch (emailError) {
-        console.error('Error sending status email:', emailError);
+      } catch (_emailError) {
+        // Email sending is non-critical
       }
-      
+
       res.json({ success: true, data: order });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al actualizar estado';

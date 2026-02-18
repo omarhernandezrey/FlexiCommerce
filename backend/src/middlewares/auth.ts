@@ -19,6 +19,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
   }
 };
 
+export const verifyToken = authenticate;
+
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user || !roles.includes(req.user.role)) {

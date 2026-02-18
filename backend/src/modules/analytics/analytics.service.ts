@@ -1,4 +1,5 @@
 import { prisma } from '../../database/prisma.js';
+import { OrderStatus, Prisma } from '@prisma/client';
 
 export interface SalesMetrics {
   totalSales: number;
@@ -42,7 +43,7 @@ export class AnalyticsService {
         _count: true,
       });
 
-      const totalSales = orderStats._sum.total || 0;
+      const totalSales = Number(orderStats._sum.total || 0);
       const totalOrders = orderStats._count;
       const averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
 
@@ -107,7 +108,7 @@ export class AnalyticsService {
         const date = new Date(order.createdAt).toISOString().split('T')[0];
         const existing = dailyMap.get(date) || { sales: 0, orders: 0 };
         dailyMap.set(date, {
-          sales: existing.sales + order.total,
+          sales: existing.sales + Number(order.total),
           orders: existing.orders + 1,
         });
       });
@@ -178,10 +179,6 @@ export class AnalyticsService {
       // Calculate trends and convert to results
       const result = Array.from(productMap.values())
         .map((item: any) => {
-          const avgPrice = item.prices.length > 0
-            ? item.prices.reduce((a: number, b: number) => a + b, 0) / item.prices.length
-            : 0;
-
           return {
             productId: item.productId,
             productName: item.productName,
@@ -211,7 +208,9 @@ export class AnalyticsService {
     try {
       const skip = (page - 1) * limit;
 
-      const where = status ? { status } : {};
+      const where: Prisma.OrderWhereInput = status
+        ? { status: status as OrderStatus }
+        : {};
 
       const [orders, total] = await Promise.all([
         prisma.order.findMany({
@@ -253,14 +252,14 @@ export class AnalyticsService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {
+      const where: Prisma.ProductWhereInput = {
         isActive: true,
       };
 
       if (search) {
         where.OR = [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
         ];
       }
 

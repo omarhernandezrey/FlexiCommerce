@@ -155,23 +155,26 @@ export function createBatchRouter() {
 
       // Validate batch size
       if (!BatchOperationProcessor.validateBatchSize(batchRequest.operations)) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Invalid batch size. Must have 1-50 operations.',
         });
+        return;
       }
 
       // Validate operations structure
       for (const op of batchRequest.operations) {
         if (!op.method || !op.path || !op.id) {
-          return res.status(400).json({
+          res.status(400).json({
             error: 'Each operation must have id, method, and path',
           });
+          return;
         }
 
         if (!['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(op.method)) {
-          return res.status(400).json({
+          res.status(400).json({
             error: `Invalid HTTP method: ${op.method}`,
           });
+          return;
         }
       }
 

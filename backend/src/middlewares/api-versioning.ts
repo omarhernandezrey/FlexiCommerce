@@ -60,7 +60,7 @@ export function withVersions(
         });
       }
 
-      await handler(req, res);
+      return await handler(req, res);
     } catch (error) {
       next(error);
     }

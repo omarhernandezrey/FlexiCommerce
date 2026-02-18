@@ -5,10 +5,14 @@
 
 import { prisma } from '../database/prisma.js';
 import crypto from 'crypto';
+import { OrderStatus, Role } from '@prisma/client';
 
 const USER_COUNT = 50;
-const PRODUCT_COUNT = 25;
 const ORDERS_PER_USER = 5;
+
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
 
 async function seed() {
   console.log('🌱 Starting database seeding...\n');
@@ -16,6 +20,9 @@ async function seed() {
   try {
     // Clear existing data
     console.log('🗑️  Clearing existing data...');
+    await prisma.wishlist.deleteMany({});
+    await prisma.review.deleteMany({});
+    await prisma.payment.deleteMany({});
     await prisma.orderItem.deleteMany({});
     await prisma.order.deleteMany({});
     await prisma.product.deleteMany({});
@@ -27,16 +34,16 @@ async function seed() {
     console.log('📂 Creating categories...');
     const categories = await Promise.all([
       prisma.category.create({
-        data: { name: 'Electronics', description: 'Electronic devices' },
+        data: { name: 'Electronics', slug: 'electronics', description: 'Electronic devices' },
       }),
       prisma.category.create({
-        data: { name: 'Accessories', description: 'Phone and computer accessories' },
+        data: { name: 'Accessories', slug: 'accessories', description: 'Phone and computer accessories' },
       }),
       prisma.category.create({
-        data: { name: 'Software', description: 'Software and digital products' },
+        data: { name: 'Software', slug: 'software', description: 'Software and digital products' },
       }),
       prisma.category.create({
-        data: { name: 'Services', description: 'Digital services' },
+        data: { name: 'Services', slug: 'services', description: 'Digital services' },
       }),
     ]);
     console.log(`✅ Created ${categories.length} categories\n`);
@@ -76,11 +83,12 @@ async function seed() {
         prisma.product.create({
           data: {
             name,
+            slug: slugify(name),
             description: `High-quality ${name.toLowerCase()}. Perfect for professionals and casual users.`,
             price: Math.round((Math.random() * 500 + 20) * 100) / 100,
             stock: Math.floor(Math.random() * 100) + 10,
             categoryId: categories[idx % categories.length].id,
-            image: `/products/${idx + 1}.jpg`,
+            images: [`/products/${idx + 1}.jpg`],
             isActive: true,
           },
         })
@@ -95,9 +103,10 @@ async function seed() {
         prisma.user.create({
           data: {
             email: `user${i + 1}@example.com`,
-            name: `User ${i + 1}`,
+            firstName: `User`,
+            lastName: `${i + 1}`,
             password: crypto.randomBytes(16).toString('hex'),
-            role: i < 3 ? 'admin' : 'customer',
+            role: i < 3 ? Role.ADMIN : Role.CUSTOMER,
           },
         })
       )
@@ -107,6 +116,8 @@ async function seed() {
     // Create orders
     console.log('📦 Creating orders...');
     let orderCount = 0;
+
+    const statuses = [OrderStatus.PENDING, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.DELIVERED];
 
     for (const user of users) {
       const ordersToCreate = Math.floor(Math.random() * ORDERS_PER_USER) + 1;
@@ -120,7 +131,7 @@ async function seed() {
         let total = 0;
         const orderItems = selectedProducts.map((product) => {
           const quantity = Math.floor(Math.random() * 5) + 1;
-          total += product.price * quantity;
+          total += Number(product.price) * quantity;
           return {
             productId: product.id,
             quantity,
@@ -128,8 +139,6 @@ async function seed() {
           };
         });
 
-        // Random order status
-        const statuses = ['pending', 'confirmed', 'shipped', 'delivered'];
         const status = statuses[Math.floor(Math.random() * statuses.length)];
 
         // Random dates in the last month
@@ -137,23 +146,14 @@ async function seed() {
         const createdAt = new Date();
         createdAt.setDate(createdAt.getDate() - daysAgo);
 
-        const order = await prisma.order.create({
+        await prisma.order.create({
           data: {
             userId: user.id,
             total: Math.round(total * 100) / 100,
-            status: status as any,
+            status,
             createdAt,
             items: {
               create: orderItems,
-            },
-            shippingAddress: {
-              create: {
-                firstName: user.name.split(' ')[0],
-                lastName: user.name.split(' ')[1] || 'User',
-                email: user.email,
-                phone: `+1${Math.floor(Math.random() * 9000000000 + 1000000000)}`,
-                address: `${Math.floor(Math.random() * 999) + 1} Main St, City, State 12345`,
-              },
             },
           },
         });
