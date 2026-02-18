@@ -26,6 +26,13 @@ export interface Order {
   total: number;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
   createdAt: string;
+  shippingAddress?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
 }
 
 export interface OrderItem {

@@ -13,6 +13,7 @@ import ordersRoutes from './modules/orders/orders.routes.js';
 import paymentsRoutes from './modules/payments/payments.routes.js';
 import reviewsRoutes from './modules/reviews/reviews.routes.js';
 import cmsRoutes from './modules/cms/cms.routes.js';
+import analyticsRoutes from './modules/analytics/analytics.routes.js';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.get('/', (_req: Request, res: Response) => {
       payments: '/api/payments',
       reviews: '/api/reviews',
       cms: '/api/cms',
+      analytics: '/api/analytics',
       health: '/api/health',
     },
   });
@@ -69,6 +71,7 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/cms', cmsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling
 app.use(errorHandler);
