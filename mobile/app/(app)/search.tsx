@@ -59,24 +59,40 @@ export default function SearchScreen() {
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.lg }}>
-            {/* Search Bar */}
-            <TextInput
-              placeholder="Buscar productos..."
-              value={query}
-              onChangeText={setQuery}
-              onSubmitEditing={handleSearch}
-              RightIcon={() => (
-                <Pressable onPress={handleSearch}>
-                  <Ionicons name="search" size={20} color={colors.primary} />
-                </Pressable>
-              )}
-            />
+            {/* Search Bar with Advanced Button */}
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, alignItems: 'center' }}>
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  placeholder="Buscar productos..."
+                  value={query}
+                  onChangeText={setQuery}
+                  onSubmitEditing={handleSearch}
+                  RightIcon={() => (
+                    <Pressable onPress={handleSearch}>
+                      <Ionicons name="search" size={20} color={colors.primary} />
+                    </Pressable>
+                  )}
+                />
+              </View>
+              <Pressable
+                onPress={() => router.push('/(app)/advanced-search')}
+                style={{
+                  paddingVertical: spacing.md,
+                  paddingHorizontal: spacing.md,
+                  backgroundColor: colors.primary,
+                  borderRadius: borderRadius.md,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Ionicons name="options" size={20} color={colors.white} />
+              </Pressable>
+            </View>
 
             {/* Filter Toggle */}
             <Pressable
               onPress={() => setShowFilters(!showFilters)}
               style={{
-                marginTop: spacing.md,
                 paddingHorizontal: spacing.md,
                 paddingVertical: spacing.sm,
                 borderRadius: borderRadius.md,

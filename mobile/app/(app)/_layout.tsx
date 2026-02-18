@@ -52,8 +52,6 @@ function ProfileStack() {
     </Stack>
   );
 }
-  );
-}
 
 export default function AppLayout() {
   return (
