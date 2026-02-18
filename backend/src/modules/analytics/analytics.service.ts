@@ -342,7 +342,7 @@ export class AnalyticsService {
         ) orderCounts ON u.id = orderCounts."userId"
       `;
 
-      return stats[0] || {};
+      return (stats as any[])[0] || {};
     } catch (error) {
       console.error('Error fetching customer stats:', error);
       throw error;

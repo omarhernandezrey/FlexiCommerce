@@ -25,6 +25,15 @@ function SearchStack() {
   );
 }
 
+function WishlistStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="wishlist" />
+      <Stack.Screen name="products/[id]" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
+
 function CartStack() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -34,20 +43,15 @@ function CartStack() {
   );
 }
 
-function OrdersStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="orders" />
-      <Stack.Screen name="orders/[id]" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
-
 function ProfileStack() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="profile" />
+      <Stack.Screen name="orders" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="orders/[id]" options={{ presentation: 'modal' }} />
     </Stack>
+  );
+}
   );
 }
 
@@ -94,6 +98,17 @@ export default function AppLayout() {
         }}
       />
       <Tab.Screen
+        name="wishlist-tab"
+        component={WishlistStack}
+        options={{
+          title: 'Favoritos',
+          tabBarLabel: 'Favoritos',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="heart" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="cart-tab"
         component={CartStack}
         options={{
@@ -101,17 +116,6 @@ export default function AppLayout() {
           tabBarLabel: 'Carrito',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bag" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="orders-tab"
-        component={OrdersStack}
-        options={{
-          title: 'Pedidos',
-          tabBarLabel: 'Pedidos',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="receipt" size={size} color={color} />
           ),
         }}
       />

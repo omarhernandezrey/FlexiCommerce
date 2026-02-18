@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProductDetail } from '../../../hooks/useProducts';
 import { useAuthStore } from '../../../store/auth';
 import { useCartStore } from '../../../store/cart';
+import { useWishlist } from '../../../hooks/useWishlist';
 import Text from '../../../components/Text';
 import Button from '../../../components/Button';
 import { colors, spacing, borderRadius } from '../../../styles/theme';
@@ -27,11 +28,19 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { addItem } = useCartStore();
+  const { toggleItem, isInWishlist } = useWishlist();
   const { product, similar, loading, error } = useProductDetail(id as string);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      setIsFavorite(isInWishlist(id as string));
+    }
+  }, [id, isInWishlist]);
 
   // Fetch reviews
   useEffect(() => {
@@ -120,9 +129,23 @@ export default function ProductDetailScreen() {
           <Pressable onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color={colors.text} />
           </Pressable>
-          <Pressable onPress={handleShare}>
-            <Ionicons name="share-social" size={24} color={colors.primary} />
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            <Pressable
+              onPress={() => {
+                setIsFavorite(!isFavorite);
+                toggleItem(id as string);
+              }}
+            >
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={24}
+                color={isFavorite ? colors.danger : colors.text}
+              />
+            </Pressable>
+            <Pressable onPress={handleShare}>
+              <Ionicons name="share-social" size={24} color={colors.primary} />
+            </Pressable>
+          </View>
         </View>
 
         {/* Image Carousel */}

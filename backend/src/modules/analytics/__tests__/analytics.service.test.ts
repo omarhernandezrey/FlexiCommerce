@@ -3,7 +3,7 @@
  * Run with: npm test
  */
 
-import { AnalyticsService } from './analytics.service';
+import { AnalyticsService } from '../analytics.service.js';
 
 // Mock tests (would be written in proper test framework)
 describe('AnalyticsService', () => {

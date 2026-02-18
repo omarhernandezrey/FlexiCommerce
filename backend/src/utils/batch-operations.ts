@@ -93,7 +93,7 @@ export class BatchOperationProcessor {
    */
   private static async executeOperation(
     operation: BatchOperation,
-    userId?: string
+    _userId?: string
   ): Promise<{ status: number; data?: any }> {
     // TODO: Route to actual endpoint handlers
     // For now, return mock response
@@ -194,7 +194,7 @@ export function createBatchRouter() {
   });
 
   // GET /api/batch/info - Get batch operations documentation
-  router.get('/api/batch/info', (req: Request, res: Response) => {
+  router.get('/api/batch/info', (_req: Request, res: Response) => {
     res.json({
       description: 'Batch Operations API - Execute multiple operations in a single request',
       endpoint: '/api/batch',

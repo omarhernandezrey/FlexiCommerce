@@ -119,6 +119,25 @@ export default function ProfileScreen() {
             </Pressable>
 
             <Pressable
+              onPress={() => router.push('/(app)/orders')}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: spacing.lg,
+                paddingVertical: spacing.md,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                <Ionicons name="receipt-outline" size={24} color={colors.primary} />
+                <Text style={{ fontWeight: '600' }}>Mis Pedidos</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.gray} />
+            </Pressable>
+
+            <Pressable
               onPress={() => router.push('/(app)/profile/payments')}
               style={{
                 flexDirection: 'row',

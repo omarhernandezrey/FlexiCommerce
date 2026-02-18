@@ -17,7 +17,7 @@ export class WishlistController {
         orderBy: { createdAt: 'desc' },
       });
 
-      const formatted = wishlist.map((item) => ({
+      const formatted = wishlist.map((item: any) => ({
         id: item.id,
         productId: item.product.id,
         productName: item.product.name,

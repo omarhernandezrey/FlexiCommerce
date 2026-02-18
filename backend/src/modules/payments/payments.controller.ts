@@ -83,7 +83,7 @@ export class PaymentsController {
 
   processPayment = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { amount, paymentMethod, currency = 'usd' } = req.body;
+      const { amount, paymentMethod } = req.body;
 
       if (!amount || !paymentMethod) {
         res.status(400).json({ error: 'Datos de pago inválidos' });
