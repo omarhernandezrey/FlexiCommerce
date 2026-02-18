@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 
 interface ButtonProps {
   onPress: () => void;
@@ -8,6 +8,7 @@ interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
+  style?: ViewStyle;
 }
 
 export function Button({
@@ -17,22 +18,25 @@ export function Button({
   size = 'md',
   disabled = false,
   loading = false,
+  style,
 }: ButtonProps) {
-  const styles = getStyles(variant, size);
+  const buttonStyles = getStyles(variant, size);
 
   return (
     <TouchableOpacity
-      style={[styles.button, disabled && styles.disabled]}
+      style={[buttonStyles.button, disabled && buttonStyles.disabled, style]}
       onPress={onPress}
       disabled={disabled || loading}
     >
-      <Text style={styles.text}>{loading ? 'Loading...' : title}</Text>
+      <Text style={buttonStyles.text}>{loading ? 'Loading...' : title}</Text>
     </TouchableOpacity>
   );
 }
 
+export default Button;
+
 function getStyles(variant: string, size: string) {
-  const baseButton = {
+  const baseButton: ViewStyle = {
     paddingVertical: size === 'sm' ? 8 : size === 'lg' ? 16 : 12,
     paddingHorizontal: size === 'sm' ? 12 : size === 'lg' ? 24 : 16,
     borderRadius: 8,
@@ -40,7 +44,7 @@ function getStyles(variant: string, size: string) {
     justifyContent: 'center',
   };
 
-  const buttonStyles = {
+  const buttonStyles: Record<string, ViewStyle> = {
     primary: {
       ...baseButton,
       backgroundColor: '#2563eb',
@@ -57,16 +61,16 @@ function getStyles(variant: string, size: string) {
     },
   };
 
-  const textColor = {
+  const textColor: Record<string, string> = {
     primary: '#ffffff',
     secondary: '#1f2937',
     ghost: '#1f2937',
   };
 
   return StyleSheet.create({
-    button: buttonStyles[variant as keyof typeof buttonStyles] || baseButton,
+    button: buttonStyles[variant] || baseButton,
     text: {
-      color: textColor[variant as keyof typeof textColor],
+      color: textColor[variant],
       fontSize: size === 'sm' ? 14 : size === 'lg' ? 18 : 16,
       fontWeight: '600',
     },

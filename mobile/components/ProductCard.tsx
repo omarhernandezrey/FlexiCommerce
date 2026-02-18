@@ -1,63 +1,66 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
-interface ProductCardProps {
+interface Product {
   id: string;
   name: string;
   price: number;
   image?: string;
-  rating: number;
-  reviewCount: number;
-  onPress: () => void;
+  avgRating?: number;
+  reviewCount?: number;
 }
 
-export function ProductCard({
-  id,
-  name,
-  price,
-  image,
-  rating,
-  reviewCount,
-  onPress,
-}: ProductCardProps) {
+interface ProductCardProps {
+  product: Product;
+  width?: number;
+  onPress?: () => void;
+}
+
+export function ProductCard({ product, width, onPress }: ProductCardProps) {
+  const cardWidth = width || 160;
+
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      {/* Image */}
-      {image ? (
-        <Image source={{ uri: image }} style={styles.image} />
+    <TouchableOpacity
+      style={[styles.card, { width: cardWidth }]}
+      onPress={onPress}
+      disabled={!onPress}
+    >
+      {product.image ? (
+        <Image
+          source={{ uri: product.image }}
+          style={[styles.image, { width: cardWidth }]}
+        />
       ) : (
-        <View style={[styles.image, styles.imagePlaceholder]}>
+        <View style={[styles.image, styles.imagePlaceholder, { width: cardWidth }]}>
           <Text style={styles.noImageText}>No Image</Text>
         </View>
       )}
 
-      {/* Content */}
       <View style={styles.content}>
         <Text style={styles.name} numberOfLines={2}>
-          {name}
+          {product.name}
         </Text>
 
-        {/* Rating */}
         <View style={styles.ratingContainer}>
-          <Text style={styles.stars}>★ {rating.toFixed(1)}</Text>
-          <Text style={styles.reviewCount}>({reviewCount})</Text>
+          <Text style={styles.stars}>
+            ★ {(product.avgRating ?? 0).toFixed(1)}
+          </Text>
+          <Text style={styles.reviewCount}>({product.reviewCount ?? 0})</Text>
         </View>
 
-        {/* Price */}
-        <Text style={styles.price}>${price.toFixed(2)}</Text>
+        <Text style={styles.price}>${product.price.toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
   );
 }
+
+export default ProductCard;
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 12,
-    marginHorizontal: 8,
-    width: '48%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -65,7 +68,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   image: {
-    width: '100%',
     height: 160,
     backgroundColor: '#f3f4f6',
   },

@@ -64,19 +64,21 @@ export const orderService = {
   async getOrder(id: string) {
     return apiClient.get(`/orders/${id}`);
   },
+
+  async createOrder(data: { items: unknown[]; address: unknown; paymentMethod: string; total: number }) {
+    return apiClient.post('/orders', data);
+  },
 };
+
+export const ordersService = orderService;
 
 export const reviewService = {
   async getReviews(productId: string) {
     return apiClient.get(`/reviews/product/${productId}`);
   },
 
-  async createReview(productId: string, rating: number, comment?: string) {
-    return apiClient.post('/reviews', {
-      productId,
-      rating,
-      comment,
-    });
+  async createReview(data: { productId: string; rating: number; title?: string; comment?: string }) {
+    return apiClient.post('/reviews', data);
   },
 
   async deleteReview(reviewId: string) {

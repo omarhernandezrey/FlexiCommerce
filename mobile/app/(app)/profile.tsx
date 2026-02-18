@@ -58,12 +58,12 @@ export default function ProfileScreen() {
               }}
             >
               <Text style={{ fontSize: 32, fontWeight: '700', color: colors.white }}>
-                {user.name?.[0]?.toUpperCase() || 'U'}
+                {user.firstName?.[0]?.toUpperCase() || 'U'}
               </Text>
             </View>
             <View>
               <Text style={{ fontSize: 18, fontWeight: '700' }}>
-                {user.name || 'Usuario'}
+                {`${user.firstName} ${user.lastName}` || 'Usuario'}
               </Text>
               <Text style={{ fontSize: 14, color: colors.gray, marginTop: spacing.xs }}>
                 {user.email}

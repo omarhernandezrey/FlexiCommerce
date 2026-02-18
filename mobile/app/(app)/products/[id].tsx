@@ -31,7 +31,7 @@ export default function ProductDetailScreen() {
   const { toggleItem, isInWishlist } = useWishlist();
   const { product, similar, loading, error } = useProductDetail(id as string);
   const [quantity, setQuantity] = useState(1);
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -62,8 +62,12 @@ export default function ProductDetailScreen() {
   const handleAddToCart = () => {
     if (!product) return;
     addItem({
+      id: `cart-${product.id}-${Date.now()}`,
       productId: product.id,
+      name: product.name,
+      price: product.price,
       quantity,
+      image: product.image || '',
     });
     Alert.alert('Éxito', `${product.name} agregado al carrito`);
   };

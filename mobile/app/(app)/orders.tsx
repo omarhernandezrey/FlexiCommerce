@@ -9,7 +9,7 @@ import { colors, spacing, borderRadius } from '../../styles/theme';
 
 export default function OrdersScreen() {
   const router = useRouter();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -79,7 +79,7 @@ export default function AppLayout() {
         options={{
           title: 'Inicio',
           tabBarLabel: 'Inicio',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
         }}
@@ -90,7 +90,7 @@ export default function AppLayout() {
         options={{
           title: 'Buscar',
           tabBarLabel: 'Buscar',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="search" size={size} color={color} />
           ),
         }}
@@ -101,7 +101,7 @@ export default function AppLayout() {
         options={{
           title: 'Favoritos',
           tabBarLabel: 'Favoritos',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="heart" size={size} color={color} />
           ),
         }}
@@ -112,7 +112,7 @@ export default function AppLayout() {
         options={{
           title: 'Carrito',
           tabBarLabel: 'Carrito',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="bag" size={size} color={color} />
           ),
         }}
@@ -123,7 +123,7 @@ export default function AppLayout() {
         options={{
           title: 'Perfil',
           tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
         }}

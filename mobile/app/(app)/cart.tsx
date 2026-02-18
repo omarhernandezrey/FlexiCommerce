@@ -18,7 +18,7 @@ interface CartItemWithProduct {
 
 export default function CartScreen() {
   const router = useRouter();
-  const { cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
+  const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
   const { user } = useAuthStore();
   const [items, setItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);

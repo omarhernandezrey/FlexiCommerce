@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  CheckBox,
+  Pressable,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { TextInputField } from '../../components/TextInput';
@@ -178,11 +178,12 @@ export default function RegisterScreen() {
 
           {/* Terms and Conditions */}
           <View style={styles.termsContainer}>
-            <CheckBox
-              value={agreedToTerms}
-              onValueChange={setAgreedToTerms}
-              style={styles.checkbox}
-            />
+            <Pressable
+              onPress={() => setAgreedToTerms(!agreedToTerms)}
+              style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}
+            >
+              {agreedToTerms && <Text style={styles.checkmark}>✓</Text>}
+            </Pressable>
             <View style={styles.termsText}>
               <Text style={styles.termsLabel}>Acepto los </Text>
               <Link href="/(auth)/terms" asChild>
@@ -260,7 +261,23 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    borderRadius: 4,
     marginTop: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  checkmark: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   termsText: {
     flex: 1,

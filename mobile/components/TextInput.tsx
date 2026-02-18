@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ViewStyle, TextStyle, NativeSyntheticEvent, TextInputSubmitEditingEventData } from 'react-native';
 
 interface InputProps {
   label?: string;
@@ -11,6 +11,10 @@ interface InputProps {
   error?: string;
   multiline?: boolean;
   rows?: number;
+  maxLength?: number;
+  style?: ViewStyle | TextStyle;
+  onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void;
+  RightIcon?: React.ComponentType;
 }
 
 export function TextInputField({
@@ -23,25 +27,40 @@ export function TextInputField({
   error,
   multiline = false,
   rows = 1,
+  maxLength,
+  style: customStyle,
+  onSubmitEditing,
+  RightIcon,
 }: InputProps) {
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        style={[styles.input, error && styles.inputError, multiline && styles.multilineInput]}
-        placeholder={placeholder}
-        placeholderTextColor="#9ca3af"
-        value={value}
-        onChangeText={onChangeText}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        numberOfLines={multiline ? rows : 1}
-      />
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={[styles.input, error && styles.inputError, multiline && styles.multilineInput, customStyle as TextStyle]}
+          placeholder={placeholder}
+          placeholderTextColor="#9ca3af"
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={multiline ? rows : 1}
+          maxLength={maxLength}
+          onSubmitEditing={onSubmitEditing}
+        />
+        {RightIcon && (
+          <View style={styles.rightIcon}>
+            <RightIcon />
+          </View>
+        )}
+      </View>
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
 }
+
+export default TextInputField;
 
 const styles = StyleSheet.create({
   container: {
@@ -52,6 +71,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 8,
+  },
+  inputWrapper: {
+    position: 'relative',
   },
   input: {
     borderWidth: 1,
@@ -69,6 +91,13 @@ const styles = StyleSheet.create({
   multilineInput: {
     paddingTop: 12,
     textAlignVertical: 'top',
+  },
+  rightIcon: {
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   error: {
     fontSize: 12,

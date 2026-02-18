@@ -13,7 +13,7 @@ import { colors, spacing, borderRadius } from '../../styles/theme';
 export default function CheckoutScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { cartItems, clearCart } = useCartStore();
+  const { items: cartItems, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'address' | 'payment' | 'confirmation'>('address');
   const [address, setAddress] = useState({
