@@ -5,8 +5,9 @@
 
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { verifyToken } from '../middlewares/auth.js';
-import prisma from '../database/prisma.js';
+import jwt from 'jwt-simple';
+import { config } from '../config/index.js';
+import prisma from '../database/prisma';
 
 export interface SocketUser {
   id: string;
@@ -35,7 +36,7 @@ export class WebSocketServer {
 
   private setupMiddleware() {
     // Authentication middleware
-    this.io.use((socket, next) => {
+    this.io.use((socket: Socket, next: (err?: Error) => void) => {
       const token = socket.handshake.auth.token;
 
       if (!token) {
@@ -43,7 +44,7 @@ export class WebSocketServer {
       }
 
       try {
-        const decoded = verifyToken(token) as any;
+        const decoded = jwt.decode(token, config.jwt.secret) as any;
         socket.data.userId = decoded.id;
         socket.data.user = decoded;
         next();
@@ -77,13 +78,13 @@ export class WebSocketServer {
       socket.on('disconnect', () => this.handleDisconnect(socket.id, userId));
 
       // Order events
-      socket.on('order:subscribe', (orderId) => this.handleOrderSubscribe(socket, userId, orderId));
-      socket.on('order:unsubscribe', (orderId) => this.handleOrderUnsubscribe(socket, orderId));
+      socket.on('order:subscribe', (orderId: string) => this.handleOrderSubscribe(socket, userId, orderId));
+      socket.on('order:unsubscribe', (orderId: string) => this.handleOrderUnsubscribe(socket, orderId));
 
       // Notification events
-      socket.on('notification:read', (notificationId) =>
-        this.handleNotificationRead(userId, notificationId)
-      );
+      // socket.on('notification:read', (notificationId: string) =>
+      //   this.handleNotificationRead(userId, notificationId)
+      // );
 
       // Keep-alive
       socket.on('ping', () => socket.emit('pong'));
@@ -132,19 +133,20 @@ export class WebSocketServer {
     socket.leave(`order:${orderId}`);
   }
 
-  private async handleNotificationRead(userId: string, notificationId: string) {
-    try {
-      await prisma.notification.update({
-        where: { id: notificationId },
-        data: { read: true },
-      });
+  // private async handleNotificationRead(userId: string, notificationId: string) {
+  //   try {
+  //     // Note: Notification model not yet in Prisma schema
+  //     // await prisma.notification.update({
+  //     //   where: { id: notificationId },
+  //     //   data: { read: true },
+  //     // });
 
-      // Notify user
-      this.io.to(`user:${userId}`).emit('notification:read', { notificationId });
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  }
+  //     // Notify user
+  //     this.io.to(`user:${userId}`).emit('notification:read', { notificationId });
+  //   } catch (error) {
+  //     console.error('Error marking notification as read:', error);
+  //   }
+  // }
 
   /**
    * Broadcast order status update to user

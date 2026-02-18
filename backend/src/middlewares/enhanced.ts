@@ -53,14 +53,13 @@ export function requestIdTracker(req: Request, res: Response, next: NextFunction
 export function setupCompression(app: Express) {
   app.use(
     compression({
-      filter: (req: Request, res: Response) => {
+      filter: (_req: Request, res: Response) => {
         // Don't compress responses asking explicitly not to
         if (res.getHeader('x-no-compression')) {
           return false;
         }
-
-        // Use compression filter function
-        return compression.filter(req, res);
+        // Compress by default
+        return true;
       },
       level: 6, // Balance between compression ratio and speed
       threshold: 1000, // Compress responses larger than 1KB
@@ -99,7 +98,7 @@ export function enhancedCors(
   const origin = options.origin || process.env.CORS_ORIGIN || 'http://localhost:3000';
   const maxAge = options.maxAge || 86400; // 24 hours
 
-  app.options('*', (req: Request, res: Response) => {
+  app.options('*', (_req: Request, res: Response) => {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Request-ID');
@@ -108,7 +107,7 @@ export function enhancedCors(
     res.sendStatus(200);
   });
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
     next();
@@ -118,7 +117,7 @@ export function enhancedCors(
 /**
  * Security headers middleware
  */
-export function securityHeaders(req: Request, res: Response, next: NextFunction) {
+export function securityHeaders(_req: Request, res: Response, next: NextFunction) {
   // Prevent clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
 
@@ -200,6 +199,7 @@ export class RateLimiter {
       res.setHeader('X-RateLimit-Reset', new Date(now + this.windowMs).toISOString());
 
       next();
+      return undefined;
     };
   }
 }

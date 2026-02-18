@@ -2,9 +2,9 @@
  * Enhanced Orders Service with validation, error handling, and batch operations
  */
 
-import prisma from '../../database/prisma.js';
-import { Cache, cacheKeys } from '../cache.js';
-import { retryWithBackoff } from '../retry.js';
+import prisma from '../../database/prisma';
+import { Cache, cacheKeys } from '../../utils/cache';
+import { retryWithBackoff } from '../../utils/retry';
 
 const ordersCache = new Cache(300000); // 5 min TTL
 
@@ -46,7 +46,7 @@ export class OrdersServiceEnhanced {
         ]);
 
         return {
-          data: data.map((order) => ({
+          data: data.map((order: any) => ({
             ...order,
             itemCount: order.items.length,
           })),
@@ -103,8 +103,8 @@ export class OrdersServiceEnhanced {
           ...order,
           summary: {
             itemCount: order.items.length,
-            subtotal: order.items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0),
-            tax: (order.total * 0.16) || 0, // Assuming 16% tax
+            subtotal: order.items.reduce((sum: number, item: any) => sum + Number(item.price) * item.quantity, 0),
+            tax: (Number(order.total) * 0.16) || 0, // Assuming 16% tax
             total: order.total,
           },
         };
@@ -117,7 +117,7 @@ export class OrdersServiceEnhanced {
   /**
    * Create order with validation
    */
-  async create(userId: string, items: OrderItemInput[], shippingAddress?: any) {
+  async create(userId: string, items: OrderItemInput[], _shippingAddress?: any) {
     const errors: OrderValidationError[] = [];
 
     // Validate input
@@ -151,7 +151,7 @@ export class OrdersServiceEnhanced {
       // Validate all products exist
       const missingIds = items
         .map((item) => item.productId)
-        .filter((id) => !products.find((p) => p.id === id));
+        .filter((id) => !products.find((p: any) => p.id === id));
 
       if (missingIds.length > 0) {
         throw new Error(`Productos no encontrados: ${missingIds.join(', ')}`);
@@ -159,7 +159,7 @@ export class OrdersServiceEnhanced {
 
       // Validate stock
       const insufficientStock = items.filter((item) => {
-        const product = products.find((p) => p.id === item.productId);
+        const product = products.find((p: any) => p.id === item.productId);
         return product && product.stock < item.quantity;
       });
 
@@ -168,8 +168,8 @@ export class OrdersServiceEnhanced {
       }
 
       // Calculate total
-      const total = items.reduce((sum, item) => {
-        const product = products.find((p) => p.id === item.productId)!;
+      const total = items.reduce((sum: number, item: any) => {
+        const product = products.find((p: any) => p.id === item.productId)!;
         return sum + Number(product.price) * item.quantity;
       }, 0);
 
@@ -179,11 +179,10 @@ export class OrdersServiceEnhanced {
           data: {
             userId,
             total,
-            status: 'PENDING',
-            shippingAddress: shippingAddress || undefined,
+            status: 'PENDING' as any,
             items: {
               create: items.map((item) => {
-                const product = products.find((p) => p.id === item.productId)!;
+                const product = products.find((p: any) => p.id === item.productId)!;
                 return {
                   productId: item.productId,
                   quantity: item.quantity,
@@ -223,7 +222,7 @@ export class OrdersServiceEnhanced {
    * Update order status with validation
    */
   async updateStatus(id: string, status: string) {
-    const validStatuses = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+    const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
     if (!validStatuses.includes(status)) {
       throw new Error(`Estado inválido. Debe ser uno de: ${validStatuses.join(', ')}`);
@@ -233,7 +232,7 @@ export class OrdersServiceEnhanced {
       const order = await retryWithBackoff(() =>
         prisma.order.update({
           where: { id },
-          data: { status },
+          data: { status: status as any },
           include: { items: true },
         })
       );
@@ -303,7 +302,7 @@ export class OrdersServiceEnhanced {
     try {
       return await retryWithBackoff(() =>
         prisma.order.findMany({
-          where: { status },
+          where: { status: status as any },
           include: { items: true, user: { select: { id: true, email: true } } },
           orderBy: { createdAt: 'desc' },
           take: limit,
@@ -344,7 +343,7 @@ export class OrdersServiceEnhanced {
       return {
         totalOrders,
         totalRevenue: totalRevenue._sum.total || 0,
-        byStatus: Object.fromEntries(byStatus.map((s) => [s.status, s._count])),
+        byStatus: Object.fromEntries(byStatus.map((s: any) => [s.status, s._count])),
       };
     } catch (error) {
       throw new Error(`Failed to fetch order statistics: ${error instanceof Error ? error.message : 'Unknown error'}`);

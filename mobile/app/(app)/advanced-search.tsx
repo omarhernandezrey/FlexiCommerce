@@ -289,7 +289,7 @@ export default function AdvancedSearchScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={{ alignItems: 'center', paddingVertical: spacing.xl }}>
-              <Iconicons name="search-outline" size={48} color={colors.gray} />
+              <Ionicons name="search-outline" size={48} color={colors.gray} />
               <Text style={{ marginTop: spacing.md, color: colors.gray, textAlign: 'center' }}>
                 {searchQuery ? 'Sin resultados' : 'Busca un producto'}
               </Text>

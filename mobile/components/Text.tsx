@@ -6,6 +6,7 @@ interface CustomTextProps extends TextProps {
   variant?: 'h1' | 'h2' | 'h3' | 'body' | 'caption' | 'small';
   color?: string;
   bold?: boolean;
+  children?: React.ReactNode;
 }
 
 export default function Text({

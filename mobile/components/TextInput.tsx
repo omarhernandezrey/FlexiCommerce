@@ -12,7 +12,7 @@ interface InputProps {
   multiline?: boolean;
   rows?: number;
   maxLength?: number;
-  style?: ViewStyle | TextStyle;
+  style?: ViewStyle | TextStyle | undefined | false | null;
   onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void;
   RightIcon?: React.ComponentType;
 }
@@ -32,12 +32,16 @@ export function TextInputField({
   onSubmitEditing,
   RightIcon,
 }: InputProps) {
+  const inputStyle = [styles.input, customStyle || {}];
+  if (error) inputStyle.push(styles.inputError);
+  if (multiline) inputStyle.push(styles.multilineInput);
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputWrapper}>
         <TextInput
-          style={[styles.input, error && styles.inputError, multiline && styles.multilineInput, customStyle as TextStyle]}
+          style={inputStyle as any}
           placeholder={placeholder}
           placeholderTextColor="#9ca3af"
           value={value}

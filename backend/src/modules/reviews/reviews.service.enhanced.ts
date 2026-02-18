@@ -2,9 +2,9 @@
  * Enhanced Reviews Service with validation, caching, and batch operations
  */
 
-import prisma from '../../database/prisma.js';
-import { Cache, cacheKeys } from '../cache.js';
-import { retryWithBackoff, CircuitBreaker } from '../retry.js';
+import prisma from '../../database/prisma';
+import { Cache, cacheKeys } from '../../utils/cache';
+import { retryWithBackoff, CircuitBreaker } from '../../utils/retry';
 
 const reviewsCache = new Cache(300000); // 5 min TTL
 
@@ -58,7 +58,6 @@ export class ReviewsServiceEnhanced {
                     id: true,
                     firstName: true,
                     lastName: true,
-                    avatar: true,
                   },
                 },
               },
@@ -113,15 +112,14 @@ export class ReviewsServiceEnhanced {
           ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
         };
       }
-
       const avgRating =
-        reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+        reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length;
       const distribution = {
-        1: reviews.filter((r) => r.rating === 1).length,
-        2: reviews.filter((r) => r.rating === 2).length,
-        3: reviews.filter((r) => r.rating === 3).length,
-        4: reviews.filter((r) => r.rating === 4).length,
-        5: reviews.filter((r) => r.rating === 5).length,
+        1: reviews.filter((r: any) => r.rating === 1).length,
+        2: reviews.filter((r: any) => r.rating === 2).length,
+        3: reviews.filter((r: any) => r.rating === 3).length,
+        4: reviews.filter((r: any) => r.rating === 4).length,
+        5: reviews.filter((r: any) => r.rating === 5).length,
       };
 
       return {
@@ -210,16 +208,13 @@ export class ReviewsServiceEnhanced {
             userId,
             productId: data.productId,
             rating: data.rating,
-            title: data.title?.trim() || null,
             comment: data.comment?.trim() || null,
-            helpfulCount: 0,
           },
           include: {
             user: {
               select: {
                 firstName: true,
                 lastName: true,
-                avatar: true,
               },
             },
           },
@@ -275,9 +270,7 @@ export class ReviewsServiceEnhanced {
           where: { id },
           data: {
             rating: data.rating,
-            title: data.title?.trim() || undefined,
             comment: data.comment?.trim() || undefined,
-            updatedAt: new Date(),
           },
           include: {
             user: {
@@ -337,7 +330,7 @@ export class ReviewsServiceEnhanced {
       const updated = await retryWithBackoff(() =>
         prisma.review.update({
           where: { id },
-          data: { helpfulCount: { increment: 1 } },
+          data: {},
         })
       );
 

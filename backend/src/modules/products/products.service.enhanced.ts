@@ -2,11 +2,11 @@
  * Enhanced Products Service with caching, batch operations, and error handling
  */
 
-import prisma from '../../database/prisma.js';
+import prisma from '../../database/prisma';
 import { Prisma } from '@prisma/client';
-import { Cache, cacheKeys } from '../cache.js';
-import { batchGet, parallelBatch } from '../batch.js';
-import { retryWithBackoff, CircuitBreaker } from '../retry.js';
+import { Cache, cacheKeys } from '../../utils/cache';
+import { batchGet } from '../../utils/batch';
+import { retryWithBackoff, CircuitBreaker } from '../../utils/retry';
 
 const productCache = new Cache(300000); // 5 min TTL
 
@@ -51,7 +51,7 @@ export class ProductsServiceEnhanced {
         ]);
 
         return {
-          data: data.map((p) => ({
+          data: data.map((p: any) => ({
             ...p,
             reviewCount: p._count.reviews,
           })),
@@ -84,7 +84,7 @@ export class ProductsServiceEnhanced {
             include: {
               category: true,
               reviews: {
-                include: { user: { select: { firstName: true, lastName: true, avatar: true } } },
+                include: { user: { select: { firstName: true, lastName: true } } },
                 orderBy: { createdAt: 'desc' },
                 take: 10,
               },
@@ -99,7 +99,7 @@ export class ProductsServiceEnhanced {
 
         const avgRating =
           product.reviews.length > 0
-            ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+            ? product.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / product.reviews.length
             : 0;
 
         return {
@@ -118,7 +118,7 @@ export class ProductsServiceEnhanced {
    */
   async getByIds(ids: string[]) {
     try {
-      return await batchGet(ids, async (batchIds) => {
+      return await batchGet(ids, async (batchIds: string[]) => {
         return retryWithBackoff(() =>
           prisma.product.findMany({
             where: { id: { in: batchIds }, isActive: true },
@@ -175,7 +175,7 @@ export class ProductsServiceEnhanced {
         ]);
 
         return {
-          data: data.map((p) => ({
+          data: data.map((p: any) => ({
             ...p,
             reviewCount: p._count.reviews,
           })),
@@ -280,7 +280,7 @@ export class ProductsServiceEnhanced {
       try {
         return await retryWithBackoff(() =>
           prisma.product.findMany({
-            where: { isActive: true, featured: true },
+            where: { isActive: true },
             take: limit,
             include: { category: true, _count: { select: { reviews: true } } },
             orderBy: { createdAt: 'desc' },

@@ -2,8 +2,8 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
-// Skip notification setup in Android Genymotion
-const IS_GENYMOTION = Constants.executionEnvironment === 'StoreClient' && Device.modelId === 'genymotion';
+// Skip notification setup in Android Genymotion emulator
+const IS_GENYMOTION = Device.modelId === 'genymotion';
 
 /**
  * Configure notification handler
