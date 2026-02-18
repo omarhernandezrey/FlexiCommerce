@@ -15,6 +15,7 @@ import reviewsRoutes from './modules/reviews/reviews.routes.js';
 import cmsRoutes from './modules/cms/cms.routes.js';
 import analyticsRoutes from './modules/analytics/analytics.routes.js';
 import wishlistRoutes from './modules/wishlist/wishlist.routes.js';
+import recommendationsRoutes from './modules/recommendations/recommendations.routes.js';
 
 dotenv.config();
 
@@ -75,6 +76,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/cms', cmsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
 
 // Error handling
 app.use(errorHandler);
