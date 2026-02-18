@@ -1,139 +1,167 @@
 'use client';
 
-import { useState } from 'react';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MaterialIcon } from '@/components/ui/MaterialIcon';
-import { ProductCard } from '@/components/products/ProductCard';
-import { MOCK_PRODUCTS } from '@/lib/constants';
+import { useEffect } from 'react';
 
 export default function WishlistPage() {
-  const [wishlist, setWishlist] = useState(MOCK_PRODUCTS.slice(0, 4));
+  const { items, loading, removeFromWishlist, clearWishlist } = useWishlist();
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  const removeFromWishlist = (id: string) => {
-    setWishlist(wishlist.filter(p => p.id !== id));
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      router.push('/auth');
+    }
+  }, [isAuthenticated, user, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg h-64"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-12 text-center">
+        <div className="mb-6">
+          <div className="text-4xl">🤍</div>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">Tu lista está vacía</h2>
+        <p className="text-gray-500 mb-6">
+          Guarda tus productos favoritos para acceder a ellos fácilmente más tarde
+        </p>
+        <Link href="/products" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+          Explorar Productos
+        </Link>
+      </div>
+    );
+  }
+
+  const stats = {
+    total: items.length,
+    minPrice: Math.min(...items.map(item => item.price)),
+    maxPrice: Math.max(...items.map(item => item.price)),
+    totalValue: items.reduce((sum, item) => sum + item.price, 0),
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">Mi Wishlist</h1>
-        <span className="bg-primary text-white px-4 py-2 rounded-full font-semibold">
-          {wishlist.length} producto{wishlist.length !== 1 ? 's' : ''}
-        </span>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Mi Lista de Deseos</h1>
+        <p className="text-gray-600">{items.length} producto(s) guardado(s)</p>
       </div>
 
-      {wishlist.length > 0 ? (
-        <>
-          {/* Grid View */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {wishlist.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-lg border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="relative">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <button
-                    onClick={() => removeFromWishlist(product.id)}
-                    className="absolute top-3 right-3 bg-white text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors"
-                  >
-                    <MaterialIcon name="favorite" filled />
-                  </button>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <p className="text-gray-600 text-sm">Total de items</p>
+          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <p className="text-gray-600 text-sm">Precio mínimo</p>
+          <p className="text-2xl font-bold text-gray-900">${stats.minPrice.toFixed(2)}</p>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <p className="text-gray-600 text-sm">Precio máximo</p>
+          <p className="text-2xl font-bold text-gray-900">${stats.maxPrice.toFixed(2)}</p>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <p className="text-gray-600 text-sm">Valor total</p>
+          <p className="text-2xl font-bold text-gray-900">${stats.totalValue.toFixed(2)}</p>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+          >
+            {/* Image */}
+            <div className="relative bg-gray-100 h-48 overflow-hidden">
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={item.productName}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-gray-400">No image</span>
                 </div>
+              )}
+            </div>
 
-                <div className="p-4">
-                  <p className="text-xs text-slate-500 mb-1">{product.category}</p>
-                  <Link
-                    href={`/products/${product.id}`}
-                    className="block font-semibold text-primary mb-2 hover:text-primary/80 truncate"
-                  >
-                    {product.name}
-                  </Link>
-
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xl font-bold text-primary">
-                      ${product.price}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      ⭐ {product.rating} ({product.reviews})
-                    </span>
-                  </div>
-
-                  <button className="w-full bg-primary text-white font-semibold py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
-                    <MaterialIcon name="shopping_bag" />
-                    Agregar al Carrito
-                  </button>
-                </div>
+            {/* Content */}
+            <div className="p-4">
+              {/* Category */}
+              <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                {item.category}
               </div>
-            ))}
-          </div>
 
-          {/* Compare Section */}
-          <div className="bg-background-light rounded-lg p-8">
-            <h3 className="text-2xl font-bold text-primary mb-6">Comparar Productos</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-primary">
-                    <th className="text-left py-4 font-semibold text-primary">Producto</th>
-                    <th className="text-center py-4 font-semibold text-primary">Precio</th>
-                    <th className="text-center py-4 font-semibold text-primary">Calificación</th>
-                    <th className="text-center py-4 font-semibold text-primary">Stock</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {wishlist.map((product) => (
-                    <tr
-                      key={product.id}
-                      className="border-b border-slate-200 hover:bg-white transition-colors"
-                    >
-                      <td className="py-4">
-                        <Link
-                          href={`/products/${product.id}`}
-                          className="text-primary hover:underline font-semibold"
-                        >
-                          {product.name}
-                        </Link>
-                      </td>
-                      <td className="text-center py-4 font-bold text-primary">
-                        ${product.price}
-                      </td>
-                      <td className="text-center py-4">
-                        <span className="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                          ⭐ {product.rating}
-                        </span>
-                      </td>
-                      <td className="text-center py-4">
-                        <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded">
-                          En Stock
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {/* Name */}
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                {item.productName}
+              </h3>
+
+              {/* Price */}
+              <div className="mb-4">
+                <p className="text-2xl font-bold text-blue-600">${item.price.toFixed(2)}</p>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2">
+                <Link
+                  href={`/products/${item.productId}`}
+                  className="block w-full text-center bg-blue-100 text-blue-700 font-semibold py-2 rounded-lg hover:bg-blue-200"
+                >
+                  Ver Producto
+                </Link>
+
+                <button
+                  onClick={() => removeFromWishlist(item.id, item.productName)}
+                  className="w-full bg-red-100 text-red-700 font-semibold py-2 rounded-lg hover:bg-red-200"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
-        </>
-      ) : (
-        <div className="text-center py-16 bg-white rounded-lg border border-slate-200">
-          <MaterialIcon name="favorite_border" className="text-slate-300 text-5xl mb-4" />
-          <h2 className="text-2xl font-bold text-primary mb-2">Tu wishlist está vacía</h2>
-          <p className="text-slate-600 mb-6">
-            Agrega productos a tu lista de deseos para guardarlos para después
-          </p>
-          <Link
-            href="/products"
-            className="inline-block bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Explorar Productos
-          </Link>
-        </div>
-      )}
+        ))}
+      </div>
+
+      {/* Clear Button */}
+      <div className="flex justify-center">
+        <button
+          onClick={() => clearWishlist()}
+          className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700"
+        >
+          Vaciar Lista de Deseos
+        </button>
+      </div>
     </div>
   );
 }
