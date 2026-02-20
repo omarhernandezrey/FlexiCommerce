@@ -15,7 +15,7 @@ export const useOrders = () => {
         setLoading(true);
         setError(null);
         const response = await ordersAPI.getAll(params);
-        const data = response.data;
+        const data = response.data.data || [];
         setOrders(data);
         return data;
       } catch (err) {
@@ -35,7 +35,7 @@ export const useOrders = () => {
       setLoading(true);
       setError(null);
       const response = await ordersAPI.getById(id);
-      const data = response.data;
+      const data = response.data.data || response.data;
       setCurrentOrder(data);
       return data;
     } catch (err) {
@@ -53,7 +53,7 @@ export const useOrders = () => {
       setLoading(true);
       setError(null);
       const response = await ordersAPI.create(orderData);
-      const data = response.data;
+      const data = response.data.data || response.data;
       setCurrentOrder(data);
       return data;
     } catch (err) {
@@ -72,7 +72,7 @@ export const useOrders = () => {
         setLoading(true);
         setError(null);
         const response = await ordersAPI.updateStatus(id, status);
-        const data = response.data;
+        const data = response.data.data || response.data;
         if (currentOrder?.id === id) {
           setCurrentOrder(data);
         }

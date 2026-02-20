@@ -15,8 +15,10 @@ export interface Product {
 export interface User {
   id: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   role: 'customer' | 'admin';
+  createdAt?: string;
 }
 
 export interface Order {
@@ -47,8 +49,8 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
-  user: User;
   token: string;
+  user: User;
 }
 
 // Products API
@@ -82,14 +84,14 @@ export const authAPI = {
   login: (credentials: LoginRequest) =>
     apiClient.post<AuthResponse>('/api/auth/login', credentials),
 
-  register: (userData: Omit<User, 'id' | 'role'> & { password: string }) =>
+  register: (userData: Omit<User, 'id' | 'role' | 'createdAt'> & { password: string }) =>
     apiClient.post<AuthResponse>('/api/auth/register', userData),
 
   logout: () => apiClient.post('/api/auth/logout'),
 
   getCurrentUser: () => apiClient.get<User>('/api/auth/me'),
 
-  refreshToken: () => apiClient.post('/api/auth/refresh'),
+  refreshToken: () => apiClient.post<AuthResponse>('/api/auth/refresh'),
 };
 
 // Orders API

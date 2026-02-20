@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/auth';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+// Use local IP instead of localhost for Expo Go compatibility
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://172.26.230.69:3001';
 
 const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -14,7 +15,7 @@ const apiClient = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   async (config) => {
-    const { token } = useAuthStore.getState();
+    const token = useAuthStore.getState().token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

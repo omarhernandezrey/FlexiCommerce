@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface User {
@@ -18,6 +18,10 @@ interface AuthStore {
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
+
+const createStorage = () => {
+  return createJSONStorage(() => AsyncStorage);
+};
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -42,18 +46,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => ({
-        getItem: async (name) => {
-          const value = await SecureStore.getItemAsync(name);
-          return value ? JSON.parse(value) : null;
-        },
-        setItem: async (name, value) => {
-          await SecureStore.setItemAsync(name, JSON.stringify(value));
-        },
-        removeItem: async (name) => {
-          await SecureStore.deleteItemAsync(name);
-        },
-      })),
+      storage: createStorage(),
     }
   )
 );

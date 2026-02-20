@@ -3,8 +3,12 @@
  * Run with: npx ts-node src/scripts/seed.ts
  */
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { prisma } from '../database/prisma.js';
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 import { OrderStatus, Role } from '@prisma/client';
 
 const USER_COUNT = 50;
@@ -98,7 +102,34 @@ async function seed() {
 
     // Create users
     console.log('👥 Creating users...');
-    const users = await Promise.all(
+    
+    // Create test users with known credentials
+    const testUsers = [
+      { email: 'admin@flexicommerce.com', password: 'Admin@12345', firstName: 'Admin', lastName: 'User', role: Role.ADMIN },
+      { email: 'customer@flexicommerce.com', password: 'Customer@12345', firstName: 'Juan', lastName: 'Cliente', role: Role.CUSTOMER },
+      { email: 'test@flexicommerce.com', password: 'Test@12345', firstName: 'Test', lastName: 'User', role: Role.CUSTOMER },
+    ];
+
+    const hashedTestUsers = await Promise.all(
+      testUsers.map(async (user) => ({
+        ...user,
+        password: await bcrypt.hash(user.password, 10),
+      }))
+    );
+
+    const createdTestUsers = await Promise.all(
+      hashedTestUsers.map((user) =>
+        prisma.user.create({ data: user })
+      )
+    );
+
+    console.log(`✅ Created ${createdTestUsers.length} test users`);
+    console.log('   📧 admin@flexicommerce.com / Admin@12345');
+    console.log('   📧 customer@flexicommerce.com / Customer@12345');
+    console.log('   📧 test@flexicommerce.com / Test@12345\n');
+
+    // Create additional random users
+    const randomUsers = await Promise.all(
       Array.from({ length: USER_COUNT }).map((_, i) =>
         prisma.user.create({
           data: {
@@ -106,12 +137,14 @@ async function seed() {
             firstName: `User`,
             lastName: `${i + 1}`,
             password: crypto.randomBytes(16).toString('hex'),
-            role: i < 3 ? Role.ADMIN : Role.CUSTOMER,
+            role: i < 2 ? Role.ADMIN : Role.CUSTOMER,
           },
         })
       )
     );
-    console.log(`✅ Created ${users.length} users\n`);
+
+    const users = [...createdTestUsers, ...randomUsers];
+    console.log(`✅ Created ${randomUsers.length} additional users\n`);
 
     // Create orders
     console.log('📦 Creating orders...');

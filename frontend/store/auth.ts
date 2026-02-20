@@ -3,18 +3,21 @@ import { persist } from 'zustand/middleware';
 
 export interface User {
   id: string;
-  name: string;
   email: string;
-  avatar?: string;
+  firstName: string;
+  lastName: string;
   role: 'customer' | 'admin';
+  createdAt?: string;
 }
 
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
-  login: (user: User) => void;
+  token: string | null;
+  login: (user: User, token?: string) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
+  setToken: (token: string) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -22,19 +25,24 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
+      token: null,
       
-      login: (user: User) => {
-        set({ user, isAuthenticated: true });
+      login: (user: User, token?: string) => {
+        set({ user, isAuthenticated: true, token: token || null });
       },
       
       logout: () => {
-        set({ user: null, isAuthenticated: false });
+        set({ user: null, isAuthenticated: false, token: null });
       },
       
       updateUser: (updates: Partial<User>) => {
         set((state) => ({
           user: state.user ? { ...state.user, ...updates } : null,
         }));
+      },
+
+      setToken: (token: string) => {
+        set({ token });
       },
     }),
     {

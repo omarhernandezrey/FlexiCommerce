@@ -14,9 +14,9 @@ export const useProducts = () => {
         setLoading(true);
         setError(null);
         const response = await productsAPI.getAll(params);
-        const data = response.data;
-        setProducts(data);
-        return data;
+        const { data: products, pagination } = response.data;
+        setProducts(products || []);
+        return products;
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Error fetching products';
@@ -34,7 +34,7 @@ export const useProducts = () => {
       setLoading(true);
       setError(null);
       const response = await productsAPI.getById(id);
-      return response.data;
+      return response.data.data || response.data;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Error fetching product';
@@ -50,9 +50,9 @@ export const useProducts = () => {
       setLoading(true);
       setError(null);
       const response = await productsAPI.search(query);
-      const data = response.data;
-      setProducts(data);
-      return data;
+      const { data: products, pagination } = response.data;
+      setProducts(products || []);
+      return products;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Error searching products';

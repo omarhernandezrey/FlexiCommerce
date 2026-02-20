@@ -1,133 +1,95 @@
+import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Stack } from 'expo-router';
 import React from 'react';
-import { colors } from '../../styles/theme';
 
-const Tab = createBottomTabNavigator();
-
-function HomeStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="products/[id]" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="reviews/[id]" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
-
-function SearchStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="search" />
-      <Stack.Screen name="products/[id]" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
-
-function WishlistStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="wishlist" />
-      <Stack.Screen name="products/[id]" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
-
-function CartStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="cart" />
-      <Stack.Screen name="checkout" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
-
-function ProfileStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="profile" />
-      <Stack.Screen name="orders" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="orders/[id]" options={{ presentation: 'modal' }} />
-    </Stack>
-  );
-}
+const PRIMARY_COLOR = '#2563eb';
+const GRAY_COLOR = '#d1d5db';
+const BORDER_COLOR = '#e5e7eb';
 
 export default function AppLayout() {
   return (
-    <Tab.Navigator
+    <Tabs
       screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray,
+        headerShown: true,
+        tabBarActiveTintColor: PRIMARY_COLOR,
+        tabBarInactiveTintColor: GRAY_COLOR,
         tabBarStyle: {
-          borderTopColor: colors.border,
+          borderTopColor: BORDER_COLOR,
           borderTopWidth: 1,
           paddingBottom: 8,
           paddingTop: 8,
-          height: 60,
+          height: 65,
+          backgroundColor: '#ffffff',
         },
         tabBarLabelStyle: {
           fontSize: 11,
           marginTop: 4,
+          fontWeight: '500',
+        },
+        headerStyle: {
+          backgroundColor: '#ffffff',
+        },
+        headerTintColor: '#000',
+        headerTitleStyle: {
+          fontWeight: '600',
         },
       }}
     >
-      <Tab.Screen
-        name="home"
-        component={HomeStack}
+      <Tabs.Screen
+        name="index"
         options={{
           title: 'Inicio',
           tabBarLabel: 'Inicio',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          headerTitle: 'FlexiCommerce',
+          tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
-        name="search-tab"
-        component={SearchStack}
+      <Tabs.Screen
+        name="search"
         options={{
           title: 'Buscar',
           tabBarLabel: 'Buscar',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          headerTitle: 'Buscar Productos',
+          tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
-        name="wishlist-tab"
-        component={WishlistStack}
+      <Tabs.Screen
+        name="wishlist"
         options={{
           title: 'Favoritos',
           tabBarLabel: 'Favoritos',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          headerTitle: 'Mis Favoritos',
+          tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
-        name="cart-tab"
-        component={CartStack}
+      <Tabs.Screen
+        name="cart"
         options={{
           title: 'Carrito',
           tabBarLabel: 'Carrito',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          headerTitle: 'Mi Carrito',
+          tabBarIcon: ({ color, size }) => (
             <Ionicons name="bag" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
-        name="profile-tab"
-        component={ProfileStack}
+      <Tabs.Screen
+        name="profile"
         options={{
           title: 'Perfil',
           tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          headerTitle: 'Mi Perfil',
+          tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
         }}
       />
-    </Tab.Navigator>
+    </Tabs>
   );
 }

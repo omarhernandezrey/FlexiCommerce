@@ -15,8 +15,19 @@ interface LoginInput {
   password: string;
 }
 
+interface AuthResult {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  };
+}
+
 export class AuthService {
-  async register(data: RegisterInput) {
+  async register(data: RegisterInput): Promise<AuthResult> {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) {
       throw new Error('El email ya está registrado');
@@ -41,10 +52,24 @@ export class AuthService {
       },
     });
 
-    return user;
+    const token = jwt.encode(
+      { id: user.id, email: user.email, role: user.role },
+      config.jwt.secret
+    );
+
+    return {
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
   }
 
-  async login(data: LoginInput) {
+  async login(data: LoginInput): Promise<AuthResult> {
     const user = await prisma.user.findUnique({ where: { email: data.email } });
     if (!user) {
       throw new Error('Credenciales inválidas');
@@ -54,6 +79,46 @@ export class AuthService {
     if (!isValid) {
       throw new Error('Credenciales inválidas');
     }
+
+    const token = jwt.encode(
+      { id: user.id, email: user.email, role: user.role },
+      config.jwt.secret
+    );
+
+    return {
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    };
+  }
+
+  async getUserById(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    return user;
+  }
+
+  async refreshToken(userId: string): Promise<AuthResult> {
+    const user = await this.getUserById(userId);
 
     const token = jwt.encode(
       { id: user.id, email: user.email, role: user.role },

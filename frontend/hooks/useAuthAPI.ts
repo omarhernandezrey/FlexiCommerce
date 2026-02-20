@@ -17,10 +17,12 @@ export const useAuthAPI = () => {
         const { data } = await authAPI.login(credentials);
         
         // Save token to localStorage
-        localStorage.setItem('authToken', data.token);
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
         
         // Update store
-        storeLogin(data.user);
+        storeLogin(data.user, data.token);
         
         return data.user;
       } catch (err) {
@@ -37,7 +39,7 @@ export const useAuthAPI = () => {
 
   const register = useCallback(
     async (
-      userData: Omit<User, 'id' | 'role'> & { password: string }
+      userData: Omit<User, 'id' | 'role' | 'createdAt'> & { password: string }
     ) => {
       try {
         setLoading(true);
@@ -45,10 +47,12 @@ export const useAuthAPI = () => {
         const { data } = await authAPI.register(userData);
         
         // Save token to localStorage
-        localStorage.setItem('authToken', data.token);
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
         
         // Update store
-        storeLogin(data.user);
+        storeLogin(data.user, data.token);
         
         return data.user;
       } catch (err) {
@@ -101,6 +105,31 @@ export const useAuthAPI = () => {
     }
   }, [storeLogin]);
 
+  const refreshToken = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await authAPI.refreshToken();
+      
+      // Save new token
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      
+      // Update store
+      storeLogin(data.user, data.token);
+      
+      return data.token;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Error refreshing token';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [storeLogin]);
+
   return {
     loading,
     error,
@@ -108,5 +137,6 @@ export const useAuthAPI = () => {
     register,
     logout,
     getCurrentUser,
+    refreshToken,
   };
 };

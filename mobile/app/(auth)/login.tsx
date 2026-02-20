@@ -48,7 +48,7 @@ export default function LoginScreen() {
       setLoading(true);
       const response = await authService.login(email, password);
       setAuth(response.user, response.token);
-      router.replace('/(app)');
+      router.replace('/(app)' as any);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Error de inicio de sesión';
       Alert.alert('Error', message);
