@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================
 # FlexiCommerce - Script de desarrollo para Expo Go
-# Levanta PostgreSQL + Backend con tunnel + Mobile con tunnel
+# Levanta PostgreSQL + Backend + Tunnel Cloudflare + actualiza .env
 # ============================================================
 
 set -e
@@ -16,6 +16,7 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
 MOBILE_DIR="$ROOT_DIR/mobile"
 MOBILE_ENV="$MOBILE_DIR/.env"
+CLOUDFLARED="/tmp/cloudflared"
 
 echo -e "${BLUE}================================================${NC}"
 echo -e "${BLUE}   FlexiCommerce - Inicio para Expo Go${NC}"
@@ -31,92 +32,80 @@ fi
 echo -e "${GREEN}✅ PostgreSQL corriendo${NC}"
 echo ""
 
-# ── 2. Backend en background ──────────────────────────────
+# ── 2. Backend ────────────────────────────────────────────
 echo -e "${YELLOW}[2/4] Iniciando Backend (puerto 3001)...${NC}"
 cd "$BACKEND_DIR"
 npm run dev > /tmp/flexicommerce-backend.log 2>&1 &
 BACKEND_PID=$!
-sleep 4
+sleep 5
 
 if curl -s http://localhost:3001/api/health > /dev/null 2>&1; then
-  echo -e "${GREEN}✅ Backend corriendo en http://localhost:3001${NC}"
+  echo -e "${GREEN}✅ Backend corriendo${NC}"
 else
-  echo -e "${RED}❌ Backend no respondió. Ver logs: tail /tmp/flexicommerce-backend.log${NC}"
+  echo -e "${RED}❌ Backend falló. Ver: tail /tmp/flexicommerce-backend.log${NC}"
   exit 1
 fi
 echo ""
 
-# ── 3. Tunnel para el Backend ─────────────────────────────
-echo -e "${YELLOW}[3/4] Creando tunnel para el Backend...${NC}"
-cd "$BACKEND_DIR"
-
-# Iniciar localtunnel y capturar URL
-npx lt --port 3001 --subdomain flexicommerce-api-$(whoami | tr -d ' ') > /tmp/lt-backend.log 2>&1 &
-LT_PID=$!
-sleep 5
-
-BACKEND_TUNNEL_URL=$(grep -o 'https://[^ ]*' /tmp/lt-backend.log | head -1)
-
-if [ -z "$BACKEND_TUNNEL_URL" ]; then
-  # Intentar URL genérica de localtunnel
-  BACKEND_TUNNEL_URL=$(cat /tmp/lt-backend.log | grep -o 'https://[a-z0-9-]*\.loca\.lt' | head -1)
+# ── 3. Descargar cloudflared si no existe ─────────────────
+if [ ! -f "$CLOUDFLARED" ]; then
+  echo -e "${YELLOW}[3/4] Descargando cloudflared...${NC}"
+  wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O "$CLOUDFLARED"
+  chmod +x "$CLOUDFLARED"
 fi
 
-if [ -z "$BACKEND_TUNNEL_URL" ]; then
-  echo -e "${RED}❌ No se pudo obtener URL del tunnel del backend${NC}"
-  echo -e "${YELLOW}   Revisa: cat /tmp/lt-backend.log${NC}"
-  echo -e "${YELLOW}   Usando IP local como fallback...${NC}"
-  # Fallback: usar IP de Windows si está disponible
-  WIN_IP=$(cat /etc/resolv.conf 2>/dev/null | grep nameserver | awk '{print $2}' | head -1)
-  if [ -n "$WIN_IP" ]; then
-    BACKEND_TUNNEL_URL="http://$WIN_IP:3001"
-    echo -e "${YELLOW}   IP de Windows detectada: $BACKEND_TUNNEL_URL${NC}"
-  else
-    BACKEND_TUNNEL_URL="http://172.26.230.69:3001"
-  fi
-else
-  echo -e "${GREEN}✅ Backend tunnel: $BACKEND_TUNNEL_URL${NC}"
+# ── 4. Tunnel con cloudflared ─────────────────────────────
+echo -e "${YELLOW}[4/4] Creando tunnel para el Backend...${NC}"
+"$CLOUDFLARED" tunnel --url http://localhost:3001 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+CF_PID=$!
+sleep 8
+
+TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /tmp/cloudflared.log | head -1)
+
+if [ -z "$TUNNEL_URL" ]; then
+  echo -e "${RED}❌ No se pudo obtener URL del tunnel${NC}"
+  echo "Log: $(cat /tmp/cloudflared.log | grep -i 'https://' | head -3)"
+  kill $BACKEND_PID 2>/dev/null || true
+  exit 1
 fi
+
+echo -e "${GREEN}✅ Tunnel activo: $TUNNEL_URL${NC}"
 echo ""
 
-# ── 4. Actualizar .env del mobile ─────────────────────────
-echo -e "${YELLOW}[4/4] Actualizando API URL del mobile...${NC}"
+# ── Actualizar .env del mobile ────────────────────────────
 if [ -f "$MOBILE_ENV" ]; then
-  # Reemplazar la línea EXPO_PUBLIC_API_URL
-  sed -i "s|EXPO_PUBLIC_API_URL=.*|EXPO_PUBLIC_API_URL=$BACKEND_TUNNEL_URL|" "$MOBILE_ENV"
+  sed -i "s|EXPO_PUBLIC_API_URL=.*|EXPO_PUBLIC_API_URL=$TUNNEL_URL|" "$MOBILE_ENV"
 else
-  echo "EXPO_PUBLIC_API_URL=$BACKEND_TUNNEL_URL" > "$MOBILE_ENV"
+  echo "EXPO_PUBLIC_API_URL=$TUNNEL_URL" > "$MOBILE_ENV"
   echo "EXPO_PUBLIC_APP_NAME=FlexiCommerce" >> "$MOBILE_ENV"
 fi
-echo -e "${GREEN}✅ mobile/.env actualizado con: $BACKEND_TUNNEL_URL${NC}"
+echo -e "${GREEN}✅ mobile/.env actualizado${NC}"
 echo ""
 
 # ── Resumen ───────────────────────────────────────────────
 echo -e "${BLUE}================================================${NC}"
-echo -e "${GREEN}   Todo listo! Instrucciones:${NC}"
+echo -e "${GREEN}   Todo listo!${NC}"
 echo -e "${BLUE}================================================${NC}"
 echo ""
-echo -e "  Backend:  ${GREEN}http://localhost:3001${NC}"
-echo -e "  Tunnel:   ${GREEN}$BACKEND_TUNNEL_URL${NC}"
+echo -e "  Backend local:  ${GREEN}http://localhost:3001${NC}"
+echo -e "  Backend tunnel: ${GREEN}$TUNNEL_URL${NC}"
 echo ""
 echo -e "${YELLOW}Ahora en OTRA terminal ejecuta:${NC}"
-echo -e "  ${BLUE}cd $MOBILE_DIR && npm run tunnel${NC}"
+echo -e "  ${BLUE}cd mobile && npm run tunnel${NC}"
 echo ""
-echo -e "${YELLOW}Luego escanea el QR con Expo Go.${NC}"
+echo -e "Credenciales de prueba:"
+echo -e "  📧 ${GREEN}test@flexicommerce.com${NC} / ${GREEN}Test@12345${NC}"
+echo -e "  📧 ${GREEN}admin@flexicommerce.com${NC} / ${GREEN}Admin@12345${NC}"
 echo ""
 echo -e "Presiona ${RED}Ctrl+C${NC} para detener todo."
 echo ""
 
-# Cleanup al salir
 cleanup() {
-  echo ""
-  echo -e "${YELLOW}Deteniendo servicios...${NC}"
+  echo -e "\n${YELLOW}Deteniendo servicios...${NC}"
   kill $BACKEND_PID 2>/dev/null || true
-  kill $LT_PID 2>/dev/null || true
-  echo -e "${GREEN}Servicios detenidos.${NC}"
+  kill $CF_PID 2>/dev/null || true
+  echo -e "${GREEN}Listo.${NC}"
 }
 trap cleanup EXIT INT TERM
 
-# Mantener corriendo y mostrar logs del backend
-echo -e "${YELLOW}=== Logs del Backend ===${NC}"
 tail -f /tmp/flexicommerce-backend.log

@@ -6,9 +6,10 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://172.26.230.69:30
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
+    'bypass-tunnel-reminder': 'true',
   },
 });
 
