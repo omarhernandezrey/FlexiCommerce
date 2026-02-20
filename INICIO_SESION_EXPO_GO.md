@@ -1,12 +1,16 @@
-# 📱 Guía: Iniciar Sesión en FlexiCommerce con Expo Go
+# 📱 Guía: Iniciar Sesión en FlexiCommerce Mobile con Expo Go
+
+**⚠️ NOTA IMPORTANTE**: Esta guía es **SOLO para desarrollo mobile** en Expo Go.  
+**Para web**, usa el frontend en `/frontend` (Next.js) - ver [WEB_SETUP.md](WEB_SETUP.md)
 
 ## ✅ Estado Actual - 20/02/2026
 
-| Plataforma | Comando | Estado | Notas |
-|-----------|---------|--------|-------|
+| Plataforma | Comando | Estado | Detalles |
+|-----------|---------|--------|----------|
 | **Android (Expo Go)** | `npm start -- --tunnel --clear` | ✅ Funcionando | QR visible, Login OK |
 | **Android (Expo Go)** | `npm run dev` | ✅ Funcionando | Localhost, requiere red LAN |
-| **Web (`Press w`)** | `npm start -- --tunnel --clear` | ❌ Roto | Conflicto react-native-web |
+| **Web (Press w en Expo)** | `npm start -- --tunnel --clear` | ❌ No soportado | Usar `/frontend` Next.js en su lugar |
+| **Web (Next.js)** | Ver [WEB_SETUP.md](WEB_SETUP.md) | ✅ Disponible | Arquitectura separada recomendada |
 | **iOS** | No probado | ⏳ Pendiente | Requiere dispositivo/simulator |
 
 ---
@@ -81,7 +85,7 @@ Una vez dentro de Expo, en la terminal puedes presionar:
 |-------|--------|--------|
 | `r` | Recargar app | ✅ Funciona |
 | `a` | Abrir en Android | ✅ Funciona |
-| `w` | Abrir en Web | ❌ Roto (react-native-web issue) |
+| `w` | Abrir en Web | ❌ No soportado (Usar `/frontend` Next.js) |
 | `i` | Abrir en iOS | ⏳ No probado |
 | `j` | Abrir debugger | ✅ Funciona |
 | `m` | Toggle menu | ✅ Funciona |
@@ -163,22 +167,39 @@ npm start -- --tunnel --clear
 **Próximo paso:** Arreglar react-native-web para web
 ---
 
+## ⚠️ Arquitectura Web: Separada por Diseño
+
+### 🏗️ Por qué NO usamos Web en Expo
+
+La app **Expo Go web** requiere `react-native-web`, que **NO soporta React 19.x aún**. 
+
+**Decisión arquitectónica**: Mantener web **separado** en `/frontend` (Next.js)
+
+**Ventajas**:
+- ✅ Firebase, Vercel, serverless functions disponibles
+- ✅ SEO nativo (importante para e-commerce)
+- ✅ React optimizado para web (sin limitaciones mobile)
+- ✅ Build y deploy independiente de mobile
+- ✅ React 19 features disponibles en web también
+
+### 📍 Cómo acceder a Web
+
+**NO hacer**: Presionar `w` en Expo (no está soportado)  
+**HACER**: Usar Next.js en `/frontend`
+
+Ver guía: [WEB_SETUP.md](WEB_SETUP.md)
+
+---
+
 ## ⚠️ Problemas Conocidos
 
-### ❌ Web (Press w) No Funciona
+### ❌ Web en Expo (Press w) - No Soportado
 
 **Causa**: `react-native-web@0.21.2` no es compatible con `React 19.1.0`
 
-**Estado**: React 19.x no tiene soporte oficial en react-native-web aún
+**Solución**: Usar el frontend Next.js en `/frontend` (ver [WEB_SETUP.md](WEB_SETUP.md))
 
-**Workaround**: 
-- Usa **Android** para desarrollo móvil (✅ Funcionando)
-- Usa el **frontend en `/frontend`** para web (Next.js)
-
-**Opciones futuras**:
-1. Downgrade React a 18.2.0 (web funcionaría pero perdería nuevas features)
-2. Mantener frontend separado en Next.js (actual arquitectura)
-3. Esperar a que react-native-web soporte React 19 oficialmente
+**Alternativa**: Si necesitas web en Expo, downgrade React a 18.2.0 (no recomendado)
 
 ---
 
@@ -187,10 +208,11 @@ npm start -- --tunnel --clear
 | Plataforma | Estado | Recomendación |
 |-----------|--------|---------------|
 | **Android Expo Go** | ✅ Funcionando | Usar `npm start -- --tunnel --clear` |
-| **Web Expo** | ❌ No compatible | Usar `/frontend` (Next.js) |
+| **Web (Next.js)** | ✅ Disponible | Usar `/frontend` (ver [WEB_SETUP.md](WEB_SETUP.md)) |
+| **Web (Expo Press w)** | ❌ No soportado | No implementado (arquitectura separada) |
 | **iOS** | ⏳ No probado | Requiere setup en Mac |
 
 ---
 
-**Estado General:** ✅ Android listo para desarrollo | ⚠️ Web usar Next.js | ⏳ iOS pendiente  
-**Confirmado:** 20/02/2026
+**Estado General:** ✅ Android operativo | ✅ Web en Next.js | ⏳ iOS pendiente  
+**Confirmado:** 20/02/2026 | **Arquitectura:** Separada (Mobile + Web independientes)
