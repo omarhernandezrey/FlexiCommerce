@@ -50,7 +50,12 @@ export default function LoginScreen() {
       setAuth(response.user, response.token);
       router.replace('/(app)' as any);
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Error de inicio de sesión';
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        (error.code === 'ECONNREFUSED' || error.message?.includes('Network')
+          ? 'No se pudo conectar al servidor. Verifica tu conexión.'
+          : 'Error de inicio de sesión');
       Alert.alert('Error', message);
     } finally {
       setLoading(false);
