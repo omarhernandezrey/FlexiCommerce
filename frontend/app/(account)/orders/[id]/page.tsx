@@ -4,11 +4,18 @@ import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
+const statusConfig = {
+  processing: { label: 'Procesando', color: 'bg-blue-100 text-blue-800', icon: 'hourglass_top' },
+  shipped: { label: 'Enviado', color: 'bg-amber-100 text-amber-800', icon: 'local_shipping' },
+  delivered: { label: 'Entregado', color: 'bg-green-100 text-green-800', icon: 'check_circle' },
+  cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-gray-800', icon: 'cancel' },
+};
+
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const order = {
     id: params.id,
     date: '17 de Febrero de 2024',
-    status: 'delivered',
+    status: 'delivered' as keyof typeof statusConfig,
     total: 299.0,
     items: [
       {
@@ -34,8 +41,12 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     ],
   };
 
+  const tax = order.total * 0.08;
+  const totalWithTax = order.total + tax;
+  const statusInfo = statusConfig[order.status];
+
   return (
-    <div className="pb-20 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
       {/* Breadcrumbs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-200">
         <Breadcrumbs
@@ -47,37 +58,51 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-primary mb-2">{order.id}</h1>
-            <p className="text-slate-600">{order.date}</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20 md:pb-12">
+        {/* Header Section */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-white rounded-xl border border-slate-200 p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <MaterialIcon name="receipt_long" className="text-primary text-2xl" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-primary mb-1">Orden #{order.id}</h1>
+              <p className="text-slate-600 text-sm">{order.date}</p>
+            </div>
           </div>
-          <span className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold w-fit mt-4 md:mt-0">
-            Entregado
-          </span>
+          <div className={`px-4 py-2 rounded-full font-semibold flex items-center gap-2 ${statusInfo.color}`}>
+            <MaterialIcon name={statusInfo.icon} className="text-lg" />
+            {statusInfo.label}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Items */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
-              <h3 className="text-2xl font-bold text-primary mb-6">Artículos</h3>
-              <div className="space-y-4">
+            {/* Items Section */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
+                <MaterialIcon name="shopping_bag" className="text-primary" />
+                Artículos de la Orden
+              </h3>
+              <div className="divide-y divide-slate-200">
                 {order.items.map((item) => (
-                  <div key={item.id} className="flex gap-4 pb-4 border-b border-slate-200 last:border-b-0">
+                  <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex gap-4 hover:bg-slate-50/50 px-4 -mx-4 transition-colors">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-20 h-20 rounded-lg object-cover"
+                      className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="flex-1">
-                      <h4 className="font-semibold text-primary">{item.name}</h4>
-                      <p className="text-sm text-slate-600">Cantidad: {item.quantity}</p>
-                      <p className="font-bold text-primary mt-2">
-                        ${(item.price * item.quantity).toFixed(2)}
+                      <Link href={`/products/${item.id}`} className="font-semibold text-primary hover:text-primary/80 transition-colors block mb-2">
+                        {item.name}
+                      </Link>
+                      <div className="flex gap-4 text-sm text-slate-600 mb-3">
+                        <span>Cantidad: <span className="font-semibold text-primary">{item.quantity}</span></span>
+                        <span>Precio: <span className="font-semibold text-primary">${item.price.toFixed(2)}</span></span>
+                      </div>
+                      <p className="text-lg font-bold text-primary">
+                        Subtotal: ${(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -85,33 +110,34 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               </div>
             </div>
 
-            {/* Timeline */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
-              <h3 className="text-2xl font-bold text-primary mb-6">Seguimiento</h3>
-              <div className="space-y-4">
+            {/* Timeline Section */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h3 className="text-xl font-bold text-primary mb-8 flex items-center gap-2">
+                <MaterialIcon name="timeline" className="text-primary" />
+                Historial de Seguimiento
+              </h3>
+              <div className="space-y-0">
                 {order.timeline.map((step, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                          step.completed
-                            ? 'bg-success text-white'
-                            : 'bg-slate-200 text-slate-600'
-                        }`}
-                      >
-                        {step.completed ? (
-                          <MaterialIcon name="check" />
-                        ) : (
-                          idx + 1
+                  <div key={idx}>
+                    <div className="flex gap-6">
+                      {/* Timeline dot and line */}
+                      <div className="flex flex-col items-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white relative z-10 ${step.completed ? 'bg-success' : 'bg-slate-300'}`}>
+                          {step.completed ? (
+                            <MaterialIcon name="check" className="text-lg" />
+                          ) : (
+                            <span>{idx + 1}</span>
+                          )}
+                        </div>
+                        {idx < order.timeline.length - 1 && (
+                          <div className={`w-1 h-12 ${step.completed ? 'bg-success' : 'bg-slate-300'}`} />
                         )}
                       </div>
-                      {idx < order.timeline.length - 1 && (
-                        <div className="w-0.5 h-12 bg-slate-200" />
-                      )}
-                    </div>
-                    <div className="pb-6">
-                      <p className="font-semibold text-primary">{step.status}</p>
-                      <p className="text-sm text-slate-600">{step.date}</p>
+                      {/* Content */}
+                      <div className={`pb-8 ${idx === order.timeline.length - 1 ? 'pb-0' : ''}`}>
+                        <p className="font-semibold text-primary text-lg">{step.status}</p>
+                        <p className="text-sm text-slate-600 mt-1">{step.date}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -119,65 +145,114 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             {/* Shipping Info */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
-              <h3 className="text-2xl font-bold text-primary mb-6">Información de Envío</h3>
-              <div className="bg-background-light p-4 rounded-lg">
-                <p className="font-semibold text-primary">{order.shipping.name}</p>
-                <p className="text-slate-600">{order.shipping.address}</p>
-                <p className="text-slate-600">
-                  {order.shipping.city}, {order.shipping.zipCode}
-                </p>
-                <p className="text-slate-600">{order.shipping.country}</p>
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
+                <MaterialIcon name="location_on" className="text-primary" />
+                Dirección de Envío
+              </h3>
+              <div className="bg-primary/5 border border-primary/10 rounded-lg p-5">
+                <div className="space-y-2">
+                  <p className="font-semibold text-primary text-lg">{order.shipping.name}</p>
+                  <div className="text-slate-700 space-y-1">
+                    <p>{order.shipping.address}</p>
+                    <p>{order.shipping.city}, {order.shipping.zipCode}</p>
+                    <p>{order.shipping.country}</p>
+                  </div>
+                </div>
               </div>
+              <button className="w-full mt-4 px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+                <MaterialIcon name="edit" className="text-lg" />
+                Cambiar Dirección
+              </button>
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="lg:col-span-1">
             {/* Order Summary */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
-              <h3 className="text-xl font-bold text-primary mb-6">Resumen de Orden</h3>
+            <div className="bg-white rounded-xl border border-slate-200 p-6 sticky top-24 h-fit">
+              <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
+                <MaterialIcon name="receipt" className="text-primary" />
+                Resumen de Orden
+              </h3>
 
-              <div className="space-y-3 mb-6 pb-6 border-b border-slate-200">
+              <div className="space-y-4 mb-6 pb-6 border-b border-slate-200">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
-                  <span>${order.total.toFixed(2)}</span>
+                  <span className="font-semibold text-primary">${order.total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Envío</span>
-                  <span className="text-success font-semibold">Gratis</span>
+                  <span className="font-semibold text-success">Gratis</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Impuestos</span>
-                  <span>${(order.total * 0.21).toFixed(2)}</span>
+                  <span>Impuestos (8%)</span>
+                  <span className="font-semibold text-primary">${tax.toFixed(2)}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center font-bold text-lg pb-6 border-b border-slate-200">
-                <span className="text-primary">Total</span>
-                <span className="text-2xl text-primary">
-                  ${(order.total * 1.21).toFixed(2)}
-                </span>
+              <div className="mb-6 pb-6 border-b border-slate-200">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-slate-700">Total</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${totalWithTax.toFixed(2)}
+                  </span>
+                </div>
               </div>
 
               <Link
                 href="/products"
-                className="w-full mt-6 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mb-3"
               >
-                <MaterialIcon name="shopping_bag" />
+                <MaterialIcon name="shopping_catalog" className="fill-1" />
                 Continuar Comprando
               </Link>
+
+              <button className="w-full px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+                <MaterialIcon name="file_download" className="text-lg" />
+                Descargar Factura
+              </button>
             </div>
 
-            {/* Support */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h4 className="font-semibold text-blue-900 mb-3">¿Necesitas ayuda?</h4>
-              <p className="text-sm text-blue-800 mb-4">
-                Si tienes preguntas sobre tu orden, contáctanos.
+            {/* Support Widget */}
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6 mt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <MaterialIcon name="headset_mic" className="text-primary text-lg" />
+                </div>
+                <h4 className="font-bold text-primary">Centro de Ayuda</h4>
+              </div>
+              <p className="text-sm text-slate-700 mb-4">
+                ¿Tienes preguntas sobre tu orden? Nuestro equipo de soporte está aquí para ayudarte.
               </p>
-              <button className="w-full px-4 py-2 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors text-sm">
-                Contactar Soporte
-              </button>
+              <div className="space-y-2">
+                <button className="w-full px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:shadow-md transition-all text-sm flex items-center justify-center gap-2">
+                  <MaterialIcon name="chat" className="text-lg" />
+                  Chatear
+                </button>
+                <button className="w-full px-4 py-2.5 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors text-sm flex items-center justify-center gap-2">
+                  <MaterialIcon name="info" className="text-lg" />
+                  Ver FAQ
+                </button>
+              </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <MaterialIcon name="verified" className="text-success text-xl" />
+                  <span className="text-sm text-slate-700"><span className="font-semibold text-primary">Entrega Segura</span><br /><span className="text-xs text-slate-500">Rastreo en tiempo real</span></span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MaterialIcon name="security" className="text-primary text-xl" />
+                  <span className="text-sm text-slate-700"><span className="font-semibold text-primary">Compra Protegida</span><br /><span className="text-xs text-slate-500">Garantía de protección</span></span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MaterialIcon name="loop" className="text-primary text-xl" />
+                  <span className="text-sm text-slate-700"><span className="font-semibold text-primary">F\u00e1cil Devolución</span><br /><span className="text-xs text-slate-500">30 días sin preguntas</span></span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

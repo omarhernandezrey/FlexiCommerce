@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { ShippingForm, type ShippingData } from '@/components/checkout/ShippingForm';
@@ -18,7 +17,7 @@ export default function CheckoutPage() {
   const [shippingData, setShippingData] = useState<ShippingData | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
-  
+
   const { items, getTotalPrice } = useCart();
   const { create } = useOrders();
   const { toast } = useToast();
@@ -31,7 +30,8 @@ export default function CheckoutPage() {
   }, [items, router]);
 
   const steps = ['shipping', 'payment', 'review'];
-  const stepLabels = { shipping: 'Envío', payment: 'Pago', review: 'Revisión' };
+  const stepLabels = { shipping: 'Shipping', payment: 'Payment', review: 'Review' };
+  const stepIcons = { shipping: 'local_shipping', payment: 'credit_card', review: 'receipt_long' };
 
   const handleShippingNext = (data: ShippingData) => {
     setShippingData(data);
@@ -61,7 +61,7 @@ export default function CheckoutPage() {
       };
 
       const order = await create(orderData);
-      
+
       toast({
         message: 'Orden creada exitosamente',
         type: 'success',
@@ -80,50 +80,81 @@ export default function CheckoutPage() {
     }
   };
 
+  const subtotal = getTotalPrice();
+  const tax = subtotal * 0.08;
+  const total = subtotal + tax;
+
   return (
     <ProtectedRoute>
-      <div className="pb-20 md:pb-0">
+      <div className="bg-background-light min-h-screen">
         {/* Breadcrumbs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-200">
-          <Breadcrumbs
-            items={[
-              { label: 'Inicio', href: '/' },
-              { label: 'Carrito', href: '/cart' },
-              { label: 'Checkout' },
-            ]}
-          />
+        <div className="bg-white border-b border-primary/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <Breadcrumbs
+              items={[
+                { label: 'Inicio', href: '/' },
+                { label: 'Carrito', href: '/cart' },
+                { label: 'Checkout' },
+              ]}
+            />
+          </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Progress */}
-          <div className="flex justify-between mb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center mb-10">
             {steps.map((step, idx) => (
-              <div key={step} className="flex items-center flex-1">
-                <button
-                  onClick={() => idx <= currentStep && setCurrentStep(idx)}
-                  disabled={idx > currentStep}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
-                    idx <= currentStep
-                      ? 'bg-primary text-white'
-                      : 'bg-slate-200 text-slate-600'
-                  }`}
-                >
-                  {idx + 1}
-                </button>
-                <div className="flex-1 ml-4">
-                  <p className="text-sm font-semibold text-primary">{stepLabels[steps[idx] as keyof typeof stepLabels]}</p>
+              <div key={step} className="flex items-center">
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={() => idx <= currentStep && setCurrentStep(idx)}
+                    disabled={idx > currentStep}
+                    className={`size-12 rounded-full flex items-center justify-center font-bold transition-all ${
+                      idx < currentStep
+                        ? 'bg-green-500 text-white'
+                        : idx === currentStep
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                        : 'bg-primary/10 text-primary/40'
+                    }`}
+                  >
+                    {idx < currentStep ? (
+                      <MaterialIcon name="check" className="text-xl" />
+                    ) : (
+                      <MaterialIcon name={stepIcons[step as keyof typeof stepIcons]} className="text-xl" />
+                    )}
+                  </button>
+                  <span
+                    className={`text-xs font-bold ${
+                      idx <= currentStep ? 'text-primary' : 'text-primary/40'
+                    }`}
+                  >
+                    {stepLabels[step as keyof typeof stepLabels]}
+                  </span>
                 </div>
+                {idx < steps.length - 1 && (
+                  <div
+                    className={`h-0.5 w-24 mx-4 mb-6 rounded-full transition-colors ${
+                      idx < currentStep ? 'bg-green-500' : 'bg-primary/10'
+                    }`}
+                  />
+                )}
               </div>
             ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
-            <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-8">
+            <div className="lg:col-span-2 space-y-4">
               {currentStep === 0 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-primary">Información de Envío</h2>
-                  <ShippingForm 
+                <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
+                  {/* Section Number */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
+                      1
+                    </div>
+                    <h2 className="text-xl font-extrabold text-primary">Shipping Address</h2>
+                  </div>
+                  <ShippingForm
                     onNext={handleShippingNext}
                     initialData={shippingData || undefined}
                   />
@@ -131,100 +162,172 @@ export default function CheckoutPage() {
               )}
 
               {currentStep === 1 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-primary">Método de Pago</h2>
+                <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
+                      2
+                    </div>
+                    <h2 className="text-xl font-extrabold text-primary">Payment Method</h2>
+                  </div>
                   <PaymentForm onNext={handlePaymentNext} />
-                  <div className="pt-4">
+                  <div className="pt-6 mt-6 border-t border-primary/10">
                     <button
                       onClick={() => setCurrentStep(0)}
-                      className="px-6 py-2 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors"
+                      className="flex items-center gap-2 text-primary font-semibold hover:text-primary/70 transition-colors text-sm"
                     >
-                      Atrás
+                      <MaterialIcon name="arrow_back" className="text-base" />
+                      Back to Shipping
                     </button>
                   </div>
                 </div>
               )}
 
               {currentStep === 2 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-primary">Revisión de Orden</h2>
+                <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
+                      3
+                    </div>
+                    <h2 className="text-xl font-extrabold text-primary">Review Order</h2>
+                  </div>
 
                   {shippingData && (
-                    <div className="bg-background-light p-6 rounded-lg">
-                      <p className="text-sm text-slate-600 mb-4">Dirección de Envío</p>
-                      <p className="font-semibold text-primary">{shippingData.firstName} {shippingData.lastName}</p>
-                      <p className="text-sm text-slate-600">{shippingData.street}</p>
-                      <p className="text-sm text-slate-600">{shippingData.city}, {shippingData.zipCode}</p>
-                      <p className="text-xs text-slate-500 mt-2">Email: {shippingData.email}</p>
-                      <p className="text-xs text-slate-500">Teléfono: {shippingData.phone}</p>
+                    <div className="bg-primary/5 p-5 rounded-xl mb-6 border border-primary/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-bold text-primary flex items-center gap-2">
+                          <MaterialIcon name="local_shipping" className="text-base" />
+                          Shipping Address
+                        </p>
+                        <button
+                          onClick={() => setCurrentStep(0)}
+                          className="text-xs text-primary/60 hover:text-primary font-semibold"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                      <p className="font-bold text-primary">{shippingData.firstName} {shippingData.lastName}</p>
+                      <p className="text-sm text-primary/60">{shippingData.street}</p>
+                      <p className="text-sm text-primary/60">{shippingData.city}, {shippingData.zipCode}</p>
                     </div>
                   )}
 
-                  <div className="bg-background-light p-6 rounded-lg">
-                    <p className="text-sm text-slate-600 mb-4">Método de Pago</p>
-                    <p className="font-semibold text-primary capitalize">
-                      {paymentMethod === 'card' && 'Tarjeta de Crédito/Débito'}
+                  <div className="bg-primary/5 p-5 rounded-xl mb-6 border border-primary/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-bold text-primary flex items-center gap-2">
+                        <MaterialIcon name="credit_card" className="text-base" />
+                        Payment Method
+                      </p>
+                      <button
+                        onClick={() => setCurrentStep(1)}
+                        className="text-xs text-primary/60 hover:text-primary font-semibold"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <p className="font-bold text-primary capitalize">
+                      {paymentMethod === 'card' && 'Credit / Debit Card'}
                       {paymentMethod === 'paypal' && 'PayPal'}
-                      {paymentMethod === 'transfer' && 'Transferencia Bancaria'}
+                      {paymentMethod === 'transfer' && 'Bank Transfer'}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="flex gap-4">
                     <button
                       onClick={() => setCurrentStep(1)}
-                      className="px-6 py-2 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors"
+                      className="flex items-center gap-2 text-primary font-semibold hover:text-primary/70 transition-colors text-sm"
                     >
-                      Atrás
+                      <MaterialIcon name="arrow_back" className="text-base" />
+                      Back to Payment
                     </button>
                     <button
                       onClick={handleCreateOrder}
                       disabled={isCreatingOrder}
-                      className="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="ml-auto px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isCreatingOrder && <MaterialIcon name="hourglass_bottom" />}
-                      {isCreatingOrder ? 'Procesando...' : 'Confirmar Orden'}
+                      {isCreatingOrder ? 'Processing...' : 'Complete Purchase'}
                     </button>
                   </div>
                 </div>
               )}
+
+              {/* Trust Badges */}
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { icon: 'lock', label: 'SSL Secure', desc: 'Encrypted checkout' },
+                  { icon: 'assignment_return', label: '30-Day Returns', desc: 'Easy returns' },
+                  { icon: 'local_shipping', label: 'Fast Shipping', desc: '2-3 business days' },
+                ].map((badge) => (
+                  <div
+                    key={badge.label}
+                    className="bg-white rounded-xl border border-primary/10 p-4 flex flex-col items-center text-center gap-2"
+                  >
+                    <MaterialIcon name={badge.icon} className="text-primary text-2xl" />
+                    <p className="text-xs font-bold text-primary">{badge.label}</p>
+                    <p className="text-[10px] text-primary/40">{badge.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg border border-slate-200 p-6 sticky top-24">
-                <h3 className="text-lg font-bold text-primary mb-6">Resumen de Orden</h3>
+              <div className="bg-white rounded-xl border border-primary/10 p-6 sticky top-24">
+                <h3 className="text-lg font-extrabold text-primary mb-6">Order Summary</h3>
 
-                <div className="space-y-4 mb-6 pb-6 border-b border-slate-200 max-h-64 overflow-y-auto">
+                <div className="space-y-4 mb-6 pb-6 border-b border-primary/10 max-h-64 overflow-y-auto">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <div className="w-16 h-16 bg-slate-200 rounded-lg flex-shrink-0 overflow-hidden">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="relative">
+                        <div className="w-16 h-16 bg-primary/5 rounded-lg flex-shrink-0 overflow-hidden">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {item.quantity}
+                        </span>
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-primary">{item.name}</p>
-                        <p className="text-xs text-slate-600">Cantidad: {item.quantity}</p>
-                        <p className="text-sm font-bold text-primary mt-1">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="text-sm font-bold text-primary leading-tight">{item.name}</p>
+                        <p className="text-sm font-extrabold text-primary mt-1">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
 
+                {/* Promo Code */}
+                <div className="flex gap-2 mb-6">
+                  <input
+                    type="text"
+                    placeholder="Promo code"
+                    className="flex-1 px-3 py-2 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <button className="px-4 py-2 border border-primary text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors">
+                    Apply
+                  </button>
+                </div>
+
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between text-primary/60">
                     <span>Subtotal</span>
-                    <span>${getTotalPrice().toFixed(2)}</span>
+                    <span>${subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Envío</span>
-                    <span>Gratis</span>
+                  <div className="flex justify-between text-primary/60">
+                    <span>Shipping</span>
+                    <span className="text-green-600 font-semibold">Free</span>
                   </div>
-                  <div className="flex justify-between font-bold text-primary pt-3 border-t border-slate-200 text-base">
+                  <div className="flex justify-between text-primary/60">
+                    <span>Tax (8%)</span>
+                    <span>${tax.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-extrabold text-primary pt-3 border-t border-primary/10 text-base">
                     <span>Total</span>
-                    <span>${getTotalPrice().toFixed(2)}</span>
+                    <span>${total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

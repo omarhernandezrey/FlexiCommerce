@@ -4,14 +4,46 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
-import { NAV_LINKS, IMAGES } from '@/lib/constants';
+import { IMAGES } from '@/lib/constants';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthAPI } from '@/hooks/useAuthAPI';
 
+const MEGA_MENU_ITEMS = {
+  Electronics: {
+    featured: [
+      { name: 'Smartphones', icon: 'smartphone', count: 245 },
+      { name: 'Laptops', icon: 'laptop', count: 128 },
+      { name: 'Audio Devices', icon: 'headphones', count: 342 },
+      { name: 'Smart Watches', icon: 'watch', count: 89 },
+    ],
+    trending: [
+      'Wireless Earbuds',
+      'USB-C Chargers',
+      'Phone Cases',
+      'Screen Protectors',
+    ],
+  },
+  Fashion: {
+    featured: [
+      { name: 'Mens Clothing', icon: 'checkroom', count: 521 },
+      { name: 'Womens Clothing', icon: 'checkroom', count: 634 },
+      { name: 'Accessories', icon: 'shopping_bag', count: 289 },
+      { name: 'Footwear', icon: 'directions_walk', count: 412 },
+    ],
+    trending: [
+      'Summer Dresses',
+      'Casual Sneakers',
+      'Designer Bags',
+      'Winter Jackets',
+    ],
+  },
+};
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const router = useRouter();
   const { getTotalItems } = useCart();
   const { user } = useAuth();
@@ -46,9 +78,9 @@ export function Header() {
             <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
               <MaterialIcon name="shopping_bag" className="text-2xl" />
             </div>
-            <h1 className="text-xl font-extrabold tracking-tight text-primary uppercase">
+            <span className="text-xl font-extrabold tracking-tight text-primary uppercase">
               Flexi<span className="font-normal">Commerce</span>
-            </h1>
+            </span>
           </Link>
 
           {/* Search Bar */}
@@ -92,9 +124,9 @@ export function Header() {
                 className="flex items-center gap-2 p-1 pl-1 pr-3 hover:bg-primary/5 rounded-full border border-primary/10"
               >
                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                  {user?.name ? (
+                  {user?.firstName ? (
                     <span className="text-sm font-bold text-primary">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user.firstName.charAt(0).toUpperCase()}
                     </span>
                   ) : (
                     <img
@@ -105,7 +137,7 @@ export function Header() {
                   )}
                 </div>
                 <span className="text-sm font-semibold hidden lg:inline">
-                  {user?.name ? user.name.split(' ')[0] : 'Account'}
+                  {user?.firstName ? user.firstName : 'Account'}
                 </span>
               </button>
 
@@ -115,7 +147,7 @@ export function Header() {
                   {user && (
                     <>
                       <div className="px-4 py-3 border-b border-slate-200">
-                        <p className="text-sm font-semibold text-primary">{user.name}</p>
+                        <p className="text-sm font-semibold text-primary">{user.firstName} {user.lastName}</p>
                         <p className="text-xs text-slate-600">{user.email}</p>
                       </div>
                     </>
@@ -161,23 +193,78 @@ export function Header() {
 
         {/* Mega Menu Nav - Desktop */}
         <nav className="hidden lg:flex items-center gap-8 py-3 text-sm font-medium border-t border-primary/5">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.label}
-              href="/products"
-              className="text-primary hover:text-primary/70 flex items-center gap-1"
+          {Object.entries(MEGA_MENU_ITEMS).map(([category, items]) => (
+            <div
+              key={category}
+              className="relative group"
+              onMouseEnter={() => setActiveMegaMenu(category)}
+              onMouseLeave={() => setActiveMegaMenu(null)}
             >
-              {link.label}
-              {link.hasDropdown && (
-                <MaterialIcon name="expand_more" className="text-xs" />
+              <button className="text-primary hover:text-primary/70 flex items-center gap-1 py-2 px-3 rounded-lg hover:bg-primary/5 transition-colors">
+                {category}
+                <MaterialIcon name="expand_more" className="text-xs group-hover:rotate-180 transition-transform" />
+              </button>
+
+              {/* Mega Menu Dropdown */}
+              {activeMegaMenu === category && (
+                <div className="absolute left-0 top-full w-screen max-w-full bg-white border border-slate-200 shadow-2xl z-50 animate-fade-in">
+                  <div className="max-w-7xl mx-auto px-8 py-8">
+                    <div className="grid grid-cols-2 gap-8">
+                      {/* Featured Categories */}
+                      <div>
+                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Featured Categories</h3>
+                        <div className="space-y-2">
+                          {items.featured.map((item) => (
+                            <Link
+                              key={item.name}
+                              href="/products"
+                              className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/5 transition-colors group"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                <MaterialIcon name={item.icon} className="text-base" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-primary group-hover:text-primary/80">{item.name}</p>
+                                <p className="text-xs text-slate-500">{item.count} items</p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Trending Products */}
+                      <div>
+                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Trending Now</h3>
+                        <div className="space-y-2">
+                          {items.trending.map((trend) => (
+                            <Link
+                              key={trend}
+                              href="/products"
+                              className="block p-3 rounded-lg text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors font-medium"
+                            >
+                              {trend}
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Special Banner */}
+                        <div className="mt-4 p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
+                          <p className="text-xs font-bold text-primary mb-2">EXCLUSIVE OFFER</p>
+                          <p className="text-sm font-bold text-primary">Get 20% off on all {category}</p>
+                          <p className="text-xs text-slate-600">Use code: {category.toUpperCase()}20</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
-            </Link>
+            </div>
           ))}
           <div className="h-4 w-px bg-primary/10 mx-2" />
-          <Link href="/products" className="text-primary/60 hover:text-primary font-semibold">
+          <Link href="/products" className="text-primary/60 hover:text-primary font-semibold transition-colors">
             New Arrivals
           </Link>
-          <Link href="/products" className="text-red-600 font-semibold italic">
+          <Link href="/products" className="text-red-600 font-semibold italic hover:text-red-700 transition-colors">
             Clearance Sale
           </Link>
         </nav>
@@ -196,14 +283,14 @@ export function Header() {
                 type="text"
               />
             </div>
-            {NAV_LINKS.map((link) => (
+            {Object.keys(MEGA_MENU_ITEMS).map((category) => (
               <Link
-                key={link.label}
+                key={category}
                 href="/products"
                 className="block py-2 text-primary hover:text-primary/70 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.label}
+                {category}
               </Link>
             ))}
             <Link

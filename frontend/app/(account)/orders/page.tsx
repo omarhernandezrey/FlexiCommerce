@@ -6,6 +6,7 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 export default function OrdersPage() {
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchId, setSearchId] = useState('');
 
   const orders = [
     {
@@ -34,109 +35,192 @@ export default function OrdersPage() {
     },
   ];
 
-  const statusLabels = {
-    pending: 'Pendiente',
-    shipping: 'Enviando',
-    delivered: 'Entregado',
-    cancelled: 'Cancelado',
+  const statusConfig = {
+    pending: { label: 'Processing', color: 'bg-blue-100 text-blue-700' },
+    shipping: { label: 'Shipped', color: 'bg-yellow-100 text-yellow-700' },
+    delivered: { label: 'Delivered', color: 'bg-green-100 text-green-700' },
+    cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600' },
   };
 
-  const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    shipping: 'bg-blue-100 text-blue-800',
-    delivered: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
-  };
-
-  const filteredOrders = filterStatus === 'all' 
-    ? orders 
-    : orders.filter(o => o.status === filterStatus);
+  const filteredOrders = orders.filter((o) => {
+    const matchesStatus = filterStatus === 'all' || o.status === filterStatus;
+    const matchesSearch = searchId === '' || o.id.toLowerCase().includes(searchId.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-primary mb-8">Mis Órdenes</h1>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-primary">Order History</h1>
+          <p className="text-primary/60 text-sm mt-1">{orders.length} orders total</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors">
+          <MaterialIcon name="download" className="text-base" />
+          Export CSV
+        </button>
+      </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {['all', 'pending', 'shipping', 'delivered'].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilterStatus(status)}
-            className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap transition-colors ${
-              filterStatus === status
-                ? 'bg-primary text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {status === 'all' ? 'Todas' : statusLabels[status as keyof typeof statusLabels]}
-          </button>
-        ))}
+      {/* Filters Toolbar */}
+      <div className="bg-white rounded-xl border border-primary/10 p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="relative flex-1">
+            <MaterialIcon
+              name="search"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base"
+            />
+            <input
+              type="text"
+              placeholder="Search by Order ID..."
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              className="w-full pl-9 pr-4 h-10 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          {/* Status Filters */}
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { value: 'all', label: 'All' },
+              { value: 'pending', label: 'Processing' },
+              { value: 'shipping', label: 'Shipped' },
+              { value: 'delivered', label: 'Delivered' },
+              { value: 'cancelled', label: 'Cancelled' },
+            ].map((status) => (
+              <button
+                key={status.value}
+                onClick={() => setFilterStatus(status.value)}
+                className={`px-4 h-10 rounded-lg font-semibold text-sm whitespace-nowrap transition-colors ${
+                  filterStatus === status.value
+                    ? 'bg-primary text-white'
+                    : 'border border-primary/10 text-primary/60 hover:border-primary/30 hover:text-primary'
+                }`}
+              >
+                {status.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Orders List */}
       {filteredOrders.length > 0 ? (
-        <div className="space-y-4">
-          {filteredOrders.map((order) => (
-            <div
-              key={order.id}
-              className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-lg transition-shadow"
-            >
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                {/* Image */}
-                <img
-                  src={order.image}
-                  alt="Order"
-                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                />
+        <div className="space-y-3">
+          {filteredOrders.map((order) => {
+            const status = statusConfig[order.status as keyof typeof statusConfig];
+            return (
+              <div
+                key={order.id}
+                className="bg-white rounded-xl border border-primary/10 p-5 hover:shadow-md transition-shadow"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  {/* Image */}
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/10 flex-shrink-0">
+                    <img
+                      src={order.image}
+                      alt="Order"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {/* Details */}
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-primary">{order.id}</p>
-                      <p className="text-sm text-slate-600">{order.date}</p>
+                  {/* Details */}
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-start gap-2 mb-1">
+                      <p className="font-extrabold text-primary text-sm">{order.id}</p>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${status.color}`}>
+                        {status.label}
+                      </span>
                     </div>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                        statusColors[order.status as keyof typeof statusColors]
-                      }`}
-                    >
-                      {statusLabels[order.status as keyof typeof statusLabels]}
-                    </span>
+                    <p className="text-xs text-primary/40">{order.date}</p>
+                    <p className="text-xs text-primary/60 mt-1">
+                      {order.items} item{order.items !== 1 ? 's' : ''}
+                    </p>
                   </div>
-                  <p className="text-sm text-slate-600 mt-2">
-                    {order.items} artículo{order.items !== 1 ? 's' : ''}
-                  </p>
-                </div>
 
-                {/* Total and Action */}
-                <div className="text-right flex md:flex-col md:items-end justify-between md:justify-center gap-4">
-                  <div>
-                    <p className="text-2xl font-bold text-primary">{order.total}</p>
+                  {/* Total and Action */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3">
+                    <p className="text-xl font-extrabold text-primary">{order.total}</p>
+                    <Link
+                      href={`/orders/${order.id}`}
+                      className="flex items-center gap-2 px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors text-sm whitespace-nowrap"
+                    >
+                      View Details
+                      <MaterialIcon name="arrow_forward" className="text-base" />
+                    </Link>
                   </div>
-                  <Link
-                    href={`/orders/${order.id}`}
-                    className="px-6 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap"
-                  >
-                    Ver Detalles
-                  </Link>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
-        <div className="text-center py-12 bg-white rounded-lg border border-slate-200">
-          <MaterialIcon name="shopping_bag" className="text-slate-300 text-4xl mb-4" />
-          <p className="text-slate-600 mb-4">No hay órdenes que mostrar</p>
+        <div className="text-center py-16 bg-white rounded-xl border border-primary/10">
+          <MaterialIcon name="shopping_bag" className="text-primary/20 text-6xl mb-4" />
+          <p className="text-primary font-bold mb-2">No orders found</p>
+          <p className="text-primary/40 text-sm mb-6">Try adjusting your filters</p>
           <Link
             href="/products"
-            className="text-primary font-semibold hover:underline"
+            className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
           >
-            Ir a productos
+            <MaterialIcon name="storefront" className="text-base" />
+            Start Shopping
           </Link>
         </div>
       )}
+
+      {/* Pagination */}
+      {filteredOrders.length > 0 && (
+        <div className="flex items-center justify-between pt-4">
+          <p className="text-sm text-primary/40">
+            Showing {filteredOrders.length} of {orders.length} orders
+          </p>
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary/60 hover:border-primary/30 hover:text-primary transition-colors">
+              <MaterialIcon name="chevron_left" className="text-base" />
+              Previous
+            </button>
+            {[1, 2, 3].map((page) => (
+              <button
+                key={page}
+                className={`size-9 rounded-lg text-sm font-bold transition-colors ${
+                  page === 1
+                    ? 'bg-primary text-white'
+                    : 'border border-primary/10 text-primary hover:bg-primary/5'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary hover:border-primary/30 transition-colors">
+              Next
+              <MaterialIcon name="chevron_right" className="text-base" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Support Banner */}
+      <div className="bg-primary/5 rounded-xl border border-primary/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center">
+            <MaterialIcon name="support_agent" className="text-primary text-2xl" />
+          </div>
+          <div>
+            <p className="font-extrabold text-primary">Need help with an order?</p>
+            <p className="text-sm text-primary/60">Our support team is available 24/7</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button className="px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors text-sm">
+            Visit Help Center
+          </button>
+          <button className="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm">
+            Chat with Support
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
