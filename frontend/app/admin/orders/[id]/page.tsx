@@ -107,7 +107,7 @@ export default function AdminOrderDetailPage() {
         </button>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Orden #{currentOrder.id.slice(0, 8)}</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-2">Orden #{currentOrder.id.slice(0, 8)}</h1>
           <p className="text-slate-600">
             Creada el {new Date(currentOrder.createdAt || '').toLocaleDateString('es-ES', {
               weekday: 'long',

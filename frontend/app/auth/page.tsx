@@ -169,18 +169,18 @@ export default function AuthPage() {
       </div>
 
       {/* Right Side: Auth Form Section */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 lg:p-24 bg-white">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 sm:p-8 md:p-12 lg:p-24 bg-white pb-24 sm:pb-12 lg:pb-24">
         <div className="w-full max-w-[420px]">
           {/* Mobile Logo */}
-          <div className="flex lg:hidden items-center gap-2 mb-10">
+          <div className="flex lg:hidden items-center gap-2 spacing-header">
             <div className="size-8 bg-primary rounded flex items-center justify-center">
               <MaterialIcon name="shopping_bag" className="text-white text-sm" />
             </div>
             <span className="text-xl font-bold tracking-tight text-primary">FlexiCommerce</span>
           </div>
 
-          <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-black text-primary mb-3">
+          <div className="spacing-section text-center lg:text-left">
+            <h2 className="text-2xl sm:text-3xl font-black text-primary spacing-header">
               {isLogin ? 'Sign In' : 'Create Account'}
             </h2>
             <p className="text-[#5d6a89] font-medium">
@@ -189,7 +189,7 @@ export default function AuthPage() {
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex border-b border-[#eaecf1] mb-8">
+          <div className="flex border-b border-[#eaecf1] spacing-header">
             <button
               onClick={() => handleTabSwitch(true)}
               className={`flex-1 pb-4 text-sm font-bold border-b-2 transition-colors ${
@@ -250,7 +250,7 @@ export default function AuthPage() {
           {/* Auth Form */}
           <form className="space-y-6" onSubmit={handleSubmit}>
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-primary mb-2" htmlFor="firstName">
                     First Name

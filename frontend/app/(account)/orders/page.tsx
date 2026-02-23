@@ -7,6 +7,7 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 export default function OrdersPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchId, setSearchId] = useState('');
+  const [dateRange, setDateRange] = useState('all');
 
   const orders = [
     {
@@ -49,11 +50,11 @@ export default function OrdersPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="spacing-section">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-primary">Order History</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-primary">Order History</h1>
           <p className="text-primary/60 text-sm mt-1">{orders.length} orders total</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors">
@@ -63,21 +64,46 @@ export default function OrdersPage() {
       </div>
 
       {/* Filters Toolbar */}
-      <div className="bg-white rounded-xl border border-primary/10 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
-          <div className="relative flex-1">
-            <MaterialIcon
-              name="search"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base"
-            />
-            <input
-              type="text"
-              placeholder="Search by Order ID..."
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-              className="w-full pl-9 pr-4 h-10 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+      <div className="bg-white rounded-xl border border-primary/10 p-4 spacing-section">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
+            <div className="relative flex-1">
+              <MaterialIcon
+                name="search"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base"
+              />
+              <input
+                type="text"
+                placeholder="Search by Order ID..."
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                className="w-full pl-9 pr-4 h-10 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            {/* Date Range */}
+            <div className="relative">
+              <MaterialIcon
+                name="calendar_today"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base pointer-events-none"
+              />
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="appearance-none pl-9 pr-8 h-10 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white cursor-pointer"
+              >
+                <option value="all">All Time</option>
+                <option value="30d">Last 30 days</option>
+                <option value="3m">Last 3 months</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+              </select>
+              <MaterialIcon
+                name="expand_more"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none text-base"
+              />
+            </div>
           </div>
 
           {/* Status Filters */}
@@ -107,7 +133,7 @@ export default function OrdersPage() {
 
       {/* Orders List */}
       {filteredOrders.length > 0 ? (
-        <div className="space-y-3">
+        <div className="spacing-section">
           {filteredOrders.map((order) => {
             const status = statusConfig[order.status as keyof typeof statusConfig];
             return (
@@ -172,11 +198,11 @@ export default function OrdersPage() {
 
       {/* Pagination */}
       {filteredOrders.length > 0 && (
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4">
           <p className="text-sm text-primary/40">
             Showing {filteredOrders.length} of {orders.length} orders
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary/60 hover:border-primary/30 hover:text-primary transition-colors">
               <MaterialIcon name="chevron_left" className="text-base" />
               Previous

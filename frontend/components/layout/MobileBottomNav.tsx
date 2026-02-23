@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { cn } from '@/lib/cn';
 
@@ -15,12 +16,17 @@ const navItems = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-primary/10 lg:hidden">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = mounted ? pathname === item.href : false;
           return (
             <Link
               key={item.href}
@@ -35,7 +41,7 @@ export function MobileBottomNav() {
                 filled={isActive}
                 className="text-xl"
               />
-              {item.label}
+              <span>{item.label}</span>
             </Link>
           );
         })}

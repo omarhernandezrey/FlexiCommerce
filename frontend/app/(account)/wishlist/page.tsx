@@ -11,7 +11,7 @@ export default function WishlistPage() {
   const { items, loading, removeFromWishlist, clearWishlist } = useWishlist();
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'wishlist' | 'compare'>('wishlist');
+  const [activeTab, setActiveTab] = useState<'wishlist' | 'compare' | 'alerts'>('wishlist');
   const [compareItems, setCompareItems] = useState<string[]>([]);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="spacing-section">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -89,15 +89,15 @@ export default function WishlistPage() {
               onClick={() => setActiveTab('compare')}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
             >
-              <MaterialIcon name="compare" className="text-base" />
-              Compare ({compareItems.length})
+              <MaterialIcon name="compare_arrows" className="text-base" />
+              Compare Selection ({compareItems.length})
             </button>
           )}
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 spacing-header">
         {[
           { label: 'Total Items', value: stats.total, icon: 'favorite' },
           { label: 'Min Price', value: `$${stats.minPrice.toFixed(2)}`, icon: 'arrow_downward' },
@@ -115,98 +115,108 @@ export default function WishlistPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-primary/10">
+      <div className="flex border-b border-primary/10 overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('wishlist')}
-          className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${
+          className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'wishlist'
               ? 'border-primary text-primary'
               : 'border-transparent text-primary/40 hover:text-primary'
           }`}
         >
+          <MaterialIcon name="favorite" className="text-base" />
           Wishlist Items ({items.length})
         </button>
         <button
           onClick={() => setActiveTab('compare')}
-          className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${
+          className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeTab === 'compare'
               ? 'border-primary text-primary'
               : 'border-transparent text-primary/40 hover:text-primary'
           }`}
         >
-          Comparison ({compareItems.length})
+          <MaterialIcon name="grid_view" className="text-base" />
+          Specification Matrix
+        </button>
+        <button
+          onClick={() => setActiveTab('alerts')}
+          className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'alerts'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-primary/40 hover:text-primary'
+          }`}
+        >
+          <MaterialIcon name="history" className="text-base" />
+          Price Alerts
         </button>
       </div>
 
       {/* Wishlist Grid */}
       {activeTab === 'wishlist' && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group bg-white rounded-xl border border-primary/10 overflow-hidden hover:shadow-lg transition-shadow"
+                className="group bg-white rounded-xl border border-primary/5 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col"
               >
                 {/* Image */}
-                <div className="relative bg-primary/5 h-48 overflow-hidden">
+                <div className="relative aspect-square overflow-hidden bg-gray-50">
                   {item.image ? (
                     <img
                       src={item.image}
                       alt={item.productName}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <MaterialIcon name="image_not_supported" className="text-primary/20 text-4xl" />
                     </div>
                   )}
-                  {/* Remove Button */}
+                  {/* Remove/Favorite Button */}
                   <button
                     onClick={() => removeFromWishlist(item.id, item.productName)}
-                    className="absolute top-3 right-3 size-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-red-500 hover:bg-white transition-all shadow-sm"
                   >
-                    <MaterialIcon name="close" className="text-base" />
+                    <MaterialIcon name="favorite" filled className="text-base" />
                   </button>
-                  {/* Compare Checkbox */}
-                  <div className="absolute bottom-3 left-3">
-                    <label className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={compareItems.includes(item.id)}
-                        onChange={() => toggleCompare(item.id)}
-                        className="rounded border-primary/20 text-primary focus:ring-primary/20 size-3"
-                      />
-                      <span className="text-[10px] font-bold text-primary">Compare</span>
-                    </label>
+                  {/* In Stock Badge */}
+                  <div className="absolute bottom-3 left-3 flex gap-2">
+                    <span className="px-2 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded">
+                      In Stock
+                    </span>
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-primary/40 mb-1">
+                <div className="p-5 flex flex-col flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary/40 mb-1">
                     {item.category}
                   </p>
-                  <h3 className="font-bold text-primary mb-2 line-clamp-2 text-sm">
+                  <h3 className="font-bold text-primary text-base line-clamp-1 mb-2">
                     {item.productName}
                   </h3>
-                  <p className="text-xl font-extrabold text-primary mb-4">
+                  <p className="text-lg font-extrabold text-primary mb-4">
                     ${item.price.toFixed(2)}
                   </p>
 
-                  <div className="flex gap-2">
+                  <div className="mt-auto space-y-2">
                     <Link
                       href={`/products/${item.productId}`}
-                      className="flex-1 text-center bg-primary text-white font-bold py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                      className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all"
                     >
-                      View Product
+                      <MaterialIcon name="shopping_cart" className="text-sm" />
+                      Quick Add
                     </Link>
-                    <button
-                      onClick={() => removeFromWishlist(item.id, item.productName)}
-                      className="px-3 py-2 border border-primary/10 text-primary/60 rounded-lg hover:border-red-300 hover:text-red-500 transition-colors"
-                      title="Remove from wishlist"
-                    >
-                      <MaterialIcon name="delete" className="text-base" />
-                    </button>
+                    <label className="flex items-center justify-center gap-2 w-full py-2 border border-primary/10 rounded-lg text-xs font-semibold text-primary/60 cursor-pointer hover:bg-gray-50 transition-all">
+                      <input
+                        type="checkbox"
+                        checked={compareItems.includes(item.id)}
+                        onChange={() => toggleCompare(item.id)}
+                        className="rounded border-primary/20 text-primary focus:ring-primary/20 size-4"
+                      />
+                      Add to Compare
+                    </label>
                   </div>
                 </div>
               </div>
@@ -226,15 +236,15 @@ export default function WishlistPage() {
         </>
       )}
 
-      {/* Comparison Tab */}
+      {/* Specification Matrix Tab */}
       {activeTab === 'compare' && (
         <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
           {compareItems.length === 0 ? (
             <div className="py-16 text-center">
-              <MaterialIcon name="compare" className="text-primary/20 text-5xl mb-4" />
-              <p className="font-bold text-primary mb-2">No items to compare</p>
+              <MaterialIcon name="grid_view" className="text-primary/20 text-5xl mb-4" />
+              <p className="font-bold text-primary mb-2">No items selected for comparison</p>
               <p className="text-primary/60 text-sm mb-6">
-                Select items from your wishlist to compare
+                Select items from your wishlist to compare specifications
               </p>
               <button
                 onClick={() => setActiveTab('wishlist')}
@@ -248,13 +258,13 @@ export default function WishlistPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-primary/10">
-                    <th className="text-left p-4 text-xs font-bold text-primary/40 uppercase tracking-wider w-36">
-                      Feature
+                    <th className="text-left p-4 bg-primary/5 w-40">
+                      <span className="text-xs font-bold text-primary/40 uppercase tracking-wider">Feature</span>
                     </th>
                     {items
                       .filter((item) => compareItems.includes(item.id))
                       .map((item) => (
-                        <th key={item.id} className="p-4 text-center min-w-[160px]">
+                        <th key={item.id} className="p-4 text-center min-w-[180px] bg-primary/5">
                           <div className="flex flex-col items-center gap-2">
                             {item.image && (
                               <img
@@ -272,12 +282,18 @@ export default function WishlistPage() {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Core Performance Group */}
+                  <tr className="bg-primary/5">
+                    <td colSpan={compareItems.length + 1} className="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-primary/60">
+                      Core Info
+                    </td>
+                  </tr>
                   {[
-                    { label: 'Price', key: 'price' as const, format: (v: number | string) => typeof v === 'number' ? `$${v.toFixed(2)}` : v },
+                    { label: 'Price', key: 'price' as const, format: (v: number | string) => typeof v === 'number' ? `$${v.toFixed(2)}` : String(v) },
                     { label: 'Category', key: 'category' as const, format: (v: number | string) => String(v) },
                   ].map((row) => (
-                    <tr key={row.label} className="border-b border-primary/10">
-                      <td className="p-4 text-sm font-bold text-primary/60">{row.label}</td>
+                    <tr key={row.label} className="border-b border-primary/5">
+                      <td className="p-4 text-sm font-bold text-primary/60 bg-primary/[0.02]">{row.label}</td>
                       {items
                         .filter((item) => compareItems.includes(item.id))
                         .map((item) => (
@@ -287,8 +303,27 @@ export default function WishlistPage() {
                         ))}
                     </tr>
                   ))}
+                  {/* Availability Group */}
+                  <tr className="bg-primary/5">
+                    <td colSpan={compareItems.length + 1} className="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-primary/60">
+                      Availability
+                    </td>
+                  </tr>
+                  <tr className="border-b border-primary/5">
+                    <td className="p-4 text-sm font-bold text-primary/60 bg-primary/[0.02]">In Stock</td>
+                    {items
+                      .filter((item) => compareItems.includes(item.id))
+                      .map((item) => (
+                        <td key={item.id} className="p-4 text-center">
+                          <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            Available
+                          </span>
+                        </td>
+                      ))}
+                  </tr>
+                  {/* Buy Now Row */}
                   <tr>
-                    <td className="p-4"></td>
+                    <td className="p-4 bg-primary/[0.02]"></td>
                     {items
                       .filter((item) => compareItems.includes(item.id))
                       .map((item) => (
@@ -306,6 +341,45 @@ export default function WishlistPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Price Alerts Tab */}
+      {activeTab === 'alerts' && (
+        <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
+          <div className="py-16 text-center">
+            <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <MaterialIcon name="notifications" className="text-primary text-4xl" />
+            </div>
+            <h3 className="text-xl font-extrabold text-primary mb-2">Price Alerts</h3>
+            <p className="text-primary/60 text-sm mb-6 max-w-xs mx-auto">
+              Get notified when prices drop on your saved items. Set up alerts for your favorite products.
+            </p>
+            <div className="space-y-3 max-w-sm mx-auto">
+              {items.slice(0, 3).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-4 border border-primary/10 rounded-xl bg-primary/5"
+                >
+                  <div className="flex items-center gap-3">
+                    {item.image && (
+                      <img src={item.image} alt={item.productName} className="size-10 rounded-lg object-cover" />
+                    )}
+                    <div className="text-left">
+                      <p className="text-xs font-bold text-primary line-clamp-1">{item.productName}</p>
+                      <p className="text-sm font-extrabold text-primary">${item.price.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <button className="text-xs font-bold text-primary border border-primary/20 px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors">
+                    Set Alert
+                  </button>
+                </div>
+              ))}
+              {items.length === 0 && (
+                <p className="text-primary/40 text-sm">Add items to your wishlist to set price alerts.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

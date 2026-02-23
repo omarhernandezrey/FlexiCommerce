@@ -16,11 +16,22 @@ const CATEGORY_FILTERS = [
   { name: 'Smart Gadgets', icon: 'developer_mode', count: 450 },
 ];
 
+const COLOR_SWATCHES = [
+  { name: 'Black', bg: 'bg-black' },
+  { name: 'Silver', bg: 'bg-gray-400' },
+  { name: 'Midnight Blue', bg: 'bg-blue-900' },
+  { name: 'Rose Gold', bg: 'bg-pink-200' },
+];
+
+const SCREEN_SIZES = ['13-inch', '14-inch', '15-inch', '16-inch'];
+
 export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('popular');
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minRating, setMinRating] = useState(0);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedScreenSize, setSelectedScreenSize] = useState('');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 9;
@@ -73,7 +84,15 @@ export default function ProductsPage() {
     setPriceRange([0, 500]);
     setSelectedCategories([]);
     setMinRating(0);
+    setSelectedColors([]);
+    setSelectedScreenSize('');
     setCurrentPage(1);
+  };
+
+  const toggleColor = (color: string) => {
+    setSelectedColors((prev) =>
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+    );
   };
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -182,11 +201,54 @@ export default function ProductsPage() {
           ))}
         </div>
       </div>
+
+      {/* Color */}
+      <div>
+        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <MaterialIcon name="palette" className="text-base" />
+          Color
+        </h4>
+        <div className="flex flex-wrap gap-3">
+          {COLOR_SWATCHES.map((color) => (
+            <button
+              key={color.name}
+              title={color.name}
+              onClick={() => toggleColor(color.name)}
+              className={`w-6 h-6 rounded-full border-2 border-white ring-1 transition-all ${color.bg} ${
+                selectedColors.includes(color.name) ? 'ring-primary scale-110' : 'ring-gray-200 hover:scale-105'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Screen Size */}
+      <div>
+        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <MaterialIcon name="straighten" className="text-base" />
+          Screen Size
+        </h4>
+        <div className="grid grid-cols-2 gap-2">
+          {SCREEN_SIZES.map((size) => (
+            <button
+              key={size}
+              onClick={() => setSelectedScreenSize(selectedScreenSize === size ? '' : size)}
+              className={`px-2 py-1.5 border rounded text-xs font-medium transition-all ${
+                selectedScreenSize === size
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-primary/20 text-primary/60 hover:border-primary hover:text-primary'
+              }`}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <div className="spacing-section pb-20 md:pb-0">
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden flex items-center gap-3">
         <button
@@ -224,7 +286,7 @@ export default function ProductsPage() {
         {/* Main Content */}
         <div className="flex-1 min-w-0">
           {/* Toolbar */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between spacing-header">
             <p className="text-sm text-primary/60">
               Showing <span className="font-bold text-primary">{filteredProducts.length}</span> products
             </p>

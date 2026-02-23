@@ -116,7 +116,7 @@ export default function AdminProductFormPage() {
             <MaterialIcon name="arrow_back" />
             Volver
           </button>
-          <h1 className="text-4xl font-bold text-primary mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-2">
             {isEdit ? 'Editar Producto' : 'Nuevo Producto'}
           </h1>
           <p className="text-slate-600">

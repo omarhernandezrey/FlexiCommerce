@@ -23,7 +23,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="spacing-section">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-primary">My Profile</h1>
@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Avatar + Stats */}
-        <div className="space-y-4">
+        <div className="spacing-section">
           {/* Avatar Card */}
           <div className="bg-white rounded-xl border border-primary/10 p-6">
             <div className="relative mb-4 w-fit mx-auto">
@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
             {isEditing ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-primary mb-2">First Name</label>
                     <input
@@ -203,7 +203,7 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-primary mb-2">City</label>
                     <input
@@ -249,7 +249,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
                   { label: 'Full Name', value: formData.name },
                   { label: 'Email', value: formData.email },

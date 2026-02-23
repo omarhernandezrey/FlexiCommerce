@@ -10,12 +10,10 @@ export default function StorefrontLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 container-main py-6 sm:py-8 md:py-12">{children}</main>
       <Footer />
       {/* Mobile bottom navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
-        <MobileBottomNav />
-      </div>
+      <MobileBottomNav />
     </div>
   );
 }

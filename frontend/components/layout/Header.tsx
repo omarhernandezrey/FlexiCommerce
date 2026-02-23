@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { IMAGES } from '@/lib/constants';
@@ -44,11 +44,17 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { getTotalItems } = useCart();
   const { user } = useAuth();
   const { logout } = useAuthAPI();
   const totalItems = getTotalItems();
+
+  // Esperar hidratación del cliente antes de mostrar datos de localStorage
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -61,7 +67,8 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-primary/10 shadow-sm">
+    <>
+      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-primary/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Bar */}
         <div className="flex items-center justify-between h-16 gap-8">
@@ -110,7 +117,7 @@ export function Header() {
               className="p-2 text-primary hover:bg-primary/5 rounded-full relative"
             >
               <MaterialIcon name="shopping_cart" />
-              {totalItems > 0 && (
+              {mounted && totalItems > 0 && (
                 <span className="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {totalItems}
                 </span>
@@ -124,7 +131,7 @@ export function Header() {
                 className="flex items-center gap-2 p-1 pl-1 pr-3 hover:bg-primary/5 rounded-full border border-primary/10"
               >
                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                  {user?.firstName ? (
+                  {mounted && user?.firstName ? (
                     <span className="text-sm font-bold text-primary">
                       {user.firstName.charAt(0).toUpperCase()}
                     </span>
@@ -137,12 +144,12 @@ export function Header() {
                   )}
                 </div>
                 <span className="text-sm font-semibold hidden lg:inline">
-                  {user?.firstName ? user.firstName : 'Account'}
+                  {mounted && user?.firstName ? user.firstName : 'Account'}
                 </span>
               </button>
 
               {/* Dropdown Menu */}
-              {profileMenuOpen && (
+              {profileMenuOpen && mounted && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg border border-slate-200 shadow-lg z-50">
                   {user && (
                     <>
@@ -207,8 +214,8 @@ export function Header() {
 
               {/* Mega Menu Dropdown */}
               {activeMegaMenu === category && (
-                <div className="absolute left-0 top-full w-screen max-w-full bg-white border border-slate-200 shadow-2xl z-50 animate-fade-in">
-                  <div className="max-w-7xl mx-auto px-8 py-8">
+                <div className="absolute left-0 top-full min-w-max bg-white border border-slate-200 shadow-2xl z-50 animate-fade-in">
+                  <div className="px-8 py-8 min-w-96">
                     <div className="grid grid-cols-2 gap-8">
                       {/* Featured Categories */}
                       <div>
@@ -269,47 +276,162 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Mobile Nav */}
-        {mobileMenuOpen && (
-          <nav className="lg:hidden py-4 border-t border-primary/5 space-y-2">
-            {/* Mobile search */}
-            <div className="relative mb-4 md:hidden">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/40">
-                <MaterialIcon name="search" className="text-xl" />
-              </div>
-              <input
-                className="block w-full pl-10 pr-3 py-2 border-none bg-primary/5 rounded-lg focus:ring-2 focus:ring-primary/20 placeholder-primary/40 text-sm"
-                placeholder="Search products..."
-                type="text"
-              />
-            </div>
-            {Object.keys(MEGA_MENU_ITEMS).map((category) => (
-              <Link
-                key={category}
-                href="/products"
-                className="block py-2 text-primary hover:text-primary/70 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {category}
-              </Link>
-            ))}
-            <Link
-              href="/products"
-              className="block py-2 text-primary/60 hover:text-primary font-semibold"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              New Arrivals
-            </Link>
-            <Link
-              href="/products"
-              className="block py-2 text-red-600 font-semibold italic"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Clearance Sale
-            </Link>
-          </nav>
-        )}
       </div>
     </header>
+
+    {/* Mobile Nav Overlay - FUERA DEL HEADER */}
+    {mobileMenuOpen && (
+      <div className="fixed inset-0 z-[999] lg:hidden">
+        {/* Overlay */}
+        <div 
+          className="absolute inset-0 bg-primary/40 backdrop-blur-sm"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        
+        {/* Navigation Drawer */}
+        <div className="relative z-[9999] h-full w-[85%] max-w-sm flex-col bg-white shadow-2xl overflow-y-auto flex">
+          {/* Header Section: Profile */}
+          <div className="flex items-center gap-4 border-b border-primary/5 p-6">
+            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-primary/10">
+              {mounted && user?.firstName ? (
+                <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-lg font-bold text-primary">
+                    {user.firstName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              ) : (
+                <img
+                  alt="User Profile"
+                  src={IMAGES.userAvatar}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            <div className="flex flex-col overflow-hidden flex-1">
+              <h2 className="truncate text-lg font-bold text-primary">
+                {mounted && user?.firstName ? `${user.firstName} ${user.lastName}` : 'Guest'}
+              </h2>
+              <p className="text-xs font-medium text-primary/60">Premium Member</p>
+            </div>
+            <button 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-primary/40 hover:text-primary transition-colors"
+            >
+              <MaterialIcon name="close" className="text-2xl" />
+            </button>
+          </div>
+
+          {/* Search Bar Section */}
+          <div className="px-6 py-4">
+            <label className="relative flex items-center group">
+              <MaterialIcon name="search" className="absolute left-3 text-primary/40 group-focus-within:text-primary transition-colors" />
+              <input 
+                className="w-full rounded-xl border-none bg-primary/5 py-3 pl-11 pr-4 text-sm font-medium text-primary placeholder:text-primary/40 focus:ring-2 focus:ring-primary/20" 
+                placeholder="Search FlexiCommerce" 
+                type="text"
+              />
+            </label>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-4 pb-6">
+            {/* Main Categories */}
+            <div className="mb-6">
+              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Shop Categories</h3>
+              <div className="flex flex-col gap-1">
+                {Object.entries(MEGA_MENU_ITEMS).map(([category, items]) => (
+                  <details key={category} className="group">
+                    <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-primary/5 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <MaterialIcon name={category === 'Electronics' ? 'devices' : 'checkroom'} className="text-primary/70" />
+                        <span className="text-sm font-semibold text-primary">{category}</span>
+                      </div>
+                      <MaterialIcon name="expand_more" className="text-sm text-primary/30 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="ml-12 mt-1 flex flex-col gap-2 border-l border-primary/10 pl-4 py-2">
+                      {items.featured.map((item) => (
+                        <Link
+                          key={item.name}
+                          href="/products"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="text-sm text-primary/60 hover:text-primary transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Access Section */}
+            <div className="mb-6 pt-4 border-t border-primary/5">
+              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">My Activity</h3>
+              <div className="flex flex-col gap-1">
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 transition-colors"
+                >
+                  <MaterialIcon name="favorite" className="text-primary/70" />
+                  <span className="text-sm font-semibold">Wishlist</span>
+                  <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold">12</span>
+                </Link>
+                <Link
+                  href="/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 transition-colors"
+                >
+                  <MaterialIcon name="shopping_bag" className="text-primary/70" />
+                  <span className="text-sm font-semibold">Orders</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Account & Support */}
+            <div className="pt-4 border-t border-primary/5">
+              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Support & Settings</h3>
+              <div className="flex flex-col gap-1">
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 transition-colors"
+                >
+                  <MaterialIcon name="settings" className="text-primary/70" />
+                  <span className="text-sm font-semibold">Settings</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section: Language & Currency */}
+          <div className="mt-auto border-t border-primary/5 bg-slate-50 p-4">
+            <div className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5">
+                  <MaterialIcon name="language" className="text-sm text-primary/70" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-primary">EN / USD</span>
+                  <span className="text-[10px] text-primary/40">English · United States</span>
+                </div>
+              </div>
+              <MaterialIcon name="chevron_right" className="text-primary/40" />
+            </div>
+            <div className="mt-4 flex items-center justify-between px-2">
+              <p className="text-[10px] text-primary/30">© 2024 FlexiCommerce</p>
+              <button 
+                onClick={handleLogout}
+                className="text-[10px] font-bold text-primary/40 hover:text-primary transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

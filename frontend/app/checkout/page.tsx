@@ -89,7 +89,7 @@ export default function CheckoutPage() {
       <div className="bg-background-light min-h-screen">
         {/* Breadcrumbs */}
         <div className="bg-white border-b border-primary/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="container-main py-4">
             <Breadcrumbs
               items={[
                 { label: 'Inicio', href: '/' },
@@ -100,16 +100,16 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container-main py-6 sm:py-8 md:py-12">
           {/* Progress Steps */}
-          <div className="flex items-center justify-center mb-10">
+          <div className="flex items-center justify-center spacing-header">
             {steps.map((step, idx) => (
               <div key={step} className="flex items-center">
                 <div className="flex flex-col items-center gap-2">
                   <button
                     onClick={() => idx <= currentStep && setCurrentStep(idx)}
                     disabled={idx > currentStep}
-                    className={`size-12 rounded-full flex items-center justify-center font-bold transition-all ${
+                    className={`size-10 sm:size-12 rounded-full flex items-center justify-center font-bold transition-all ${
                       idx < currentStep
                         ? 'bg-green-500 text-white'
                         : idx === currentStep
@@ -133,7 +133,7 @@ export default function CheckoutPage() {
                 </div>
                 {idx < steps.length - 1 && (
                   <div
-                    className={`h-0.5 w-24 mx-4 mb-6 rounded-full transition-colors ${
+                    className={`h-0.5 w-8 sm:w-24 mx-2 sm:mx-4 mb-6 rounded-full transition-colors ${
                       idx < currentStep ? 'bg-green-500' : 'bg-primary/10'
                     }`}
                   />
@@ -144,11 +144,11 @@ export default function CheckoutPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 spacing-section">
               {currentStep === 0 && (
                 <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
                   {/* Section Number */}
-                  <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-4 spacing-header">
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       1
                     </div>
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
 
               {currentStep === 1 && (
                 <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
-                  <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-4 spacing-header">
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       2
                     </div>
@@ -184,7 +184,7 @@ export default function CheckoutPage() {
 
               {currentStep === 2 && (
                 <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
-                  <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-4 spacing-header">
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       3
                     </div>
@@ -192,7 +192,7 @@ export default function CheckoutPage() {
                   </div>
 
                   {shippingData && (
-                    <div className="bg-primary/5 p-5 rounded-xl mb-6 border border-primary/10">
+                    <div className="bg-primary/5 p-5 rounded-xl spacing-header border border-primary/10">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-sm font-bold text-primary flex items-center gap-2">
                           <MaterialIcon name="local_shipping" className="text-base" />
@@ -211,7 +211,7 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  <div className="bg-primary/5 p-5 rounded-xl mb-6 border border-primary/10">
+                  <div className="bg-primary/5 p-5 rounded-xl spacing-header border border-primary/10">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-bold text-primary flex items-center gap-2">
                         <MaterialIcon name="credit_card" className="text-base" />
@@ -231,7 +231,7 @@ export default function CheckoutPage() {
                     </p>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       onClick={() => setCurrentStep(1)}
                       className="flex items-center gap-2 text-primary font-semibold hover:text-primary/70 transition-colors text-sm"
@@ -242,7 +242,7 @@ export default function CheckoutPage() {
                     <button
                       onClick={handleCreateOrder}
                       disabled={isCreatingOrder}
-                      className="ml-auto px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="sm:ml-auto px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isCreatingOrder && <MaterialIcon name="hourglass_bottom" />}
                       {isCreatingOrder ? 'Processing...' : 'Complete Purchase'}
@@ -252,7 +252,7 @@ export default function CheckoutPage() {
               )}
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { icon: 'lock', label: 'SSL Secure', desc: 'Encrypted checkout' },
                   { icon: 'assignment_return', label: '30-Day Returns', desc: 'Easy returns' },
@@ -273,9 +273,9 @@ export default function CheckoutPage() {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl border border-primary/10 p-6 sticky top-24">
-                <h3 className="text-lg font-extrabold text-primary mb-6">Order Summary</h3>
+                <h3 className="text-lg font-extrabold text-primary spacing-header">Order Summary</h3>
 
-                <div className="space-y-4 mb-6 pb-6 border-b border-primary/10 max-h-64 overflow-y-auto">
+                <div className="space-y-4 spacing-header pb-6 border-b border-primary/10 max-h-64 overflow-y-auto">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="relative">
@@ -301,7 +301,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Promo Code */}
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-2 spacing-header">
                   <input
                     type="text"
                     placeholder="Promo code"

@@ -39,16 +39,16 @@ export default function AnalyticsPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-8 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <MaterialIcon name="analytics" className="text-primary text-xl" />
               </div>
-              <h1 className="text-4xl font-bold text-primary">Analytics & Reportes</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold text-primary">Analytics & Reportes</h1>
             </div>
-            <p className="text-slate-600 ml-15">Visualiza métricas de ventas y desempeño de tu tienda</p>
+            <p className="text-slate-600 ml-0 sm:ml-15">Visualiza métricas de ventas y desempeño de tu tienda</p>
           </div>
 
           {/* Date Range & Export */}

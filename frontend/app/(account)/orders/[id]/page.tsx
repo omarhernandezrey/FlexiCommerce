@@ -66,7 +66,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               <MaterialIcon name="receipt_long" className="text-primary text-2xl" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-primary mb-1">Orden #{order.id}</h1>
+              <h1 className="text-xl sm:text-3xl font-bold text-primary mb-1">Orden #{order.id}</h1>
               <p className="text-slate-600 text-sm">{order.date}</p>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
+                      className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="flex-1">
                       <Link href={`/products/${item.id}`} className="font-semibold text-primary hover:text-primary/80 transition-colors block mb-2">

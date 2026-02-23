@@ -40,16 +40,16 @@ export default function AdminOrdersPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-8 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <MaterialIcon name="shopping_bag" className="text-primary text-xl" />
               </div>
-              <h1 className="text-4xl font-bold text-primary">Gestión de Órdenes</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold text-primary">Gestión de Órdenes</h1>
             </div>
-            <p className="text-slate-600 ml-15">Administra y controla todas las órdenes de tu tienda</p>
+            <p className="text-slate-600 ml-0 sm:ml-15">Administra y controla todas las órdenes de tu tienda</p>
           </div>
 
           {/* Stats Cards */}
@@ -58,7 +58,7 @@ export default function AdminOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">Total de Órdenes</p>
-                  <p className="text-4xl font-bold text-primary mt-2">{orders.length}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-primary mt-2">{orders.length}</p>
                 </div>
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center">
                   <MaterialIcon name="receipt_long" className="text-primary text-2xl" />
@@ -69,7 +69,7 @@ export default function AdminOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">Pendientes</p>
-                  <p className="text-4xl font-bold text-warning mt-2">{pendingCount}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-warning mt-2">{pendingCount}</p>
                 </div>
                 <div className="w-14 h-14 rounded-lg bg-warning/10 flex items-center justify-center">
                   <MaterialIcon name="hourglass_top" className="text-warning text-2xl" />
@@ -80,7 +80,7 @@ export default function AdminOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">Entregadas</p>
-                  <p className="text-4xl font-bold text-success mt-2">{deliveredCount}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-success mt-2">{deliveredCount}</p>
                 </div>
                 <div className="w-14 h-14 rounded-lg bg-success/10 flex items-center justify-center">
                   <MaterialIcon name="done_all" className="text-success text-2xl" />

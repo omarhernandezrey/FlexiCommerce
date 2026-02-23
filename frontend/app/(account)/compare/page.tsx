@@ -1,188 +1,213 @@
 'use client';
 
+import { useState } from 'react';
 import { useCompare } from '@/hooks/useCompare';
+import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import Link from 'next/link';
 
+const SPEC_GROUPS = [
+  {
+    label: 'General Info',
+    rows: [
+      { label: 'Price', key: 'price', format: (v: unknown) => typeof v === 'number' ? `$${v.toFixed(2)}` : '—' },
+      { label: 'Category', key: 'category', format: (v: unknown) => String(v ?? '—') },
+      { label: 'Rating', key: 'rating', format: (v: unknown) => typeof v === 'number' ? `${v} / 5` : '—' },
+    ],
+  },
+  {
+    label: 'Availability',
+    rows: [
+      { label: 'In Stock', key: 'stock', format: (v: unknown) => typeof v === 'number' && v > 0 ? 'Yes' : 'No' },
+    ],
+  },
+];
+
 export default function ComparePage() {
-  const { products, removeFromCompare, clearCompare, getSpecifications } = useCompare();
+  const { products, removeFromCompare, clearCompare } = useCompare();
+  const [showOnlyDiff, setShowOnlyDiff] = useState(false);
 
   if (products.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-12 text-center">
-        <div className="mb-6">
-          <div className="text-4xl">📊</div>
+      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-primary/10">
+        <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <MaterialIcon name="compare_arrows" className="text-primary text-4xl" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Nada que comparar</h2>
-        <p className="text-gray-500 mb-6">
-          Selecciona productos para compararlos lado a lado
+        <h2 className="text-xl font-extrabold text-primary mb-2">Nothing to Compare</h2>
+        <p className="text-primary/60 text-sm mb-8 text-center max-w-xs">
+          Add products to comparison from the wishlist or product pages
         </p>
-        <Link href="/products" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-          Explorar Productos
+        <Link
+          href="/products"
+          className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          <MaterialIcon name="storefront" className="text-base" />
+          Explore Products
         </Link>
       </div>
     );
   }
 
-  const specifications = getSpecifications();
-
   return (
-    <div>
+    <div className="spacing-section">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Comparación de Productos</h1>
-          <p className="text-gray-600">{products.length} de 4 productos</p>
+          <h1 className="text-2xl font-extrabold text-primary">Product Comparison</h1>
+          <p className="text-primary/60 text-sm mt-1">{products.length} of 4 products selected</p>
         </div>
-        <button
-          onClick={() => clearCompare()}
-          className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700"
-        >
-          Limpiar Comparación
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowOnlyDiff(!showOnlyDiff)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-bold transition-colors ${
+              showOnlyDiff
+                ? 'bg-primary text-white border-primary'
+                : 'border-primary/10 text-primary hover:bg-primary/5'
+            }`}
+          >
+            <MaterialIcon name="compare" className="text-base" />
+            {showOnlyDiff ? 'Show All Specs' : 'Only Differences'}
+          </button>
+          <button
+            onClick={() => clearCompare()}
+            className="flex items-center gap-2 px-4 py-2 border-2 border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors text-sm"
+          >
+            <MaterialIcon name="delete_sweep" className="text-base" />
+            Clear All
+          </button>
+        </div>
       </div>
 
       {/* Comparison Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table className="w-full">
-          {/* Header with Product Images */}
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left p-4 bg-gray-50 font-semibold text-gray-900 min-w-200px">
-                Especificaciones
-              </th>
-              {products.map((product, idx) => (
-                <th key={idx} className="text-center p-4 bg-gray-50 min-w-200px">
-                  <div className="relative">
-                    <div className="mb-4 h-40 overflow-hidden rounded-lg bg-gray-100">
-                      {product.image ? (
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-gray-400">No image</span>
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeFromCompare(product.id, product.name)}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-sm mt-2 truncate">
-                    {product.name}
-                  </h3>
+      <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            {/* Header: Product Cards */}
+            <thead>
+              <tr className="border-b border-primary/10">
+                <th className="text-left p-4 bg-primary/5 w-40 shrink-0">
+                  <span className="text-xs font-bold text-primary/40 uppercase tracking-wider">Specifications</span>
                 </th>
-              ))}
-              {/* Empty slots for less than 4 products */}
-              {products.length < 4 &&
-                [...Array(4 - products.length)].map((_, idx) => (
-                  <th key={`empty-${idx}`} className="text-center p-4 bg-gray-50 min-w-200px">
-                    <div className="h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                      Vacío
+                {products.map((product) => (
+                  <th key={product.compareId} className="p-4 text-center min-w-[200px] bg-primary/5">
+                    <div className="relative flex flex-col items-center gap-3">
+                      <button
+                        onClick={() => removeFromCompare(product.compareId, product.name)}
+                        className="absolute -top-1 -right-1 size-7 rounded-full bg-white border border-primary/10 flex items-center justify-center text-primary/40 hover:text-red-500 hover:border-red-200 transition-colors shadow-sm"
+                      >
+                        <MaterialIcon name="close" className="text-sm" />
+                      </button>
+                      <div className="size-20 rounded-xl overflow-hidden bg-primary/5 border border-primary/10">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <MaterialIcon name="image_not_supported" className="text-primary/20 text-2xl" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/40 mb-1">
+                          {product.category}
+                        </p>
+                        <h3 className="font-bold text-primary text-sm line-clamp-2 leading-tight">
+                          {product.name}
+                        </h3>
+                        <p className="text-lg font-extrabold text-primary mt-1">
+                          ${product.price.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                   </th>
                 ))}
-            </tr>
-          </thead>
+                {/* Empty slots */}
+                {products.length < 4 &&
+                  Array.from({ length: 4 - products.length }).map((_, i) => (
+                    <th key={`empty-${i}`} className="p-4 text-center min-w-[200px] bg-primary/5">
+                      <Link
+                        href="/products"
+                        className="flex flex-col items-center gap-3 text-primary/30 hover:text-primary/60 transition-colors"
+                      >
+                        <div className="size-20 rounded-xl border-2 border-dashed border-primary/20 flex items-center justify-center">
+                          <MaterialIcon name="add" className="text-2xl" />
+                        </div>
+                        <span className="text-xs font-bold">Add Product</span>
+                      </Link>
+                    </th>
+                  ))}
+              </tr>
+            </thead>
 
-          {/* Specifications Rows */}
-          <tbody>
-            {/* Price Row */}
-            <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-4 font-semibold text-gray-900 bg-gray-50">Precio</td>
-              {products.map((product, idx) => (
-                <td key={idx} className="p-4 text-center">
-                  <span className="text-2xl font-bold text-blue-600">
-                    ${product.price.toFixed(2)}
-                  </span>
-                </td>
+            {/* Specification Rows */}
+            <tbody>
+              {SPEC_GROUPS.map((group) => (
+                <>
+                  {/* Group Header */}
+                  <tr key={`group-${group.label}`} className="bg-primary/5">
+                    <td
+                      colSpan={5}
+                      className="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-primary/60"
+                    >
+                      {group.label}
+                    </td>
+                  </tr>
+                  {/* Group Rows */}
+                  {group.rows.map((row) => {
+                    const values = products.map((p) => row.format(p[row.key as keyof typeof p]));
+                    const allSame = values.every((v) => v === values[0]);
+                    if (showOnlyDiff && allSame) return null;
+
+                    return (
+                      <tr key={row.label} className="border-b border-primary/5 hover:bg-primary/[0.02]">
+                        <td className="p-4 text-sm font-bold text-primary/60 bg-primary/[0.02]">
+                          {row.label}
+                        </td>
+                        {products.map((product) => {
+                          const val = row.format(product[row.key as keyof typeof product]);
+                          return (
+                            <td key={product.compareId} className="p-4 text-center text-sm font-bold text-primary">
+                              {val}
+                            </td>
+                          );
+                        })}
+                        {products.length < 4 &&
+                          Array.from({ length: 4 - products.length }).map((_, i) => (
+                            <td key={`empty-val-${i}`} className="p-4 text-center text-primary/20">—</td>
+                          ))}
+                      </tr>
+                    );
+                  })}
+                </>
               ))}
-              {products.length < 4 &&
-                [...Array(4 - products.length)].map((_, idx) => (
-                  <td key={`empty-price-${idx}`} className="p-4 text-center">
-                    —
+
+              {/* Buy Now Row */}
+              <tr>
+                <td className="p-4 bg-primary/[0.02]"></td>
+                {products.map((product) => (
+                  <td key={product.compareId} className="p-4 text-center">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="inline-block w-full bg-primary text-white font-bold py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                    >
+                      Buy Now
+                    </Link>
                   </td>
                 ))}
-            </tr>
-
-            {/* Category Row */}
-            <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-4 font-semibold text-gray-900 bg-gray-50">Categoría</td>
-              {products.map((product, idx) => (
-                <td key={idx} className="p-4 text-center text-gray-700">
-                  {product.category}
-                </td>
-              ))}
-              {products.length < 4 &&
-                [...Array(4 - products.length)].map((_, idx) => (
-                  <td key={`empty-category-${idx}`} className="p-4 text-center">
-                    —
-                  </td>
-                ))}
-            </tr>
-
-            {/* Stock Row */}
-            <tr className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="p-4 font-semibold text-gray-900 bg-gray-50">Disponibilidad</td>
-              {products.map((product, idx) => (
-                <td key={idx} className="p-4 text-center">
-                  <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                    En Stock
-                  </span>
-                </td>
-              ))}
-              {products.length < 4 &&
-                [...Array(4 - products.length)].map((_, idx) => (
-                  <td key={`empty-stock-${idx}`} className="p-4 text-center">
-                    —
-                  </td>
-                ))}
-            </tr>
-
-            {/* Description Row */}
-            <tr className="hover:bg-gray-50">
-              <td className="p-4 font-semibold text-gray-900 bg-gray-50">Descripción</td>
-              {products.map((product, idx) => (
-                <td key={idx} className="p-4 text-center text-sm text-gray-600">
-                  {product.description || 'N/A'}
-                </td>
-              ))}
-              {products.length < 4 &&
-                [...Array(4 - products.length)].map((_, idx) => (
-                  <td key={`empty-desc-${idx}`} className="p-4 text-center">
-                    —
-                  </td>
-                ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* View Details Buttons */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {products.map((product, idx) => (
-          <Link
-            key={idx}
-            href={`/products/${product.id}`}
-            className="text-center bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-semibold"
-          >
-            Ver Detalles
-          </Link>
-        ))}
-        {products.length < 4 &&
-          [...Array(4 - products.length)].map((_, idx) => (
-            <div
-              key={`empty-btn-${idx}`}
-              className="text-center bg-gray-200 text-gray-500 px-4 py-3 rounded-lg cursor-not-allowed"
-            >
-              Vacío
-            </div>
-          ))}
+                {products.length < 4 &&
+                  Array.from({ length: 4 - products.length }).map((_, i) => (
+                    <td key={`empty-buy-${i}`} className="p-4 text-center">
+                      <div className="w-full py-2.5 px-4 rounded-lg border-2 border-dashed border-primary/10 text-primary/20 text-sm font-bold text-center">
+                        —
+                      </div>
+                    </td>
+                  ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

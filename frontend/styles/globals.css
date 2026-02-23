@@ -2,10 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -14,6 +19,66 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ====== Responsive Container System ====== */
+@layer components {
+  /* Main content wrapper */
+  .container-main {
+    @apply max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8;
+  }
+
+  /* Section wrapper */
+  .section-wrapper {
+    @apply space-y-8 sm:space-y-12 md:space-y-16;
+  }
+
+  /* Section padding */
+  .section-py {
+    @apply py-6 sm:py-8 md:py-12;
+  }
+
+  /* Vertical spacing between elements */
+  .spacing-section {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  /* Header spacing */
+  .spacing-header {
+    @apply mb-4 sm:mb-6;
+  }
+
+  /* Grid gap standard */
+  .grid-gap-standard {
+    @apply gap-2 sm:gap-3 md:gap-4 lg:gap-6;
+  }
+
+  /* Card padding standard */
+  .card-padding {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+}
+
+/* ====== Material Symbols Font ====== */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-flex;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-outlined.fill-1 {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* ====== Scrollbar Styles ====== */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -23,6 +88,105 @@ body {
   scrollbar-width: none;
 }
 
-.material-symbols-outlined.fill-1 {
-  font-variation-settings: 'FILL' 1;
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 41, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 41, 0.4);
+}
+
+/* ====== Link Styles ====== */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ====== Form Elements ====== */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* ====== Button Reset ====== */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* ====== Image Optimization ====== */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ====== Animations ====== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ====== Transitions ====== */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* ====== Responsive Typography ====== */
+@media (max-width: 640px) {
+  html {
+    font-size: 16px;
+  }
 }

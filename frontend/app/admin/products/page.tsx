@@ -36,17 +36,17 @@ export default function AdminProductsPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-8 max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="mb-8 flex justify-between items-center">
+          <div className="mb-8 flex flex-wrap justify-between items-start gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <MaterialIcon name="inventory_2" className="text-primary text-xl" />
                 </div>
-                <h1 className="text-4xl font-bold text-primary">Gestión de Productos</h1>
+                <h1 className="text-2xl sm:text-4xl font-bold text-primary">Gestión de Productos</h1>
               </div>
-              <p className="text-slate-600 ml-15">Administra el catálogo y stock de tu tienda</p>
+              <p className="text-slate-600 ml-0 sm:ml-15">Administra el catálogo y stock de tu tienda</p>
             </div>
             <Link
               href="/admin/products/new"
@@ -63,7 +63,7 @@ export default function AdminProductsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">Total de Productos</p>
-                  <p className="text-4xl font-bold text-primary mt-2">{products.length}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-primary mt-2">{products.length}</p>
                 </div>
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center">
                   <MaterialIcon name="shopping_bag" className="text-primary text-2xl" />
@@ -74,7 +74,7 @@ export default function AdminProductsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">En Stock</p>
-                  <p className="text-4xl font-bold text-success mt-2">
+                  <p className="text-3xl sm:text-4xl font-bold text-success mt-2">
                     {products.filter((p) => p.stock > 0).length}
                   </p>
                 </div>
@@ -87,7 +87,7 @@ export default function AdminProductsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">Sin Stock</p>
-                  <p className="text-4xl font-bold text-error mt-2">
+                  <p className="text-3xl sm:text-4xl font-bold text-error mt-2">
                     {products.filter((p) => p.stock === 0).length}
                   </p>
                 </div>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlexiCommerce - Mobile Navigation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f1729",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14171e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(15, 23, 41, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<!-- Wrapper for the entire layout to simulate the drawer being open -->
+<div class="relative flex h-screen w-full overflow-hidden bg-slate-200">
+<!-- Overlay -->
+<div class="absolute inset-0 z-40 bg-primary/40 backdrop-blur-sm"></div>
+<!-- Navigation Drawer -->
+<div class="relative z-50 flex h-full w-[85%] max-w-sm flex-col bg-white dark:bg-slate-900 shadow-2xl">
+<!-- Header Section: Profile -->
+<div class="flex items-center gap-4 border-b border-primary/5 p-6 dark:border-slate-800">
+<div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-primary/10">
+<img alt="User Profile" data-alt="Professional headshot of a smiling man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCugbCiHKcEJKn15YJSnxXML_-5inJ7TLk_5Xr77WEy7vkCoYl3u4-0BEijXcj0c45UMeCH3sxx9pZbaUIqGkoy5qadI5b8xshh9uhf8Cvv2hXrAmQs-fF00cIG7OREsvC6yPf9h0mdhCr1Rb8di2PHpJ-hqzSwl9pYEP0DMMcvtWRfOjahfV6kSdQzqb0IsNegmdeI8LVtmPhLb4Kgxau1RYQr7tCAEIfZSJDW_MsPrcYJN6SZO6VkQIfay18ZF7G-TCp0bx63g-Y"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<h2 class="truncate text-lg font-bold text-primary dark:text-slate-100">Alex Johnson</h2>
+<p class="text-xs font-medium text-primary/60 dark:text-slate-400">Premium Member</p>
+</div>
+<button class="ml-auto text-primary/40 hover:text-primary dark:text-slate-500">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Search Bar Section -->
+<div class="px-6 py-4">
+<label class="relative flex items-center group">
+<span class="material-symbols-outlined absolute left-3 text-primary/40 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full rounded-xl border-none bg-primary/5 py-3 pl-11 pr-4 text-sm font-medium text-primary placeholder:text-primary/40 focus:ring-2 focus:ring-primary/20 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500" placeholder="Search FlexiCommerce" type="text"/>
+</label>
+</div>
+<!-- Scrollable Content -->
+<div class="custom-scrollbar flex-1 overflow-y-auto px-4 pb-6">
+<!-- Main Categories -->
+<div class="mb-6">
+<h3 class="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40 dark:text-slate-500">Shop Categories</h3>
+<div class="flex flex-col gap-1">
+<!-- Expandable Category: Electronics -->
+<details class="group" open="">
+<summary class="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-primary/5 dark:hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">devices</span>
+<span class="text-sm font-semibold text-primary dark:text-slate-200">Electronics</span>
+</div>
+<span class="material-symbols-outlined text-sm text-primary/30 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="ml-12 mt-1 flex flex-col gap-2 border-l border-primary/10 pl-4 py-2">
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Mobile Phones</a>
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Laptops &amp; PCs</a>
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Audio &amp; Vision</a>
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Wearables</a>
+</div>
+</details>
+<!-- Expandable Category: Apparel -->
+<details class="group">
+<summary class="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-primary/5 dark:hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">apparel</span>
+<span class="text-sm font-semibold text-primary dark:text-slate-200">Apparel</span>
+</div>
+<span class="material-symbols-outlined text-sm text-primary/30 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="ml-12 mt-1 flex flex-col gap-2 border-l border-primary/10 pl-4 py-2">
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Men's Fashion</a>
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Women's Fashion</a>
+</div>
+</details>
+<!-- Expandable Category: Home & Living -->
+<details class="group">
+<summary class="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-primary/5 dark:hover:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">home</span>
+<span class="text-sm font-semibold text-primary dark:text-slate-200">Home &amp; Living</span>
+</div>
+<span class="material-symbols-outlined text-sm text-primary/30 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="ml-12 mt-1 flex flex-col gap-2 border-l border-primary/10 pl-4 py-2">
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Furniture</a>
+<a class="text-sm text-primary/60 hover:text-primary dark:text-slate-400 dark:hover:text-slate-200" href="#">Decor</a>
+</div>
+</details>
+</div>
+</div>
+<!-- Quick Access Section -->
+<div class="mb-6 pt-4 border-t border-primary/5 dark:border-slate-800">
+<h3 class="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40 dark:text-slate-500">My Activity</h3>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">favorite</span>
+<span class="text-sm font-semibold">Wishlist</span>
+<span class="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold dark:bg-primary/30">12</span>
+</a>
+<a class="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">shopping_bag</span>
+<span class="text-sm font-semibold">Orders</span>
+</a>
+<a class="flex items-center gap-3 rounded-xl bg-primary/5 px-3 py-3 text-primary dark:text-slate-100 dark:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">local_shipping</span>
+<span class="text-sm font-semibold">Track Shipping</span>
+<div class="ml-auto h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+</a>
+</div>
+</div>
+<!-- Account & Support -->
+<div class="pt-4 border-t border-primary/5 dark:border-slate-800">
+<h3 class="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40 dark:text-slate-500">Support &amp; Settings</h3>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">settings</span>
+<span class="text-sm font-semibold">Settings</span>
+</a>
+<a class="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-primary/70 dark:text-slate-400">help_center</span>
+<span class="text-sm font-semibold">Support Center</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Language & Currency -->
+<div class="mt-auto border-t border-primary/5 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+<div class="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm dark:bg-slate-800">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 dark:bg-slate-700">
+<span class="material-symbols-outlined text-sm text-primary/70 dark:text-slate-300">language</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-primary dark:text-slate-200">EN / USD</span>
+<span class="text-[10px] text-primary/40 dark:text-slate-500">English · United States</span>
+</div>
+</div>
+<button class="text-primary/40 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="mt-4 flex items-center justify-between px-2">
+<p class="text-[10px] text-primary/30 dark:text-slate-500">© 2024 FlexiCommerce Inc.</p>
+<a class="text-[10px] font-bold text-primary/40 hover:text-primary dark:text-slate-400" href="#">Logout</a>
+</div>
+</div>
+</div>
+<!-- Main Content Dummy Background -->
+<div class="hidden md:flex flex-1 flex-col p-10">
+<h1 class="text-4xl font-bold text-white/20">Marketplace Background</h1>
+</div>
+</div>
+</body></html>

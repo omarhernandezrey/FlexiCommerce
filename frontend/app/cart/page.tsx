@@ -14,7 +14,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
       {/* Breadcrumbs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-200">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 border-b border-slate-200">
         <Breadcrumbs
           items={[
             { label: 'Inicio', href: '/' },
@@ -23,22 +23,22 @@ export default function CartPage() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20 md:pb-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-12 pb-24 sm:pb-20 md:pb-12">
         {/* Header Section */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-              <MaterialIcon name="shopping_bag" className="text-primary text-xl" />
+        <div className="spacing-header">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3">
+            <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <MaterialIcon name="shopping_bag" className="text-primary text-lg sm:text-xl" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-primary">Carrito de Compras</h1>
-              <p className="text-slate-600 text-sm mt-1">{items.length} artículos en tu carrito</p>
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-primary">Carrito de Compras</h1>
+              <p className="text-slate-600 text-xs sm:text-sm mt-1">{items.length} artículos en tu carrito</p>
             </div>
           </div>
         </div>
 
         {items.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {/* Cart Items Section */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -47,17 +47,17 @@ export default function CartPage() {
                   {items.map((item) => (
                     <div
                       key={item.id}
-                      className="p-6 hover:bg-slate-50/50 transition-colors group"
+                      className="card-padding hover:bg-slate-50/50 transition-colors group"
                     >
-                      <div className="flex gap-6">
+                      <div className="flex gap-3 sm:gap-4 md:gap-6">
                         {/* Product Image */}
                         <div className="relative flex-shrink-0">
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="w-28 h-28 rounded-lg object-cover"
+                            className="w-16 sm:w-20 md:w-28 h-16 sm:h-20 md:h-28 rounded-lg object-cover"
                           />
-                          <div className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+                          <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full">
                             {item.quantity}x
                           </div>
                         </div>
@@ -67,16 +67,16 @@ export default function CartPage() {
                           <div>
                             <Link
                               href={`/products/${item.id}`}
-                              className="block font-semibold text-lg text-primary hover:text-primary/80 transition-colors mb-2"
+                              className="block font-semibold text-sm sm:text-base md:text-lg text-primary hover:text-primary/80 transition-colors mb-2 line-clamp-2"
                             >
                               {item.name}
                             </Link>
-                            <div className="flex gap-4 text-sm text-slate-600 mb-3">
+                            <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm text-slate-600 mb-2 sm:mb-3 flex-wrap">
                               {item.color && (
                                 <div className="flex items-center gap-2">
                                   <span className="text-slate-500">Color:</span>
-                                  <div className="w-4 h-4 rounded-full border-2 border-slate-300" style={{ backgroundColor: item.color }} />
-                                  <span>{item.color}</span>
+                                  <div className="w-3 sm:w-4 h-3 sm:h-4 rounded-full border-2 border-slate-300" style={{ backgroundColor: item.color }} />
+                                  <span className="hidden sm:inline">{item.color}</span>
                                 </div>
                               )}
                               {item.size && (
@@ -86,13 +86,13 @@ export default function CartPage() {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xl font-bold text-primary">
+                            <p className="text-lg sm:text-xl font-bold text-primary">
                               ${(item.price * item.quantity).toFixed(2)}
                             </p>
                           </div>
 
                           {/* Quantity Control */}
-                          <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center justify-between gap-2 sm:gap-4">
                             <div className="flex items-center bg-primary/5 rounded-lg border border-primary/10">
                               <button
                                 onClick={() =>
@@ -126,12 +126,12 @@ export default function CartPage() {
                 </div>
 
                 {/* Continue Shopping */}
-                <div className="p-6 bg-slate-50/50 border-t border-slate-200">
+                <div className="card-padding bg-slate-50/50 border-t border-slate-200">
                   <Link
                     href="/products"
-                    className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary/80 transition-colors"
+                    className="inline-flex items-center gap-2 text-primary font-semibold text-sm sm:text-base hover:text-primary/80 transition-colors"
                   >
-                    <MaterialIcon name="arrow_back" />
+                    <MaterialIcon name="arrow_back" className="text-base sm:text-lg" />
                     Continuar Comprando
                   </Link>
                 </div>
@@ -140,14 +140,14 @@ export default function CartPage() {
 
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border border-slate-200 p-6 sticky top-24 h-fit">
-                <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
-                  <MaterialIcon name="receipt" className="text-primary" />
+              <div className="bg-white rounded-xl border border-slate-200 card-padding sticky top-20 sm:top-24 h-fit">
+                <h3 className="text-lg sm:text-xl font-bold text-primary spacing-header flex items-center gap-2">
+                  <MaterialIcon name="receipt" className="text-primary text-base sm:text-lg" />
                   Resumen del Pedido
                 </h3>
 
-                <div className="space-y-4 mb-6 pb-6 border-b border-slate-200">
-                  <div className="flex justify-between text-slate-600">
+                <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-slate-200">
+                  <div className="flex justify-between text-slate-600 text-sm sm:text-base">
                     <span className="text-sm">Subtotal</span>
                     <span className="font-semibold text-primary">${subtotal.toFixed(2)}</span>
                   </div>
@@ -161,7 +161,7 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="mb-6 pb-6 border-b border-slate-200">
+                <div className="spacing-header pb-6 border-b border-slate-200">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-700">Total</span>
                     <span className="text-2xl font-bold text-primary">
@@ -190,7 +190,7 @@ export default function CartPage() {
                 </button>
 
                 {/* Trust Badges */}
-                <div className="mt-8 space-y-3 pt-6 border-t border-slate-200">
+                <div className="mt-8 pt-6 space-y-3 border-t border-slate-200">
                   <div className="flex items-center gap-2 text-sm text-slate-600">
                     <MaterialIcon name="security" className="text-success text-lg" />
                     <span>Pago 100% seguro</span>
@@ -218,17 +218,17 @@ export default function CartPage() {
             <p className="text-slate-600 mb-8 text-lg">
               Agrega algunos productos para comenzar tu aventura de compras
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-8 py-3 rounded-lg hover:shadow-lg transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold px-8 py-3 rounded-lg hover:shadow-lg transition-all duration-200"
               >
                 <MaterialIcon name="shopping_catalog" className="fill-1" />
                 Explorar Productos
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 border-2 border-slate-300 text-slate-700 font-semibold px-8 py-3 rounded-lg hover:border-slate-400 transition-colors"
+                className="inline-flex items-center justify-center gap-2 border-2 border-slate-300 text-slate-700 font-semibold px-8 py-3 rounded-lg hover:border-slate-400 transition-colors"
               >
                 <MaterialIcon name="home" />
                 Ir a Inicio

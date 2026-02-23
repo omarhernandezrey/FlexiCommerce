@@ -92,7 +92,7 @@ export default function StoreSettingsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-primary mb-2">Support Email</label>
                     <input
@@ -160,7 +160,7 @@ export default function StoreSettingsPage() {
                     className="w-full h-11 px-4 border border-primary/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-primary mb-2">City</label>
                     <input
@@ -286,7 +286,7 @@ export default function StoreSettingsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
                 <label className="block text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">
                   Domestic Flat Rate
@@ -341,7 +341,7 @@ export default function StoreSettingsPage() {
       </div>
 
       {/* Sticky Footer Save Bar */}
-      <div className="fixed bottom-0 left-64 right-0 bg-white border-t border-primary/10 px-8 py-4 flex items-center justify-between z-30 shadow-lg">
+      <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white border-t border-primary/10 px-4 sm:px-8 py-4 flex items-center justify-between z-30 shadow-lg">
         <p className="text-xs text-primary/40 font-medium">
           Last autosaved at {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
         </p>
