@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
+import apiClient from '@/lib/api-client';
+import { useToast } from '@/hooks/useToast';
 
 export default function StoreSettingsPage() {
   const [settings, setSettings] = useState({
@@ -16,8 +18,9 @@ export default function StoreSettingsPage() {
     timezone: 'Europe/Madrid',
   });
 
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const { toasts, toast } = useToast();
   const [stripeEnabled, setStripeEnabled] = useState(true);
   const [paypalEnabled, setPaypalEnabled] = useState(false);
   const [shippingSettings, setShippingSettings] = useState({
@@ -25,9 +28,38 @@ export default function StoreSettingsPage() {
     freeThreshold: '100.00',
   });
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  // Load settings from backend on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await apiClient.get('/admin/settings');
+        const data = res.data;
+        if (data.storeName !== undefined) setSettings((prev) => ({ ...prev, ...data }));
+        if (typeof data.stripeEnabled === 'boolean') setStripeEnabled(data.stripeEnabled);
+        if (typeof data.paypalEnabled === 'boolean') setPaypalEnabled(data.paypalEnabled);
+        if (data.shipping) setShippingSettings(data.shipping);
+      } catch {
+        // Endpoint may not exist yet — use defaults silently
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await apiClient.put('/admin/settings', {
+        ...settings,
+        stripeEnabled,
+        paypalEnabled,
+        shipping: shippingSettings,
+      });
+      toast({ message: 'Settings saved successfully', type: 'success' });
+    } catch {
+      toast({ message: 'Failed to save settings. Please try again.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const tabs = [
@@ -351,12 +383,33 @@ export default function StoreSettingsPage() {
           </button>
           <button
             onClick={handleSave}
-            className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-2"
+            disabled={saving}
+            className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-2 disabled:opacity-60"
           >
-            {saved && <MaterialIcon name="check" className="text-base" />}
-            {saved ? 'Saved!' : 'Save Changes'}
+            {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed bottom-24 right-6 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`px-4 py-3 rounded-xl shadow-lg text-sm font-semibold flex items-center gap-2 pointer-events-auto ${
+              t.type === 'success' ? 'bg-emerald-600 text-white' :
+              t.type === 'error' ? 'bg-red-600 text-white' :
+              'bg-primary text-white'
+            }`}
+          >
+            <MaterialIcon
+              name={t.type === 'success' ? 'check_circle' : t.type === 'error' ? 'error' : 'info'}
+              className="text-base shrink-0"
+            />
+            {t.message}
+          </div>
+        ))}
       </div>
     </div>
   );

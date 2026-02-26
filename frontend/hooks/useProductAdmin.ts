@@ -93,10 +93,27 @@ export function useProductAdmin() {
     }
   }, []);
 
+  const deleteProduct = useCallback(async (id: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      await apiClient.delete(`/products/${id}`);
+      setState((prev) => ({ ...prev, loading: false }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al eliminar producto';
+      setState((prev) => ({
+        ...prev,
+        error: message,
+        loading: false,
+      }));
+      throw error;
+    }
+  }, []);
+
   return {
     ...state,
     fetchById,
     create,
     update,
+    deleteProduct,
   };
 }

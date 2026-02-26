@@ -1,49 +1,94 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { useOrders } from '@/hooks/useOrders';
+import { Order } from '@/lib/api.service';
 
 const statusConfig = {
-  processing: { label: 'Procesando', color: 'bg-blue-100 text-blue-800', icon: 'hourglass_top' },
-  shipped: { label: 'Enviado', color: 'bg-amber-100 text-amber-800', icon: 'local_shipping' },
-  delivered: { label: 'Entregado', color: 'bg-green-100 text-green-800', icon: 'check_circle' },
-  cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-gray-800', icon: 'cancel' },
+  pending:   { label: 'Processing', color: 'bg-blue-100 text-blue-800',   icon: 'hourglass_top' },
+  confirmed: { label: 'Confirmed',  color: 'bg-indigo-100 text-indigo-800', icon: 'check_circle' },
+  shipped:   { label: 'Shipped',    color: 'bg-amber-100 text-amber-800',  icon: 'local_shipping' },
+  delivered: { label: 'Delivered',  color: 'bg-green-100 text-green-800',  icon: 'check_circle' },
+  cancelled: { label: 'Cancelled',  color: 'bg-gray-100 text-gray-800',    icon: 'cancel' },
 };
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  const order = {
-    id: params.id,
-    date: '17 de Febrero de 2024',
-    status: 'delivered' as keyof typeof statusConfig,
-    total: 299.0,
-    items: [
-      {
-        id: '1',
-        name: 'Acoustic Pro-X Wireless',
-        price: 299.0,
-        quantity: 1,
-        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBGsRLZqCj7FPTBBjxRBIsAeCWi9IS2fOgBb2GtswkIb91SPBGd67oY_qXeVNoLs7hxAHHKLkm62G8xRgmoQkPpuq9R196SIDVxGNaMuFjgga0h4mZtpp6UJ7fLI9vFIYumBkt6P0jaXsGtkRlV5MgVDKzZ564IOgSSPeFkbHLtotiT1inZGj1NcudW1L_f8bJidqpsWVXE9N0dCy8hyXOqggp-4W7MS2tUQpBnlznJ4cTgrmyAvVVIgtq3118P9cs-U8l_uWZD6pc',
-      },
-    ],
-    shipping: {
-      name: 'Juan Pérez',
-      address: 'Calle Principal 123',
-      city: 'Madrid',
-      zipCode: '28001',
-      country: 'España',
-    },
-    timeline: [
-      { date: '17 Feb 2024', status: 'Orden confirmada', completed: true },
-      { date: '18 Feb 2024', status: 'Procesando', completed: true },
-      { date: '19 Feb 2024', status: 'Enviado', completed: true },
-      { date: '20 Feb 2024', status: 'Entregado', completed: true },
-    ],
-  };
+// Generate timeline steps based on current order status
+function getTimeline(order: Order) {
+  const steps = [
+    { status: 'Order Confirmed',  key: 'pending' },
+    { status: 'Processing',       key: 'confirmed' },
+    { status: 'Shipped',          key: 'shipped' },
+    { status: 'Delivered',        key: 'delivered' },
+  ];
+  const statusOrder = ['pending', 'confirmed', 'shipped', 'delivered'];
+  const currentIdx = statusOrder.indexOf(order.status);
+  const date = new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  return steps.map((s, idx) => ({ ...s, date, completed: idx <= currentIdx }));
+}
 
-  const tax = order.total * 0.08;
-  const totalWithTax = order.total + tax;
-  const statusInfo = statusConfig[order.status];
+export default function OrderDetailPage({ params }: { params: { id: string } }) {
+  const { currentOrder, loading, error, fetchById } = useOrders();
+
+  useEffect(() => {
+    fetchById(params.id).catch(() => {/* backend not available */});
+  }, [params.id, fetchById]);
+
+  // Skeleton while loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-200">
+          <div className="h-4 bg-primary/10 rounded w-64 animate-pulse" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse">
+              <div className="flex items-center gap-4">
+                <div className="size-14 bg-primary/10 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-6 bg-primary/10 rounded w-64" />
+                  <div className="h-4 bg-primary/5 rounded w-32" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse h-48" />
+            <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse h-32" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error / not found state
+  if (error || !currentOrder) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center py-16">
+          <MaterialIcon name="receipt_long" className="text-primary/20 text-6xl mb-4" />
+          <p className="text-primary font-bold text-xl mb-2">Order not found</p>
+          <p className="text-primary/50 text-sm mb-6">We couldn&apos;t find order #{params.id}</p>
+          <Link href="/orders" className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+            <MaterialIcon name="arrow_back" className="text-base" />
+            Back to Orders
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const order = currentOrder;
+  const statusInfo = statusConfig[order.status as keyof typeof statusConfig] ?? statusConfig.pending;
+  const itemsSubtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = itemsSubtotal * 0.08;
+  const totalWithTax = itemsSubtotal + tax;
+  const timeline = getTimeline(order);
+  const formattedDate = new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  const shippingName = order.shippingAddress
+    ? `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`.trim()
+    : '—';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
@@ -51,26 +96,26 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-200">
         <Breadcrumbs
           items={[
-            { label: 'Inicio', href: '/' },
-            { label: 'Mis Órdenes', href: '/orders' },
+            { label: 'Home', href: '/' },
+            { label: 'My Orders', href: '/orders' },
             { label: order.id },
           ]}
         />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-20 md:pb-12">
-        {/* Header Section */}
+        {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-white rounded-xl border border-slate-200 p-6">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="size-14 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <MaterialIcon name="receipt_long" className="text-primary text-2xl" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-3xl font-bold text-primary mb-1">Orden #{order.id}</h1>
-              <p className="text-slate-600 text-sm">{order.date}</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-primary mb-1">Order #{order.id}</h1>
+              <p className="text-slate-600 text-sm">{formattedDate}</p>
             </div>
           </div>
-          <div className={`px-4 py-2 rounded-full font-semibold flex items-center gap-2 ${statusInfo.color}`}>
+          <div className={`px-4 py-2 rounded-full font-semibold flex items-center gap-2 w-fit ${statusInfo.color}`}>
             <MaterialIcon name={statusInfo.icon} className="text-lg" />
             {statusInfo.label}
           </div>
@@ -79,29 +124,25 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Items Section */}
+            {/* Items */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
                 <MaterialIcon name="shopping_bag" className="text-primary" />
-                Artículos de la Orden
+                Order Items
               </h3>
               <div className="divide-y divide-slate-200">
-                {order.items.map((item) => (
-                  <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex gap-4 hover:bg-slate-50/50 px-4 -mx-4 transition-colors">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover flex-shrink-0"
-                    />
+                {order.items.map((item, idx) => (
+                  <div key={idx} className="py-4 first:pt-0 last:pb-0 flex gap-4">
+                    <div className="size-16 sm:size-20 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <MaterialIcon name="inventory_2" className="text-primary/40 text-2xl" />
+                    </div>
                     <div className="flex-1">
-                      <Link href={`/products/${item.id}`} className="font-semibold text-primary hover:text-primary/80 transition-colors block mb-2">
-                        {item.name}
-                      </Link>
-                      <div className="flex gap-4 text-sm text-slate-600 mb-3">
-                        <span>Cantidad: <span className="font-semibold text-primary">{item.quantity}</span></span>
-                        <span>Precio: <span className="font-semibold text-primary">${item.price.toFixed(2)}</span></span>
+                      <p className="font-semibold text-primary mb-1">Product #{item.productId.slice(0, 8)}</p>
+                      <div className="flex gap-4 text-sm text-slate-600 mb-1">
+                        <span>Qty: <span className="font-semibold text-primary">{item.quantity}</span></span>
+                        <span>Price: <span className="font-semibold text-primary">${item.price.toFixed(2)}</span></span>
                       </div>
-                      <p className="text-lg font-bold text-primary">
+                      <p className="text-base font-bold text-primary">
                         Subtotal: ${(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
@@ -110,34 +151,29 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               </div>
             </div>
 
-            {/* Timeline Section */}
+            {/* Timeline */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h3 className="text-xl font-bold text-primary mb-8 flex items-center gap-2">
                 <MaterialIcon name="timeline" className="text-primary" />
-                Historial de Seguimiento
+                Order Tracking
               </h3>
               <div className="space-y-0">
-                {order.timeline.map((step, idx) => (
-                  <div key={idx}>
-                    <div className="flex gap-6">
-                      {/* Timeline dot and line */}
-                      <div className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white relative z-10 ${step.completed ? 'bg-success' : 'bg-slate-300'}`}>
-                          {step.completed ? (
-                            <MaterialIcon name="check" className="text-lg" />
-                          ) : (
-                            <span>{idx + 1}</span>
-                          )}
-                        </div>
-                        {idx < order.timeline.length - 1 && (
-                          <div className={`w-1 h-12 ${step.completed ? 'bg-success' : 'bg-slate-300'}`} />
-                        )}
+                {timeline.map((step, idx) => (
+                  <div key={idx} className="flex gap-6">
+                    <div className="flex flex-col items-center">
+                      <div className={`size-10 rounded-full flex items-center justify-center font-bold text-white relative z-10 ${step.completed ? 'bg-green-500' : 'bg-slate-200'}`}>
+                        {step.completed
+                          ? <MaterialIcon name="check" className="text-lg" />
+                          : <span className="text-slate-400 text-sm">{idx + 1}</span>
+                        }
                       </div>
-                      {/* Content */}
-                      <div className={`pb-8 ${idx === order.timeline.length - 1 ? 'pb-0' : ''}`}>
-                        <p className="font-semibold text-primary text-lg">{step.status}</p>
-                        <p className="text-sm text-slate-600 mt-1">{step.date}</p>
-                      </div>
+                      {idx < timeline.length - 1 && (
+                        <div className={`w-0.5 h-10 ${step.completed ? 'bg-green-500' : 'bg-slate-200'}`} />
+                      )}
+                    </div>
+                    <div className={`pb-8 ${idx === timeline.length - 1 ? 'pb-0' : ''}`}>
+                      <p className={`font-semibold text-base ${step.completed ? 'text-primary' : 'text-slate-400'}`}>{step.status}</p>
+                      <p className="text-sm text-slate-500 mt-0.5">{step.date}</p>
                     </div>
                   </div>
                 ))}
@@ -145,26 +181,22 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             {/* Shipping Info */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
-                <MaterialIcon name="location_on" className="text-primary" />
-                Dirección de Envío
-              </h3>
-              <div className="bg-primary/5 border border-primary/10 rounded-lg p-5">
-                <div className="space-y-2">
-                  <p className="font-semibold text-primary text-lg">{order.shipping.name}</p>
-                  <div className="text-slate-700 space-y-1">
-                    <p>{order.shipping.address}</p>
-                    <p>{order.shipping.city}, {order.shipping.zipCode}</p>
-                    <p>{order.shipping.country}</p>
+            {order.shippingAddress && (
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
+                  <MaterialIcon name="location_on" className="text-primary" />
+                  Shipping Address
+                </h3>
+                <div className="bg-primary/5 border border-primary/10 rounded-lg p-5">
+                  <p className="font-semibold text-primary text-lg mb-1">{shippingName}</p>
+                  <div className="text-slate-700 space-y-0.5 text-sm">
+                    <p>{order.shippingAddress.address}</p>
+                    {order.shippingAddress.phone && <p>{order.shippingAddress.phone}</p>}
+                    {order.shippingAddress.email && <p>{order.shippingAddress.email}</p>}
                   </div>
                 </div>
               </div>
-              <button className="w-full mt-4 px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
-                <MaterialIcon name="edit" className="text-lg" />
-                Cambiar Dirección
-              </button>
-            </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -173,85 +205,63 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             <div className="bg-white rounded-xl border border-slate-200 p-6 sticky top-24 h-fit">
               <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
                 <MaterialIcon name="receipt" className="text-primary" />
-                Resumen de Orden
+                Order Summary
               </h3>
 
-              <div className="space-y-4 mb-6 pb-6 border-b border-slate-200">
+              <div className="space-y-3 mb-6 pb-6 border-b border-slate-200 text-sm">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-primary">${order.total.toFixed(2)}</span>
+                  <span className="font-semibold text-primary">${itemsSubtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Envío</span>
-                  <span className="font-semibold text-success">Gratis</span>
+                  <span>Shipping</span>
+                  <span className="font-semibold text-green-600">Free</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Impuestos (8%)</span>
+                  <span>Tax (8%)</span>
                   <span className="font-semibold text-primary">${tax.toFixed(2)}</span>
                 </div>
               </div>
 
-              <div className="mb-6 pb-6 border-b border-slate-200">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-700">Total</span>
-                  <span className="text-2xl font-bold text-primary">
-                    ${totalWithTax.toFixed(2)}
-                  </span>
-                </div>
+              <div className="mb-6 pb-6 border-b border-slate-200 flex justify-between items-center">
+                <span className="font-bold text-slate-700">Total</span>
+                <span className="text-2xl font-bold text-primary">${totalWithTax.toFixed(2)}</span>
               </div>
 
               <Link
                 href="/products"
-                className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mb-3"
+                className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 mb-3 text-sm"
               >
-                <MaterialIcon name="shopping_catalog" className="fill-1" />
-                Continuar Comprando
+                <MaterialIcon name="storefront" className="text-base" />
+                Continue Shopping
               </Link>
 
-              <button className="w-full px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+              <button className="w-full px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 text-sm">
                 <MaterialIcon name="file_download" className="text-lg" />
-                Descargar Factura
+                Download Invoice
               </button>
             </div>
 
             {/* Support Widget */}
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6 mt-6">
+            <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 mt-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <MaterialIcon name="headset_mic" className="text-primary text-lg" />
                 </div>
-                <h4 className="font-bold text-primary">Centro de Ayuda</h4>
+                <h4 className="font-bold text-primary">Need Help?</h4>
               </div>
-              <p className="text-sm text-slate-700 mb-4">
-                ¿Tienes preguntas sobre tu orden? Nuestro equipo de soporte está aquí para ayudarte.
+              <p className="text-sm text-slate-600 mb-4">
+                Questions about your order? Our support team is here 24/7.
               </p>
               <div className="space-y-2">
                 <button className="w-full px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:shadow-md transition-all text-sm flex items-center justify-center gap-2">
-                  <MaterialIcon name="chat" className="text-lg" />
-                  Chatear
+                  <MaterialIcon name="chat" className="text-base" />
+                  Chat with Support
                 </button>
                 <button className="w-full px-4 py-2.5 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors text-sm flex items-center justify-center gap-2">
-                  <MaterialIcon name="info" className="text-lg" />
-                  Ver FAQ
+                  <MaterialIcon name="help_outline" className="text-base" />
+                  Visit Help Center
                 </button>
-              </div>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6 mt-6">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <MaterialIcon name="verified" className="text-success text-xl" />
-                  <span className="text-sm text-slate-700"><span className="font-semibold text-primary">Entrega Segura</span><br /><span className="text-xs text-slate-500">Rastreo en tiempo real</span></span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MaterialIcon name="security" className="text-primary text-xl" />
-                  <span className="text-sm text-slate-700"><span className="font-semibold text-primary">Compra Protegida</span><br /><span className="text-xs text-slate-500">Garantía de protección</span></span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MaterialIcon name="loop" className="text-primary text-xl" />
-                  <span className="text-sm text-slate-700"><span className="font-semibold text-primary">F\u00e1cil Devolución</span><br /><span className="text-xs text-slate-500">30 días sin preguntas</span></span>
-                </div>
               </div>
             </div>
           </div>

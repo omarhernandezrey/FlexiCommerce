@@ -67,6 +67,20 @@ export default function ProductsPage() {
       filtered = filtered.filter((p) => (p.rating || 0) >= minRating);
     }
 
+    if (selectedColors.length > 0) {
+      filtered = filtered.filter((p) => {
+        const pColor = (p as Record<string, unknown>).color as string | undefined;
+        return pColor ? selectedColors.includes(pColor) : false;
+      });
+    }
+
+    if (selectedScreenSize) {
+      filtered = filtered.filter((p) => {
+        const pSize = (p as Record<string, unknown>).screenSize as string | undefined;
+        return pSize === selectedScreenSize;
+      });
+    }
+
     const sorted = [...filtered];
     switch (sortBy) {
       case 'price-low': sorted.sort((a, b) => a.price - b.price); break;
@@ -75,9 +89,15 @@ export default function ProductsPage() {
     }
 
     return sorted;
-  }, [searchResults, priceRange, selectedCategories, minRating, sortBy]);
+  }, [searchResults, priceRange, selectedCategories, minRating, selectedColors, selectedScreenSize, sortBy]);
 
-  const hasActiveFilters = priceRange[1] < 500 || selectedCategories.length > 0 || minRating > 0 || searchTerm !== '';
+  const hasActiveFilters =
+    priceRange[1] < 500 ||
+    selectedCategories.length > 0 ||
+    minRating > 0 ||
+    searchTerm !== '' ||
+    selectedColors.length > 0 ||
+    selectedScreenSize !== '';
 
   const resetFilters = () => {
     setSearchTerm('');
@@ -259,7 +279,7 @@ export default function ProductsPage() {
           Filters
           {hasActiveFilters && (
             <span className="size-4 bg-primary text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-              {selectedCategories.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < 500 ? 1 : 0)}
+              {selectedCategories.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < 500 ? 1 : 0) + selectedColors.length + (selectedScreenSize ? 1 : 0)}
             </span>
           )}
         </button>

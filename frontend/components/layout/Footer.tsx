@@ -4,9 +4,9 @@ import { FOOTER_LINKS } from '@/lib/constants';
 
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-primary/10 pt-8 sm:pt-12 md:pt-16 pb-20 sm:pb-12 md:pb-8">
+    <footer className="bg-white border-t border-primary/10 pt-8 sm:pt-12 md:pt-16 pb-24 sm:pb-12 md:pb-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-8 sm:mb-12">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4 sm:mb-6">

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useReviews } from '@/hooks/useReviews';
+import type { Review } from '@/hooks/useReviews';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { StarRating } from '@/components/ui/StarRating';
@@ -20,7 +23,73 @@ type Tab = typeof TABS[number];
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const { addItem } = useCart();
+  const { user } = useAuth();
   const product = MOCK_PRODUCTS.find((p) => p.id === params.id) || MOCK_PRODUCTS[0];
+
+  const {
+    reviews,
+    stats,
+    loading: reviewsLoading,
+    hasUserReview,
+    userReview,
+    createReview,
+    updateReview,
+    deleteReview,
+    fetchReviews,
+  } = useReviews(product.id);
+
+  // Review form state
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [reviewLimit, setReviewLimit] = useState(10);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [hoverStar, setHoverStar] = useState(0);
+
+  // Helpers
+  const getInitials = (name: string) =>
+    name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // Review handlers
+  const handleLoadMoreReviews = async () => {
+    const newLimit = reviewLimit + 10;
+    setReviewLimit(newLimit);
+    await fetchReviews(1, newLimit);
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reviewRating === 0) return;
+    setReviewSubmitting(true);
+    try {
+      if (isEditingReview && userReview) {
+        await updateReview(userReview.id, reviewRating, reviewComment);
+      } else {
+        await createReview(reviewRating, reviewComment);
+      }
+      setReviewRating(0);
+      setReviewComment('');
+      setIsEditingReview(false);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const handleEditReview = () => {
+    if (userReview) {
+      setReviewRating(userReview.rating);
+      setReviewComment(userReview.comment || '');
+      setIsEditingReview(true);
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    if (userReview && confirm('¿Estás seguro de eliminar tu reseña?')) {
+      await deleteReview(userReview.id);
+    }
+  };
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -48,8 +117,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
 
-  // Use the same image for all thumbnails (mock gallery)
-  const galleryImages = [product.image, product.image, product.image, product.image];
+  // Use product.images[] array when available, fallback to repeating the main image
+  const galleryImages = product.images?.length
+    ? product.images
+    : [product.image, product.image, product.image, product.image];
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-24 sm:pb-20 md:pb-0">
@@ -276,41 +347,45 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               {/* Rating Summary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-primary/5 rounded-xl">
                 <div className="flex flex-col items-center justify-center">
-                  <span className="text-6xl font-extrabold text-primary">{product.rating}</span>
+                  <span className="text-6xl font-extrabold text-primary">
+                    {stats.count > 0 ? stats.average.toFixed(1) : product.rating}
+                  </span>
                   <div className="flex my-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <MaterialIcon
-                        key={i}
-                        name="star"
-                        filled={i < Math.round(product.rating)}
-                        className={`text-base ${i < Math.round(product.rating) ? 'text-yellow-400' : 'text-primary/20'}`}
-                      />
-                    ))}
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const avg = stats.count > 0 ? stats.average : product.rating;
+                      return (
+                        <MaterialIcon
+                          key={i}
+                          name="star"
+                          filled={i < Math.round(avg)}
+                          className={`text-base ${i < Math.round(avg) ? 'text-yellow-400' : 'text-primary/20'}`}
+                        />
+                      );
+                    })}
                   </div>
                   <span className="text-sm text-primary/60 font-medium">
-                    Based on {product.reviews} reviews
+                    Based on {stats.count > 0 ? stats.count : product.reviews} reviews
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    { stars: 5, pct: 85 },
-                    { stars: 4, pct: 10 },
-                    { stars: 3, pct: 3 },
-                    { stars: 2, pct: 1 },
-                    { stars: 1, pct: 1 },
-                  ].map(({ stars, pct }) => (
-                    <div key={stars} className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-primary/60 w-4">{stars}</span>
-                      <MaterialIcon name="star" filled className="text-yellow-400 text-sm" />
-                      <div className="flex-1 h-2 bg-primary/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-yellow-400 rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
+                  {([5, 4, 3, 2, 1] as const).map((stars) => {
+                    const count = stats.distribution[stars] ?? 0;
+                    const total = stats.count || 1;
+                    const pct = Math.round((count / total) * 100);
+                    return (
+                      <div key={stars} className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-primary/60 w-4">{stars}</span>
+                        <MaterialIcon name="star" filled className="text-yellow-400 text-sm" />
+                        <div className="flex-1 h-2 bg-primary/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-400 rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-primary/40 font-medium w-8">{pct}%</span>
                       </div>
-                      <span className="text-xs text-primary/40 font-medium w-8">{pct}%</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -326,48 +401,185 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 ))}
               </div>
 
-              {/* Review Cards */}
-              {[
-                { name: 'Jordan D.', initials: 'JD', rating: 5, time: '2 weeks ago', headline: 'Absolute game changer for my daily commute', comment: 'I\'ve tried every flagship noise-cancelling headphone on the market, but these take the cake. The comfort during long sessions is unparalleled.' },
-                { name: 'Maria S.', initials: 'MS', rating: 4, time: '1 month ago', headline: 'Great quality and fast shipping', comment: 'Arrived in perfect condition and ahead of schedule. Build quality is excellent. Would definitely buy again from this seller.' },
-                { name: 'Carlos M.', initials: 'CM', rating: 5, time: '3 weeks ago', headline: 'Perfect for daily use — highly recommended', comment: 'Been using it every day for a month now and it still feels like new. Battery life is as advertised and the sound quality is outstanding.' },
-              ].map((review) => (
-                <div key={review.name} className="bg-white rounded-xl p-6 border border-primary/10">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0">
-                        {review.initials}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-primary">{review.name}</span>
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                            <MaterialIcon name="verified" className="text-[10px]" />
-                            Verified
-                          </span>
-                        </div>
-                        <div className="flex mt-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <MaterialIcon
-                              key={i}
-                              name="star"
-                              filled={i < review.rating}
-                              className={`text-xs ${i < review.rating ? 'text-yellow-500' : 'text-primary/20'}`}
-                            />
-                          ))}
-                        </div>
+              {/* Write a Review / User's Review */}
+              {user ? (
+                hasUserReview && !isEditingReview ? (
+                  /* User already reviewed — show their review with edit/delete */
+                  <div className="bg-primary/5 rounded-xl p-5 border border-primary/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-bold text-primary">Your Review</span>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleEditReview}
+                          className="text-xs font-bold text-primary hover:text-primary/70 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={handleDeleteReview}
+                          className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
-                    <span className="text-xs text-primary/40">{review.time}</span>
+                    <div className="flex mb-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <MaterialIcon
+                          key={i}
+                          name="star"
+                          filled={i < (userReview?.rating ?? 0)}
+                          className={`text-sm ${i < (userReview?.rating ?? 0) ? 'text-yellow-400' : 'text-primary/20'}`}
+                        />
+                      ))}
+                    </div>
+                    {userReview?.comment && (
+                      <p className="text-sm text-primary/70 italic">&ldquo;{userReview.comment}&rdquo;</p>
+                    )}
                   </div>
-                  <h4 className="font-bold text-primary mb-2">{review.headline}</h4>
-                  <p className="text-sm text-primary/70 leading-relaxed italic">&ldquo;{review.comment}&rdquo;</p>
+                ) : (
+                  /* Write / Edit review form */
+                  <form onSubmit={handleSubmitReview} className="bg-white rounded-xl p-5 border border-primary/10 space-y-4">
+                    <h3 className="font-bold text-primary text-sm">
+                      {isEditingReview ? 'Edit Your Review' : 'Write a Review'}
+                    </h3>
+                    {/* Interactive Stars */}
+                    <div>
+                      <p className="text-xs font-bold text-primary/60 mb-2">Your Rating</p>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setReviewRating(star)}
+                            onMouseEnter={() => setHoverStar(star)}
+                            onMouseLeave={() => setHoverStar(0)}
+                            className="transition-transform hover:scale-110"
+                          >
+                            <MaterialIcon
+                              name="star"
+                              filled={star <= (hoverStar || reviewRating)}
+                              className={`text-2xl ${star <= (hoverStar || reviewRating) ? 'text-yellow-400' : 'text-primary/20'}`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Comment */}
+                    <div>
+                      <p className="text-xs font-bold text-primary/60 mb-2">Comment (optional)</p>
+                      <textarea
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        placeholder="Share your experience with this product..."
+                        rows={3}
+                        maxLength={500}
+                        className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                      />
+                      <p className="text-xs text-primary/30 text-right">{reviewComment.length}/500</p>
+                    </div>
+                    {/* Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={reviewRating === 0 || reviewSubmitting}
+                        className="flex-1 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {reviewSubmitting ? 'Submitting...' : isEditingReview ? 'Save Changes' : 'Publish Review'}
+                      </button>
+                      {isEditingReview && (
+                        <button
+                          type="button"
+                          onClick={() => { setIsEditingReview(false); setReviewRating(0); setReviewComment(''); }}
+                          className="px-4 py-2.5 border border-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary/5 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                )
+              ) : (
+                /* Not logged in — prompt to login */
+                <div className="bg-primary/5 rounded-xl p-6 text-center border border-primary/10">
+                  <MaterialIcon name="rate_review" className="text-3xl text-primary/30 mb-2" />
+                  <p className="text-sm text-primary/60 mb-3">Sign in to leave a review</p>
+                  <Link href="/auth" className="inline-block bg-primary text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
+                    Sign In
+                  </Link>
                 </div>
-              ))}
-              {/* Load More */}
-              <button className="w-full py-4 border border-primary/10 rounded-xl font-bold text-primary/60 hover:bg-primary hover:text-white transition-all">
-                Load More Reviews
-              </button>
+              )}
+
+              {/* Review Cards */}
+              {reviewsLoading && reviews.length === 0 ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white rounded-xl p-6 border border-primary/10 animate-pulse">
+                      <div className="flex gap-3 mb-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-3 bg-primary/10 rounded w-24" />
+                          <div className="h-3 bg-primary/10 rounded w-16" />
+                        </div>
+                      </div>
+                      <div className="h-3 bg-primary/10 rounded w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : reviews.length > 0 ? (
+                <>
+                  <div className="space-y-4">
+                    {reviews.map((review: Review) => (
+                      <div key={review.id} className="bg-white rounded-xl p-6 border border-primary/10">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0">
+                              {getInitials(review.user.name)}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-primary">{review.user.name}</span>
+                                <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                                  <MaterialIcon name="verified" className="text-[10px]" />
+                                  Verified
+                                </span>
+                              </div>
+                              <div className="flex mt-0.5">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <MaterialIcon
+                                    key={i}
+                                    name="star"
+                                    filled={i < review.rating}
+                                    className={`text-xs ${i < review.rating ? 'text-yellow-500' : 'text-primary/20'}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-xs text-primary/40">{formatDate(review.createdAt)}</span>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-primary/70 leading-relaxed italic">&ldquo;{review.comment}&rdquo;</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {reviews.length >= reviewLimit && (
+                    <button
+                      onClick={handleLoadMoreReviews}
+                      disabled={reviewsLoading}
+                      className="w-full py-4 border border-primary/10 rounded-xl font-bold text-primary/60 hover:bg-primary hover:text-white transition-all disabled:opacity-40"
+                    >
+                      {reviewsLoading ? 'Loading...' : 'Load More Reviews'}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <MaterialIcon name="rate_review" className="text-4xl text-primary/20 mb-2" />
+                  <p className="text-sm text-primary/40">No reviews yet. Be the first to review!</p>
+                </div>
+              )}
             </div>
           )}
 

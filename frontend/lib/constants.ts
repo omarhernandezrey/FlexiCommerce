@@ -17,6 +17,7 @@ export interface MockProduct {
   price: number;
   originalPrice?: number;
   image: string;
+  images?: string[];
   rating: number;
   reviews: number;
   badge?: string;
@@ -29,6 +30,12 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     category: 'Electronics',
     price: 299.00,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBGsRLZqCj7FPTBBjxRBIsAeCWi9IS2fOgBb2GtswkIb91SPBGd67oY_qXeVNoLs7hxAHHKLkm62G8xRgmoQkPpuq9R196SIDVxGNaMuFjgga0h4mZtpp6UJ7fLI9vFIYumBkt6P0jaXsGtkRlV5MgVDKzZ564IOgSSPeFkbHLtotiT1inZGj1NcudW1L_f8bJidqpsWVXE9N0dCy8hyXOqggp-4W7MS2tUQpBnlznJ4cTgrmyAvVVIgtq3118P9cs-U8l_uWZD6pc',
+    images: [
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBGsRLZqCj7FPTBBjxRBIsAeCWi9IS2fOgBb2GtswkIb91SPBGd67oY_qXeVNoLs7hxAHHKLkm62G8xRgmoQkPpuq9R196SIDVxGNaMuFjgga0h4mZtpp6UJ7fLI9vFIYumBkt6P0jaXsGtkRlV5MgVDKzZ564IOgSSPeFkbHLtotiT1inZGj1NcudW1L_f8bJidqpsWVXE9N0dCy8hyXOqggp-4W7MS2tUQpBnlznJ4cTgrmyAvVVIgtq3118P9cs-U8l_uWZD6pc',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCXTpVfxs1db62dokgKW758D77TDsVrhik1b_aLd5Ye3ogBXIo1XStPxpPoknzerd4ofRur1xQRSQvBrmSCsc0kprITAkRNjKvMbEH-6bXmBnzSt9h1Fym9uxPBvTJOiIp0FKH0IHFhjvXLqiKGIxwsKqp1xn0h15lbyR8THDHy8yGkqmZt9lRaaeuM0244zooz2tK5pLu8E2WY0RypRMtT_3_SBKAqBSuX7Rxu99KljBMAoT0vODTpz3_s_bLVYjjIv99WRTpQskk',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuD3STeNq8civLDlVuPkmcTIQ4SDguNu93vf1LqpN1q4q-I2_Ko_hjWygl9plMApINyRVzOeWPmjmfoNBLH6Zg1hb_O5Ns03-I6A9938zh2TTXfwdCOZAviCeCRhPKXZTaOokCxgbsEekLITcAsWOSR29RwNeru0mUDeOAJSj7YGEOKdTKLz5Kr7mX2IJ3z0HsKqieOn47XbSTb2j9mBJbQ8A9eI4rJdwrw-2uQaj5F-61WjYBKdmDOZorXciPE3JuF38UIDNCfxvWw',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDk0b44OIdiuwXlXuwCj5ZV6koSwVR_i755DwBvADCbY3y5fJ4bp_V4G1IwwjQJvoc8Cy1R4r4zduQdrh4R2x09X4nPcR2P3mNf99iSfmAvJVu1M5phK7-8ZWfMP8tu_1ExZI1ZkwB3EDzxdvI6l9FLC5w_WGqkGSNSQQEFW_TPQ1r2u6ujUB4FFwS3mubBb9YG_IsHGJVLRV9_01sw5av817xaQ08Uiz34mDwLGD7Rzw7JIb6GxhWeS3y1Iv9KHU6M5SxlrsFFI5o',
+    ],
     rating: 4.5,
     reviews: 128,
   },

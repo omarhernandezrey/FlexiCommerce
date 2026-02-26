@@ -1,53 +1,87 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
+import { useOrders } from '@/hooks/useOrders';
+import { IMAGES } from '@/lib/constants';
+
+// Unified display type used in the template
+interface DisplayOrder {
+  id: string;
+  date: string;
+  total: string;
+  status: string;
+  items: number;
+  image: string;
+}
+
+const MOCK_ORDERS: DisplayOrder[] = [
+  { id: 'FCM-2024-001234', date: '17 Feb 2024', total: '$299.00', status: 'delivered', items: 1, image: IMAGES.userAvatar },
+  { id: 'FCM-2024-001233', date: '15 Feb 2024', total: '$189.50', status: 'shipping',  items: 1, image: IMAGES.userAvatar },
+  { id: 'FCM-2024-001232', date: '10 Feb 2024', total: '$120.00', status: 'pending',   items: 2, image: IMAGES.userAvatar },
+];
+
+const statusConfig: Record<string, { label: string; color: string }> = {
+  pending:   { label: 'Processing', color: 'bg-blue-100 text-blue-700' },
+  confirmed: { label: 'Confirmed',  color: 'bg-indigo-100 text-indigo-700' },
+  shipped:   { label: 'Shipped',    color: 'bg-yellow-100 text-yellow-700' },
+  shipping:  { label: 'Shipped',    color: 'bg-yellow-100 text-yellow-700' },
+  delivered: { label: 'Delivered',  color: 'bg-green-100 text-green-700' },
+  cancelled: { label: 'Cancelled',  color: 'bg-gray-100 text-gray-600' },
+};
 
 export default function OrdersPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchId, setSearchId] = useState('');
   const [dateRange, setDateRange] = useState('all');
 
-  const orders = [
-    {
-      id: 'FCM-2024-001234',
-      date: '17 Feb 2024',
-      total: '$299.00',
-      status: 'delivered',
-      items: 1,
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBGsRLZqCj7FPTBBjxRBIsAeCWi9IS2fOgBb2GtswkIb91SPBGd67oY_qXeVNoLs7hxAHHKLkm62G8xRgmoQkPpuq9R196SIDVxGNaMuFjgga0h4mZtpp6UJ7fLI9vFIYumBkt6P0jaXsGtkRlV5MgVDKzZ564IOgSSPeFkbHLtotiT1inZGj1NcudW1L_f8bJidqpsWVXE9N0dCy8hyXOqggp-4W7MS2tUQpBnlznJ4cTgrmyAvVVIgtq3118P9cs-U8l_uWZD6pc',
-    },
-    {
-      id: 'FCM-2024-001233',
-      date: '15 Feb 2024',
-      total: '$189.50',
-      status: 'shipping',
-      items: 1,
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCXTpVfxs1db62dokgKW758D77TDsVrhik1b_aLd5Ye3ogBXIo1XStPxpPoknzerd4ofRur1xQRSQvBrmSCsc0kprITAkRNjKvMbEH-6bXmBnzSt9h1Fym9uxPBvTJOiIp0FKH0IHFhjvXLqiKGIxwsKqp1xn0h15lbyR8THDHy8yGkqmZt9lRaaeuM0244zooz2tK5pLu8E2WY0RypRMtT_3_SBKAqBSuX7Rxu99KljBMAoT0vODTpz3_s_bLVYjjIv99WRTpQskk',
-    },
-    {
-      id: 'FCM-2024-001232',
-      date: '10 Feb 2024',
-      total: '$120.00',
-      status: 'pending',
-      items: 2,
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3STeNq8civLDlVuPkmcTIQ4SDguNu93vf1LqpN1q4q-I2_Ko_hjWygl9plMApINyRVzOeWPmjmfoNBLH6Zg1hb_O5Ns03-I6A9938zh2TTXfwdCOZAviCeCRhPKXZTaOokCxgbsEekLITcAsWOSR29RwNeru0mUDeOAJSj7YGEOKdTKLz5Kr7mX2IJ3z0HsKqieOn47XbSTb2j9mBJbQ8A9eI4rJdwrw-2uQaj5F-61WjYBKdmDOZorXciPE3JuF38UIDNCfxvWw',
-    },
-  ];
+  const { orders: apiOrders, loading, fetchAll } = useOrders();
 
-  const statusConfig = {
-    pending: { label: 'Processing', color: 'bg-blue-100 text-blue-700' },
-    shipping: { label: 'Shipped', color: 'bg-yellow-100 text-yellow-700' },
-    delivered: { label: 'Delivered', color: 'bg-green-100 text-green-700' },
-    cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600' },
-  };
+  useEffect(() => {
+    fetchAll().catch(() => {/* use mock fallback */});
+  }, [fetchAll]);
 
-  const filteredOrders = orders.filter((o) => {
+  // Map API orders to display format; fall back to mock when backend unavailable
+  const displayOrders: DisplayOrder[] = apiOrders.length > 0
+    ? apiOrders.map((o) => ({
+        id: o.id,
+        date: new Date(o.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        total: `$${o.total.toFixed(2)}`,
+        status: o.status,
+        items: o.items.length,
+        image: IMAGES.userAvatar,
+      }))
+    : MOCK_ORDERS;
+
+  const filteredOrders = displayOrders.filter((o) => {
     const matchesStatus = filterStatus === 'all' || o.status === filterStatus;
     const matchesSearch = searchId === '' || o.id.toLowerCase().includes(searchId.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  const exportToCSV = () => {
+    const headers = ['Order ID', 'Date', 'Status', 'Items', 'Total'];
+    const rows = filteredOrders.map((o) => [
+      o.id,
+      o.date,
+      statusConfig[o.status]?.label ?? o.status,
+      o.items.toString(),
+      o.total,
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="spacing-section">
@@ -55,9 +89,13 @@ export default function OrdersPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-primary">Order History</h1>
-          <p className="text-primary/60 text-sm mt-1">{orders.length} orders total</p>
+          <p className="text-primary/60 text-sm mt-1">{displayOrders.length} orders total</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors">
+        <button
+          onClick={exportToCSV}
+          disabled={filteredOrders.length === 0}
+          className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
           <MaterialIcon name="download" className="text-base" />
           Export CSV
         </button>
@@ -69,10 +107,7 @@ export default function OrdersPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
             <div className="relative flex-1">
-              <MaterialIcon
-                name="search"
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base"
-              />
+              <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base" />
               <input
                 type="text"
                 placeholder="Search by Order ID..."
@@ -84,10 +119,7 @@ export default function OrdersPage() {
 
             {/* Date Range */}
             <div className="relative">
-              <MaterialIcon
-                name="calendar_today"
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base pointer-events-none"
-              />
+              <MaterialIcon name="calendar_today" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base pointer-events-none" />
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
@@ -99,19 +131,16 @@ export default function OrdersPage() {
                 <option value="2024">2024</option>
                 <option value="2023">2023</option>
               </select>
-              <MaterialIcon
-                name="expand_more"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none text-base"
-              />
+              <MaterialIcon name="expand_more" className="absolute right-2 top-1/2 -translate-y-1/2 text-primary/40 pointer-events-none text-base" />
             </div>
           </div>
 
           {/* Status Filters */}
           <div className="flex gap-2 flex-wrap">
             {[
-              { value: 'all', label: 'All' },
-              { value: 'pending', label: 'Processing' },
-              { value: 'shipping', label: 'Shipped' },
+              { value: 'all',       label: 'All' },
+              { value: 'pending',   label: 'Processing' },
+              { value: 'shipped',   label: 'Shipped' },
               { value: 'delivered', label: 'Delivered' },
               { value: 'cancelled', label: 'Cancelled' },
             ].map((status) => (
@@ -131,11 +160,29 @@ export default function OrdersPage() {
         </div>
       </div>
 
+      {/* Skeleton Loading */}
+      {loading && displayOrders === MOCK_ORDERS && (
+        <div className="spacing-section">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-primary/10 p-5 animate-pulse">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-primary/10 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-primary/10 rounded w-48" />
+                  <div className="h-3 bg-primary/5 rounded w-32" />
+                </div>
+                <div className="h-8 bg-primary/10 rounded-xl w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Orders List */}
-      {filteredOrders.length > 0 ? (
+      {!loading && filteredOrders.length > 0 && (
         <div className="spacing-section">
           {filteredOrders.map((order) => {
-            const status = statusConfig[order.status as keyof typeof statusConfig];
+            const status = statusConfig[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-600' };
             return (
               <div
                 key={order.id}
@@ -143,12 +190,8 @@ export default function OrdersPage() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   {/* Image */}
-                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/10 flex-shrink-0">
-                    <img
-                      src={order.image}
-                      alt="Order"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/10 flex-shrink-0 bg-primary/5 flex items-center justify-center">
+                    <img src={order.image} alt="Order" className="w-full h-full object-cover" />
                   </div>
 
                   {/* Details */}
@@ -181,7 +224,10 @@ export default function OrdersPage() {
             );
           })}
         </div>
-      ) : (
+      )}
+
+      {/* Empty state */}
+      {!loading && filteredOrders.length === 0 && (
         <div className="text-center py-16 bg-white rounded-xl border border-primary/10">
           <MaterialIcon name="shopping_bag" className="text-primary/20 text-6xl mb-4" />
           <p className="text-primary font-bold mb-2">No orders found</p>
@@ -197,10 +243,10 @@ export default function OrdersPage() {
       )}
 
       {/* Pagination */}
-      {filteredOrders.length > 0 && (
+      {!loading && filteredOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4">
           <p className="text-sm text-primary/40">
-            Showing {filteredOrders.length} of {orders.length} orders
+            Showing {filteredOrders.length} of {displayOrders.length} orders
           </p>
           <div className="flex items-center gap-2 flex-wrap">
             <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary/60 hover:border-primary/30 hover:text-primary transition-colors">
@@ -211,9 +257,7 @@ export default function OrdersPage() {
               <button
                 key={page}
                 className={`size-9 rounded-lg text-sm font-bold transition-colors ${
-                  page === 1
-                    ? 'bg-primary text-white'
-                    : 'border border-primary/10 text-primary hover:bg-primary/5'
+                  page === 1 ? 'bg-primary text-white' : 'border border-primary/10 text-primary hover:bg-primary/5'
                 }`}
               >
                 {page}

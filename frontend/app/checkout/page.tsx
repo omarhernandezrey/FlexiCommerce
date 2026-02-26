@@ -9,6 +9,7 @@ import { PaymentForm, type PaymentMethod } from '@/components/checkout/PaymentFo
 import { useCart } from '@/hooks/useCart';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/useToast';
+import apiClient from '@/lib/api-client';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 
 export default function CheckoutPage() {
@@ -17,6 +18,12 @@ export default function CheckoutPage() {
   const [shippingData, setShippingData] = useState<ShippingData | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
+  const [showShippingMethod, setShowShippingMethod] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoApplied, setPromoApplied] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const { items, getTotalPrice } = useCart();
   const { create } = useOrders();
@@ -35,6 +42,10 @@ export default function CheckoutPage() {
 
   const handleShippingNext = (data: ShippingData) => {
     setShippingData(data);
+    setShowShippingMethod(true);
+  };
+
+  const handleContinueToPayment = () => {
     setCurrentStep(1);
   };
 
@@ -54,7 +65,7 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.price,
         })),
-        total: getTotalPrice(),
+        total: getTotalPrice() + shippingCost + tax,
         status: 'pending' as const,
         userId: '', // Se establece desde el backend
         createdAt: new Date().toISOString(),
@@ -80,9 +91,52 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      const res = await apiClient.get(`/coupons?code=${encodeURIComponent(promoCode.trim())}`);
+      const coupons: Array<{ code: string; type: string; value: number; isActive: boolean; expiresAt?: string; minOrderAmount?: number }> = res.data?.data ?? res.data ?? [];
+      const coupon = Array.isArray(coupons)
+        ? coupons.find((c) => c.code.toLowerCase() === promoCode.trim().toLowerCase() && c.isActive)
+        : null;
+
+      if (!coupon) throw new Error('invalid');
+
+      // Check expiry
+      if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) throw new Error('expired');
+      // Check min order
+      if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) throw new Error('min_order');
+
+      const discount = coupon.type === 'percentage'
+        ? subtotal * (coupon.value / 100)
+        : Math.min(coupon.value, subtotal);
+
+      setPromoDiscount(discount);
+      setPromoApplied(coupon.code);
+      toast({ message: `Promo code "${coupon.code}" applied! -$${discount.toFixed(2)}`, type: 'success' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'expired') toast({ message: 'This promo code has expired', type: 'error' });
+      else if (msg === 'min_order') toast({ message: 'Order total too low for this code', type: 'error' });
+      else toast({ message: 'Invalid or unavailable promo code', type: 'error' });
+      setPromoDiscount(0);
+      setPromoApplied('');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const removePromo = () => {
+    setPromoCode('');
+    setPromoDiscount(0);
+    setPromoApplied('');
+  };
+
   const subtotal = getTotalPrice();
+  const shippingCost = shippingMethod === 'express' ? 15 : 0;
   const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const total = subtotal + shippingCost + tax - promoDiscount;
 
   return (
     <ProtectedRoute>
@@ -158,6 +212,82 @@ export default function CheckoutPage() {
                     onNext={handleShippingNext}
                     initialData={shippingData || undefined}
                   />
+
+                  {/* Shipping Method — appears after address is filled */}
+                  {showShippingMethod && (
+                    <div className="mt-8 pt-6 border-t border-primary/10">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
+                          2
+                        </div>
+                        <h2 className="text-xl font-extrabold text-primary">Shipping Method</h2>
+                      </div>
+
+                      <div className="space-y-3 mb-6">
+                        {/* Standard */}
+                        <button
+                          type="button"
+                          onClick={() => setShippingMethod('standard')}
+                          className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                            shippingMethod === 'standard'
+                              ? 'border-primary bg-primary/5'
+                              : 'border-primary/10 hover:border-primary/30'
+                          }`}
+                        >
+                          <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            shippingMethod === 'standard' ? 'border-primary' : 'border-primary/20'
+                          }`}>
+                            {shippingMethod === 'standard' && (
+                              <div className="size-2.5 rounded-full bg-primary" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="font-bold text-primary text-sm">Standard Shipping</p>
+                              <span className="text-sm font-extrabold text-green-600">FREE</span>
+                            </div>
+                            <p className="text-xs text-primary/50 mt-0.5">5–7 business days</p>
+                          </div>
+                          <MaterialIcon name="local_shipping" className="text-primary/40 text-xl" />
+                        </button>
+
+                        {/* Express */}
+                        <button
+                          type="button"
+                          onClick={() => setShippingMethod('express')}
+                          className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                            shippingMethod === 'express'
+                              ? 'border-primary bg-primary/5'
+                              : 'border-primary/10 hover:border-primary/30'
+                          }`}
+                        >
+                          <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            shippingMethod === 'express' ? 'border-primary' : 'border-primary/20'
+                          }`}>
+                            {shippingMethod === 'express' && (
+                              <div className="size-2.5 rounded-full bg-primary" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="font-bold text-primary text-sm">Express Shipping</p>
+                              <span className="text-sm font-extrabold text-primary">$15.00</span>
+                            </div>
+                            <p className="text-xs text-primary/50 mt-0.5">2–3 business days</p>
+                          </div>
+                          <MaterialIcon name="bolt" className="text-primary/40 text-xl" />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={handleContinueToPayment}
+                        className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                      >
+                        Continue to Payment
+                        <MaterialIcon name="arrow_forward" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -196,7 +326,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-sm font-bold text-primary flex items-center gap-2">
                           <MaterialIcon name="local_shipping" className="text-base" />
-                          Shipping Address
+                          Shipping
                         </p>
                         <button
                           onClick={() => setCurrentStep(0)}
@@ -208,6 +338,12 @@ export default function CheckoutPage() {
                       <p className="font-bold text-primary">{shippingData.firstName} {shippingData.lastName}</p>
                       <p className="text-sm text-primary/60">{shippingData.street}</p>
                       <p className="text-sm text-primary/60">{shippingData.city}, {shippingData.zipCode}</p>
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-primary/10">
+                        <MaterialIcon name={shippingMethod === 'express' ? 'bolt' : 'local_shipping'} className="text-primary/60 text-sm" />
+                        <span className="text-xs text-primary/60">
+                          {shippingMethod === 'standard' ? 'Standard (5–7 days) — Free' : 'Express (2–3 days) — $15.00'}
+                        </span>
+                      </div>
                     </div>
                   )}
 
@@ -301,15 +437,38 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Promo Code */}
-                <div className="flex gap-2 spacing-header">
-                  <input
-                    type="text"
-                    placeholder="Promo code"
-                    className="flex-1 px-3 py-2 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                  <button className="px-4 py-2 border border-primary text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors">
-                    Apply
-                  </button>
+                <div className="spacing-header">
+                  {promoApplied ? (
+                    <div className="flex items-center justify-between px-3 py-2.5 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <MaterialIcon name="local_offer" className="text-green-600 text-base" />
+                        <span className="text-sm font-bold text-green-700">{promoApplied} applied</span>
+                        <span className="text-sm text-green-600">-${promoDiscount.toFixed(2)}</span>
+                      </div>
+                      <button onClick={removePromo} className="text-green-600 hover:text-green-800 transition-colors">
+                        <MaterialIcon name="close" className="text-base" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
+                        placeholder="Promo code"
+                        className="flex-1 px-3 py-2 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      <button
+                        onClick={handleApplyPromo}
+                        disabled={promoLoading || !promoCode.trim()}
+                        className="px-4 py-2 border border-primary text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center gap-1"
+                      >
+                        {promoLoading && <MaterialIcon name="sync" className="text-sm animate-spin" />}
+                        Apply
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3 text-sm">
@@ -319,12 +478,22 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-primary/60">
                     <span>Shipping</span>
-                    <span className="text-green-600 font-semibold">Free</span>
+                    {shippingMethod === 'standard' ? (
+                      <span className="text-green-600 font-semibold">Free</span>
+                    ) : (
+                      <span>${shippingCost.toFixed(2)}</span>
+                    )}
                   </div>
                   <div className="flex justify-between text-primary/60">
                     <span>Tax (8%)</span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
+                  {promoDiscount > 0 && (
+                    <div className="flex justify-between text-green-600 font-semibold">
+                      <span>Discount ({promoApplied})</span>
+                      <span>-${promoDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-extrabold text-primary pt-3 border-t border-primary/10 text-base">
                     <span>Total</span>
                     <span>${total.toFixed(2)}</span>

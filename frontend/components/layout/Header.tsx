@@ -71,7 +71,7 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-primary/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Bar */}
-        <div className="flex items-center justify-between h-16 gap-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4 lg:gap-8">
           {/* Mobile menu toggle */}
           <button
             className="lg:hidden p-2 text-primary hover:bg-primary/5 rounded-full"
@@ -85,7 +85,7 @@ export function Header() {
             <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
               <MaterialIcon name="shopping_bag" className="text-2xl" />
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-primary uppercase">
+            <span className="text-sm sm:text-xl font-extrabold tracking-tight text-primary uppercase">
               Flexi<span className="font-normal">Commerce</span>
             </span>
           </Link>

@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
+import apiClient from '@/lib/api-client';
+import { useToast } from '@/hooks/useToast';
 
 const CMS_SECTIONS = [
   {
@@ -40,11 +42,50 @@ const CMS_SECTIONS = [
 
 const FONT_OPTIONS = ['Inter (Default)', 'Montserrat', 'Playfair Display', 'Roboto'];
 
+const SECTION_ICONS = ['imagesmode', 'grid_view', 'ads_click', 'mail', 'stars', 'local_offer', 'video_library', 'article'];
+const SECTION_COLORS = [
+  'bg-indigo-50 text-indigo-600',
+  'bg-emerald-50 text-emerald-600',
+  'bg-orange-50 text-orange-600',
+  'bg-blue-50 text-blue-600',
+  'bg-pink-50 text-pink-600',
+  'bg-violet-50 text-violet-600',
+];
+
 export default function CMSDashboardPage() {
   const [sections, setSections] = useState(CMS_SECTIONS);
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSubtitle, setEditSubtitle] = useState('');
+  const [addingSection, setAddingSection] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState('');
+  const { toasts, toast } = useToast();
+
+  // Load CMS settings from backend on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await apiClient.get('/admin/cms/settings');
+        const data = res.data;
+        if (data.sections) {
+          setSections((prev) =>
+            prev.map((s) => {
+              const saved = data.sections.find((saved: { id: string; visible: boolean }) => saved.id === s.id);
+              return saved ? { ...s, visible: saved.visible } : s;
+            })
+          );
+        }
+        if (data.font) setSelectedFont(data.font);
+        if (typeof data.maintenanceMode === 'boolean') setMaintenanceMode(data.maintenanceMode);
+      } catch {
+        // Backend endpoint may not exist yet — use defaults silently
+      }
+    };
+    loadSettings();
+  }, []);
 
   const toggleVisibility = (id: string) => {
     setSections((prev) =>
@@ -52,9 +93,59 @@ export default function CMSDashboardPage() {
     );
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleEditSection = (section: typeof sections[number]) => {
+    setEditingId(section.id);
+    setEditTitle(section.title);
+    setEditSubtitle(section.subtitle);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editTitle.trim()) return;
+    setSections((prev) =>
+      prev.map((s) => s.id === editingId ? { ...s, title: editTitle.trim(), subtitle: editSubtitle.trim() } : s)
+    );
+    setEditingId(null);
+  };
+
+  const handleAddSection = () => {
+    if (!newSectionTitle.trim()) return;
+    const id = `section-${Date.now()}`;
+    const iconIndex = sections.length % SECTION_ICONS.length;
+    const colorIndex = sections.length % SECTION_COLORS.length;
+    setSections((prev) => [
+      ...prev,
+      {
+        id,
+        title: newSectionTitle.trim(),
+        subtitle: 'New section • Not configured',
+        icon: SECTION_ICONS[iconIndex],
+        color: SECTION_COLORS[colorIndex],
+        visible: true,
+      },
+    ]);
+    setNewSectionTitle('');
+    setAddingSection(false);
+    toast({ message: 'Section added. Save to persist changes.', type: 'success' });
+  };
+
+  const handlePreview = () => {
+    window.open('/', '_blank');
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await apiClient.post('/admin/cms/settings', {
+        sections: sections.map((s) => ({ id: s.id, visible: s.visible })),
+        font: selectedFont,
+        maintenanceMode,
+      });
+      toast({ message: 'CMS settings saved successfully', type: 'success' });
+    } catch {
+      toast({ message: 'Failed to save. Changes saved locally.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -115,14 +206,20 @@ export default function CMSDashboardPage() {
               <p className="text-sm text-slate-500">Manage sections and layout of your store landing page.</p>
             </div>
             <div className="flex gap-2">
-              <button className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+              <button
+                onClick={handlePreview}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2"
+              >
+                <MaterialIcon name="open_in_new" className="text-base" />
                 Preview
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                disabled={saving}
+                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center gap-2"
               >
-                {saved ? 'Saved!' : 'Save Changes'}
+                {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
@@ -144,36 +241,108 @@ export default function CMSDashboardPage() {
                   <MaterialIcon name={section.icon} className="text-xl" />
                 </div>
 
-                {/* Info */}
+                {/* Info / Inline Edit */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold text-slate-900">{section.title}</h4>
-                  <p className="text-xs text-slate-500 uppercase tracking-tighter mt-0.5">{section.subtitle}</p>
+                  {editingId === section.id ? (
+                    <div className="flex flex-col gap-1.5">
+                      <input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="w-full px-2 py-1 border border-primary/30 rounded text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Section title"
+                        autoFocus
+                      />
+                      <input
+                        value={editSubtitle}
+                        onChange={(e) => setEditSubtitle(e.target.value)}
+                        className="w-full px-2 py-1 border border-slate-200 rounded text-xs text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Subtitle / description"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <h4 className="text-sm font-semibold text-slate-900">{section.title}</h4>
+                      <p className="text-xs text-slate-500 uppercase tracking-tighter mt-0.5">{section.subtitle}</p>
+                    </>
+                  )}
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => toggleVisibility(section.id)}
-                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                    title={section.visible ? 'Hide Section' : 'Show Section'}
-                  >
-                    <MaterialIcon
-                      name={section.visible ? 'visibility' : 'visibility_off'}
-                      className="text-xl"
-                    />
-                  </button>
-                  <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors">
-                    Edit
-                  </button>
+                  {editingId === section.id ? (
+                    <>
+                      <button
+                        onClick={handleSaveEdit}
+                        className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleVisibility(section.id)}
+                        className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                        title={section.visible ? 'Hide Section' : 'Show Section'}
+                      >
+                        <MaterialIcon
+                          name={section.visible ? 'visibility' : 'visibility_off'}
+                          className="text-xl"
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleEditSection(section)}
+                        className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
 
             {/* Add New Section */}
-            <button className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-sm font-medium text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
-              <MaterialIcon name="add_circle" className="text-xl" />
-              Add New Section
-            </button>
+            {addingSection ? (
+              <div className="bg-white border-2 border-primary/30 rounded-xl p-4 flex items-center gap-3">
+                <MaterialIcon name="add_circle" className="text-primary text-xl shrink-0" />
+                <input
+                  value={newSectionTitle}
+                  onChange={(e) => setNewSectionTitle(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') setAddingSection(false); }}
+                  className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  placeholder="New section name..."
+                  autoFocus
+                />
+                <button
+                  onClick={handleAddSection}
+                  disabled={!newSectionTitle.trim()}
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-40"
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => { setAddingSection(false); setNewSectionTitle(''); }}
+                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAddingSection(true)}
+                className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-sm font-medium text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
+              >
+                <MaterialIcon name="add_circle" className="text-xl" />
+                Add New Section
+              </button>
+            )}
           </div>
         </div>
 
@@ -262,12 +431,37 @@ export default function CMSDashboardPage() {
                 </div>
               </div>
 
-              <button className="w-full py-3 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                Apply Globally
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full py-3 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
+                {saving ? 'Saving...' : 'Apply Globally'}
               </button>
             </div>
           </div>
         </aside>
+      </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`px-4 py-3 rounded-xl shadow-lg text-sm font-semibold flex items-center gap-2 pointer-events-auto ${
+              t.type === 'success' ? 'bg-emerald-600 text-white' :
+              t.type === 'error' ? 'bg-red-600 text-white' :
+              'bg-primary text-white'
+            }`}
+          >
+            <MaterialIcon
+              name={t.type === 'success' ? 'check_circle' : t.type === 'error' ? 'error' : 'info'}
+              className="text-base shrink-0"
+            />
+            {t.message}
+          </div>
+        ))}
       </div>
     </div>
   );

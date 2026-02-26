@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
+import { useProductAdmin } from '@/hooks/useProductAdmin';
 import { useToast } from '@/hooks/useToast';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
@@ -9,6 +10,7 @@ import Link from 'next/link';
 
 export default function AdminProductsPage() {
   const { products, loading, error, fetchAll } = useProducts();
+  const { deleteProduct } = useProductAdmin();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -20,8 +22,9 @@ export default function AdminProductsPage() {
     if (!confirm(`¿Estás seguro de que deseas eliminar "${name}"?`)) return;
 
     try {
-      // await deleteProduct(id);
+      await deleteProduct(id);
       toast({ message: '✅ Producto eliminado exitosamente', type: 'success' });
+      fetchAll();
     } catch (error) {
       toast({ message: '❌ Error al eliminar producto', type: 'error' });
     }

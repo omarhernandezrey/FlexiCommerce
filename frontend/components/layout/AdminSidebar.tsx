@@ -8,7 +8,9 @@ import { cn } from '@/lib/cn';
 const mainNav = [
   { href: '/admin', icon: 'dashboard', label: 'Dashboard' },
   { href: '/admin/products', icon: 'inventory_2', label: 'Products' },
+  { href: '/admin/categories', icon: 'category', label: 'Categories' },
   { href: '/admin/orders', icon: 'shopping_cart', label: 'Orders' },
+  { href: '/admin/coupons', icon: 'local_offer', label: 'Coupons' },
   { href: '/admin/customers', icon: 'group', label: 'Customers' },
 ];
 

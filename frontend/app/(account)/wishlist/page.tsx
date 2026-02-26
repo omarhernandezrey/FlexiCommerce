@@ -13,6 +13,52 @@ export default function WishlistPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'wishlist' | 'compare' | 'alerts'>('wishlist');
   const [compareItems, setCompareItems] = useState<string[]>([]);
+  const [alertsEnabled, setAlertsEnabled] = useState<Record<string, boolean>>({});
+  const [alertTargets, setAlertTargets] = useState<Record<string, number>>({});
+
+  // Load alerts from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('priceAlerts');
+      if (stored) {
+        const { enabled, targets } = JSON.parse(stored);
+        setAlertsEnabled(enabled || {});
+        setAlertTargets(targets || {});
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const saveAlerts = (enabled: Record<string, boolean>, targets: Record<string, number>) => {
+    localStorage.setItem('priceAlerts', JSON.stringify({ enabled, targets }));
+  };
+
+  const handleSetAlert = (itemId: string, targetPrice: number) => {
+    const newEnabled = { ...alertsEnabled, [itemId]: !alertsEnabled[itemId] };
+    const newTargets = { ...alertTargets, [itemId]: targetPrice };
+    setAlertsEnabled(newEnabled);
+    setAlertTargets(newTargets);
+    saveAlerts(newEnabled, newTargets);
+  };
+
+  const handleEnableAllAlerts = () => {
+    const allEnabled: Record<string, boolean> = {};
+    const allTargets: Record<string, number> = { ...alertTargets };
+    items.forEach((item) => {
+      allEnabled[item.id] = true;
+      if (!allTargets[item.id]) allTargets[item.id] = parseFloat((item.price * 0.9).toFixed(0));
+    });
+    setAlertsEnabled(allEnabled);
+    setAlertTargets(allTargets);
+    saveAlerts(allEnabled, allTargets);
+  };
+
+  const handleTargetChange = (itemId: string, value: number) => {
+    const newTargets = { ...alertTargets, [itemId]: value };
+    setAlertTargets(newTargets);
+    saveAlerts(alertsEnabled, newTargets);
+  };
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -74,23 +120,23 @@ export default function WishlistPage() {
   return (
     <div className="spacing-section">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-primary">My Collections</h1>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-primary">My Collections</h1>
           <p className="text-primary/60 text-sm mt-1">{items.length} items saved</p>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors">
             <MaterialIcon name="share" className="text-base" />
             Share List
           </button>
           {compareItems.length > 0 && (
             <button
               onClick={() => setActiveTab('compare')}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
             >
               <MaterialIcon name="compare_arrows" className="text-base" />
-              Compare Selection ({compareItems.length})
+              Compare ({compareItems.length})
             </button>
           )}
         </div>
@@ -118,36 +164,36 @@ export default function WishlistPage() {
       <div className="flex border-b border-primary/10 overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('wishlist')}
-          className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${
             activeTab === 'wishlist'
               ? 'border-primary text-primary'
               : 'border-transparent text-primary/40 hover:text-primary'
           }`}
         >
           <MaterialIcon name="favorite" className="text-base" />
-          Wishlist Items ({items.length})
+          Wishlist ({items.length})
         </button>
         <button
           onClick={() => setActiveTab('compare')}
-          className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${
             activeTab === 'compare'
               ? 'border-primary text-primary'
               : 'border-transparent text-primary/40 hover:text-primary'
           }`}
         >
           <MaterialIcon name="grid_view" className="text-base" />
-          Specification Matrix
+          Comparar
         </button>
         <button
           onClick={() => setActiveTab('alerts')}
-          className={`px-6 py-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+          className={`px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-bold border-b-2 transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${
             activeTab === 'alerts'
               ? 'border-primary text-primary'
               : 'border-transparent text-primary/40 hover:text-primary'
           }`}
         >
           <MaterialIcon name="history" className="text-base" />
-          Price Alerts
+          Alertas
         </button>
       </div>
 
@@ -346,39 +392,92 @@ export default function WishlistPage() {
 
       {/* Price Alerts Tab */}
       {activeTab === 'alerts' && (
-        <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
-          <div className="py-16 text-center">
-            <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <MaterialIcon name="notifications" className="text-primary text-4xl" />
+        <div className="spacing-section">
+          {/* Header */}
+          <div className="bg-primary/5 rounded-xl border border-primary/10 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <MaterialIcon name="notifications_active" className="text-primary text-2xl" />
             </div>
-            <h3 className="text-xl font-extrabold text-primary mb-2">Price Alerts</h3>
-            <p className="text-primary/60 text-sm mb-6 max-w-xs mx-auto">
-              Get notified when prices drop on your saved items. Set up alerts for your favorite products.
-            </p>
-            <div className="space-y-3 max-w-sm mx-auto">
-              {items.slice(0, 3).map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-4 border border-primary/10 rounded-xl bg-primary/5"
-                >
-                  <div className="flex items-center gap-3">
-                    {item.image && (
-                      <img src={item.image} alt={item.productName} className="size-10 rounded-lg object-cover" />
-                    )}
-                    <div className="text-left">
-                      <p className="text-xs font-bold text-primary line-clamp-1">{item.productName}</p>
-                      <p className="text-sm font-extrabold text-primary">${item.price.toFixed(2)}</p>
+            <div className="flex-1">
+              <h3 className="font-extrabold text-primary">Price Drop Alerts</h3>
+              <p className="text-sm text-primary/60 mt-0.5">
+                Get notified by email when the price drops on your saved items.
+              </p>
+            </div>
+            <button
+              onClick={handleEnableAllAlerts}
+              className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap"
+            >
+              {Object.values(alertsEnabled).every(Boolean) && items.length > 0 ? 'All Alerts Active' : 'Enable All Alerts'}
+            </button>
+          </div>
+
+          {/* Items list */}
+          <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
+            {items.map((item, idx) => (
+              <div
+                key={item.id}
+                className={`flex items-center gap-4 p-4 hover:bg-primary/[0.02] transition-colors ${
+                  idx !== items.length - 1 ? 'border-b border-primary/5' : ''
+                }`}
+              >
+                {/* Image */}
+                <div className="size-14 rounded-lg overflow-hidden border border-primary/10 shrink-0">
+                  {item.image ? (
+                    <img src={item.image} alt={item.productName} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-primary/5 flex items-center justify-center">
+                      <MaterialIcon name="image_not_supported" className="text-primary/20" />
                     </div>
-                  </div>
-                  <button className="text-xs font-bold text-primary border border-primary/20 px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-colors">
-                    Set Alert
-                  </button>
+                  )}
                 </div>
-              ))}
-              {items.length === 0 && (
-                <p className="text-primary/40 text-sm">Add items to your wishlist to set price alerts.</p>
-              )}
-            </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-primary line-clamp-1">{item.productName}</p>
+                  <p className="text-xs text-primary/40 mt-0.5">{item.category}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-base font-extrabold text-primary">${item.price.toFixed(2)}</p>
+                    <span className="text-[10px] text-primary/40 font-medium">Current price</span>
+                  </div>
+                </div>
+
+                {/* Target Price Input */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-xs font-bold text-primary/40">Alert when below</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm">$</span>
+                    <input
+                      type="number"
+                      value={alertTargets[item.id] ?? parseFloat((item.price * 0.9).toFixed(0))}
+                      onChange={(e) => handleTargetChange(item.id, parseFloat(e.target.value) || 0)}
+                      className="w-24 pl-6 pr-3 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Toggle */}
+                <button
+                  onClick={() => handleSetAlert(item.id, alertTargets[item.id] ?? parseFloat((item.price * 0.9).toFixed(0)))}
+                  className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                    alertsEnabled[item.id]
+                      ? 'bg-primary text-white border border-primary'
+                      : 'text-primary border border-primary/20 hover:bg-primary hover:text-white hover:border-primary'
+                  }`}
+                >
+                  <MaterialIcon name={alertsEnabled[item.id] ? 'notifications_active' : 'notifications'} className="text-sm" />
+                  {alertsEnabled[item.id] ? 'Alert On' : 'Set Alert'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Info Banner */}
+          <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+            <MaterialIcon name="info" className="text-blue-500 text-base mt-0.5 shrink-0" />
+            <p className="text-xs text-blue-700 font-medium">
+              Price alerts are sent to your registered email. You can disable them at any time from your notification settings.
+            </p>
           </div>
         </div>
       )}
