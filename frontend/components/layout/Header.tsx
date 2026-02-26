@@ -56,6 +56,15 @@ export function Header() {
     setMounted(true);
   }, []);
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchQuery('');
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -91,18 +100,21 @@ export function Header() {
           </Link>
 
           {/* Search Bar */}
-          <div className="flex-1 max-w-2xl hidden md:block">
+          <form onSubmit={handleSearchSubmit} className="flex-1 max-w-2xl hidden md:block">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/40">
                 <MaterialIcon name="search" className="text-xl" />
               </div>
               <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
                 className="block w-full pl-10 pr-3 py-2 border-none bg-primary/5 rounded-lg focus:ring-2 focus:ring-primary/20 placeholder-primary/40 text-sm transition-all"
                 placeholder="Search products, brands, or features..."
                 type="text"
               />
             </div>
-          </div>
+          </form>
 
           {/* User Actions */}
           <div className="flex items-center gap-1 sm:gap-4">
@@ -325,9 +337,12 @@ export function Header() {
           <div className="px-6 py-4">
             <label className="relative flex items-center group">
               <MaterialIcon name="search" className="absolute left-3 text-primary/40 group-focus-within:text-primary transition-colors" />
-              <input 
-                className="w-full rounded-xl border-none bg-primary/5 py-3 pl-11 pr-4 text-sm font-medium text-primary placeholder:text-primary/40 focus:ring-2 focus:ring-primary/20" 
-                placeholder="Search FlexiCommerce" 
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { handleSearchSubmit(); setMobileMenuOpen(false); } }}
+                className="w-full rounded-xl border-none bg-primary/5 py-3 pl-11 pr-4 text-sm font-medium text-primary placeholder:text-primary/40 focus:ring-2 focus:ring-primary/20"
+                placeholder="Search FlexiCommerce"
                 type="text"
               />
             </label>

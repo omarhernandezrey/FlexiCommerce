@@ -32,6 +32,28 @@ function getTimeline(order: Order) {
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const { currentOrder, loading, error, fetchById } = useOrders();
 
+  const handleDownloadInvoice = () => {
+    if (!currentOrder) return;
+    const lines = [
+      `INVOICE — FlexiCommerce`,
+      `Order ID: ${currentOrder.id}`,
+      `Date: ${new Date(currentOrder.createdAt).toLocaleDateString()}`,
+      `Status: ${currentOrder.status}`,
+      ``,
+      `ITEMS:`,
+      ...currentOrder.items.map((item) => `  Product ${item.productId} — Qty: ${item.quantity} — $${item.price.toFixed(2)}`),
+      ``,
+      `TOTAL: $${currentOrder.total.toFixed(2)}`,
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${currentOrder.id}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     fetchById(params.id).catch(() => {/* backend not available */});
   }, [params.id, fetchById]);
@@ -236,7 +258,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 Continue Shopping
               </Link>
 
-              <button className="w-full px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 text-sm">
+              <button
+                onClick={handleDownloadInvoice}
+                className="w-full px-4 py-2.5 border-2 border-primary/20 text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 text-sm"
+              >
                 <MaterialIcon name="file_download" className="text-lg" />
                 Download Invoice
               </button>
@@ -254,14 +279,20 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 Questions about your order? Our support team is here 24/7.
               </p>
               <div className="space-y-2">
-                <button className="w-full px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:shadow-md transition-all text-sm flex items-center justify-center gap-2">
+                <a
+                  href={`mailto:support@flexicommerce.com?subject=Order%20${currentOrder?.id}`}
+                  className="w-full px-4 py-2.5 bg-primary text-white font-semibold rounded-lg hover:shadow-md transition-all text-sm flex items-center justify-center gap-2"
+                >
                   <MaterialIcon name="chat" className="text-base" />
                   Chat with Support
-                </button>
-                <button className="w-full px-4 py-2.5 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors text-sm flex items-center justify-center gap-2">
+                </a>
+                <a
+                  href="mailto:support@flexicommerce.com"
+                  className="w-full px-4 py-2.5 border-2 border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors text-sm flex items-center justify-center gap-2"
+                >
                   <MaterialIcon name="help_outline" className="text-base" />
                   Visit Help Center
-                </button>
+                </a>
               </div>
             </div>
           </div>

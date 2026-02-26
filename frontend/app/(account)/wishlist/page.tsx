@@ -60,6 +60,19 @@ export default function WishlistPage() {
     saveAlerts(alertsEnabled, newTargets);
   };
 
+  const [shareToast, setShareToast] = useState('');
+  const handleShareList = async () => {
+    const url = window.location.href;
+    const text = `Check out my wishlist on FlexiCommerce! ${url}`;
+    if (navigator.share) {
+      await navigator.share({ title: 'My Wishlist', text, url }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(url).catch(() => {});
+      setShareToast('Link copied to clipboard!');
+      setTimeout(() => setShareToast(''), 2500);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated || !user) {
       router.push('/auth');
@@ -126,9 +139,12 @@ export default function WishlistPage() {
           <p className="text-primary/60 text-sm mt-1">{items.length} items saved</p>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors">
-            <MaterialIcon name="share" className="text-base" />
-            Share List
+          <button
+            onClick={handleShareList}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
+          >
+            <MaterialIcon name={shareToast ? 'check' : 'share'} className="text-base" />
+            {shareToast || 'Share List'}
           </button>
           {compareItems.length > 0 && (
             <button

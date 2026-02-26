@@ -24,6 +24,10 @@ export default function AuthPage() {
   const { login, register, loading, error: authError } = useAuthAPI();
   const { toast } = useToast();
 
+  const handleSocialLogin = (provider: 'Google' | 'Apple') => {
+    toast({ message: `${provider} login coming soon. Please use email/password for now.`, type: 'info' });
+  };
+
   // Si el usuario ya está autenticado, redirigir a home
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -216,6 +220,7 @@ export default function AuthPage() {
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button
               type="button"
+              onClick={() => handleSocialLogin('Google')}
               className="flex items-center justify-center gap-2 h-12 px-4 border border-[#eaecf1] rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-bold text-primary"
             >
               <svg className="size-5" viewBox="0 0 24 24">
@@ -228,6 +233,7 @@ export default function AuthPage() {
             </button>
             <button
               type="button"
+              onClick={() => handleSocialLogin('Apple')}
               className="flex items-center justify-center gap-2 h-12 px-4 border border-[#eaecf1] rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-bold text-primary"
             >
               <MaterialIcon name="phone_iphone" className="text-primary" />

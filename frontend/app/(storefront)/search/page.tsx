@@ -43,6 +43,7 @@ function SearchContent() {
   const [minRating, setMinRating] = useState(0);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(12);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Run initial search from URL
@@ -105,10 +106,14 @@ function SearchContent() {
     return 0;
   });
 
+  const visibleResults = sorted.slice(0, visibleCount);
+  const hasMore = sorted.length > visibleCount;
+
   const clearFilters = () => {
     setMinRating(0);
     setPriceRange(null);
     setSort('relevance');
+    setVisibleCount(12);
   };
 
   const hasFilters = minRating > 0 || priceRange !== null || sort !== 'relevance';
@@ -341,16 +346,19 @@ function SearchContent() {
             ) : (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {sorted.map((p) => (
+                  {visibleResults.map((p) => (
                     <ProductCard key={p.id} product={p} />
                   ))}
                 </div>
 
                 {/* Load More */}
-                {sorted.length >= 12 && (
+                {hasMore && (
                   <div className="text-center pt-4">
-                    <button className="border-2 border-primary text-primary font-bold px-8 py-3 rounded-xl hover:bg-primary hover:text-white transition-all text-sm">
-                      Load More Results
+                    <button
+                      onClick={() => setVisibleCount((c) => c + 12)}
+                      className="border-2 border-primary text-primary font-bold px-8 py-3 rounded-xl hover:bg-primary hover:text-white transition-all text-sm"
+                    >
+                      Load More Results ({sorted.length - visibleCount} remaining)
                     </button>
                   </div>
                 )}

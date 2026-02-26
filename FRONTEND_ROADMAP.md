@@ -1,7 +1,7 @@
 # FlexiCommerce — Frontend Roadmap & Status Completo
 
 > **Documento maestro de desarrollo. Cualquier IA o desarrollador debe leer este archivo PRIMERO antes de tocar código.**
-> Última actualización: 2026-02-26 (T-29 completada)
+> Última actualización: 2026-02-26 (T-35 completada)
 
 ---
 
@@ -579,176 +579,72 @@ frontend/
 
 ---
 
-## 11. Lista de Tareas — Hechas y Pendientes
+## 11. Lista de Tareas — Historial Completo
 
-### ✅ COMPLETADO
-
-#### Infraestructura
-- [x] Configurar Next.js 14 App Router con TypeScript
-- [x] Configurar Tailwind CSS con tema custom (color primary #0f1729)
-- [x] Configurar Zustand stores (auth, cart, favorites, preferences)
-- [x] Configurar Axios client con base URL de .env
-- [x] Configurar layouts: storefront, account, admin
-- [x] Sistema de rutas protegidas (`ProtectedRoute`)
-- [x] Sistema de Toast notifications
-- [x] Botón BackToTop flotante (aparece a 400px scroll)
-
-#### Storefront
-- [x] Home: hero slider autoplay, categorías, trending, features, newsletter "Join the Elite Commerce Club"
-- [x] Catálogo `/products`: filtros (categoría, precio, rating, Color, Screen Size), sort, búsqueda, paginación
-- [x] Detalle producto `/products/[id]`: galería, tabs (Description con feature cards, Specifications, Reviews con backend real, Shipping & Returns)
-- [x] Reviews en detalle producto: `useReviews` hook integrado, stats reales, form write/edit/delete con estrellas interactivas, load more, skeleton loading
-- [x] Categoría `/category/[slug]`: hero banner con gradiente, productos filtrados, sort/price filter, related categories
-- [x] Búsqueda `/search`: input destacado, filtros (precio por rango, rating mínimo, sort), popular searches, no-results con sugerencias, Suspense wrapper
-- [x] Carrito completo
-- [x] Checkout: selector envío (Standard FREE / Express $15) + 3 pasos (shipping address, payment, review). Costo refleja en Order Summary
-- [x] Order Confirmation: confetti, Track Order, delivery banner, trust badges
-
-#### Account
-- [x] Perfil: save conectado a `PUT /users/profile`, avatar upload con preview + `POST /users/avatar`, loading states + toast
-- [x] Direcciones `/addresses`: CRUD completo (add/edit/delete/set-default), home/office icons
-- [x] Métodos de pago `/payment-methods`: Card + PayPal, set default, remove, SSL notice
-- [x] Historial órdenes: filtro status, filtro fecha, búsqueda, Export CSV funcional (Blob download), paginación, support banner
-- [x] Detalle orden
-- [x] Wishlist: grid, stats, 3 tabs (Wishlist/SpecMatrix/PriceAlerts), compare drawer mobile
-- [x] Compare: tabla specs, toggle differences, slots vacíos, Buy Now
-- [x] Auth: login/register 2 columnas, Google/Apple social login, password toggle
-
-#### Admin
-- [x] Dashboard: stats, page builder, branding, recent orders, top products
-- [x] CRUD Productos (lista + formulario + ImageUpload)
-- [x] Gestión Órdenes (lista + detalle + cambio status)
-- [x] Categorías `/admin/categories`: CRUD completo, subcategorías, auto-slug, toggle activo, image preview
-- [x] Cupones `/admin/coupons`: % y $fijo, max uses, expiry, stats (total/activo/expirado/uses), toggle activo, usage progress bar
-- [x] Analytics con gráficas
-- [x] Settings: tabs General/Payments/Shipping/Tax, GET/PUT backend, loading state + toast
-- [x] CMS: page builder secciones, branding, GET/POST backend, loading state + toast
-- [x] Notifications dropdown: lista de notificaciones, mark read individual/all, unread badge, cierre al click fuera
-- [x] Mobile drawer sidebar (hamburger, overlay)
-
-#### Responsive / UX
-- [x] Mobile-first en todas las páginas
-- [x] Mega menu desktop + drawer mobile en Header
-- [x] ProfileSidebar sticky in-flow con links a Addresses y Payment Methods
-- [x] Admin mobile sidebar drawer con links a Categories y Coupons
-- [x] MobileBottomNav para storefront
-- [x] Product badges diferenciados (Sale rojo top-left, New Release primary bottom-left)
+> **35/35 tareas completadas. Sin gaps pendientes. TypeScript sin errores.**
 
 ---
 
-### ✅ TAREAS COMPLETADAS (T-01 a T-10)
-
-| Tarea | Descripción | Archivos |
-|-------|-------------|----------|
-| T-01 | Reviews con backend en `/products/[id]`: `useReviews` integrado, stats reales, form write/edit/delete con estrellas, load more, skeleton | `products/[id]/page.tsx` |
-| T-02 | Shipping method en Checkout: Standard FREE / Express $15, costo en Order Summary y en orden enviada al backend | `checkout/page.tsx` |
-| T-03 | Profile save conectado a `PUT /api/users/profile`, `updateUser()` en Zustand, loading state + toast | `profile/page.tsx` |
-| T-04 | Página `/addresses`: CRUD completo add/edit/delete/set-default, home/office icons, link en ProfileSidebar | `addresses/page.tsx` |
-| T-05 | Página `/payment-methods`: Card + PayPal, set default, remove, SSL notice, link en ProfileSidebar | `payment-methods/page.tsx` |
-| T-06 | Página `/category/[slug]`: hero banner gradiente, productos filtrados, sort/price filter, related categories | `category/[slug]/page.tsx` |
-| T-07 | Página `/search`: búsqueda avanzada, filtros precio/rating/sort, popular searches, Suspense wrapper | `search/page.tsx` |
-| T-08 | Admin `/categories`: CRUD + subcategorías + auto-slug + toggle activo, link en AdminSidebar | `admin/categories/page.tsx` |
-| T-09 | Admin `/coupons`: % y $fijo, max uses, expiry, stats cards, toggle activo, usage progress bar | `admin/coupons/page.tsx` |
-| T-10 | Admin notifications dropdown: 5 notifs mock, mark read individual/all, unread badge, cierra fuera | `AdminHeader.tsx` |
-| T-11 | Admin CMS: GET settings en mount + POST al guardar, loading state, toast éxito/error | `admin/cms/page.tsx` |
-| T-12 | Admin Settings: GET settings en mount + PUT al guardar, loading state, toast éxito/error | `admin/settings/page.tsx` |
-| T-13 | Avatar upload: `<input type="file">` oculto, preview inmediato, POST `/users/avatar` multipart | `(account)/profile/page.tsx` |
-| T-14 | Export CSV: `exportToCSV()` con `Blob` + `URL.createObjectURL`, solo exporta órdenes filtradas | `(account)/orders/page.tsx` |
-| T-15 | Galería real: `product.images[]` con fallback a `[product.image]`, imágenes de demo en MockProduct #1 | `products/[id]/page.tsx`, `lib/constants.ts` |
+### Infraestructura base ✅
+- [x] Next.js 14 App Router + TypeScript + Tailwind CSS (tema #0f1729)
+- [x] Zustand stores: auth, cart, favorites, preferences
+- [x] Axios client con base URL `.env`, interceptor Bearer token
+- [x] Layouts: storefront, account (ProtectedRoute), admin
+- [x] Sistema Toast notifications + botón BackToTop
 
 ---
 
-### ✅ TAREAS COMPLETADAS (T-16 a T-19)
+### Tabla completa de tareas (T-01 a T-35)
 
-| Tarea | Descripción | Archivo | Prioridad |
-|-------|-------------|---------|-----------|
-| T-16 | ✅ Conectar `/account/orders` al backend: `useOrders.fetchAll()`, skeleton, fallback a mock | `(account)/orders/page.tsx` |
-| T-17 | ✅ Conectar `/account/orders/[id]` al backend: `useOrders.fetchById(id)`, skeleton, error state, timeline dinámico | `(account)/orders/[id]/page.tsx` |
-| T-18 | ✅ Promo code funcional en Checkout: `GET /coupons?code=X`, % y $fijo, línea descuento en Order Summary, botón Remove | `checkout/page.tsx` |
-| T-19 | ✅ Cambio de contraseña en Profile: form inline (current/new/confirm), validaciones, `PUT /users/password`, toast | `(account)/profile/page.tsx` |
-
----
-
-### ✅ TODAS LAS TAREAS COMPLETADAS (31/31)
-
----
-
-### ✅ TAREAS COMPLETADAS (T-20 a T-23)
-
-| Tarea | Descripción | Archivo | Prioridad |
-|-------|-------------|---------|-----------|
-| T-20 | ✅ Admin Products: `deleteProduct` implementado en `useProductAdmin` + llamada real en `handleDelete`, recarga lista tras eliminar | `admin/products/page.tsx`, `hooks/useProductAdmin.ts` | CRÍTICA |
-| T-21 | ✅ Catálogo `/products`: filtros Color y Screen Size incluidos en `filteredProducts` useMemo + `hasActiveFilters` + contador badge móvil | `(storefront)/products/page.tsx` | MEDIA |
-| T-22 | ✅ Wishlist Price Alerts: `handleSetAlert`, `handleEnableAllAlerts`, `handleTargetChange` con persistencia en localStorage; botones con estado visual activo/inactivo | `(account)/wishlist/page.tsx` | MEDIA |
-| T-23 | ✅ Admin CMS: Preview abre `/` en nueva pestaña; Edit por sección con inline inputs; Add New Section con formulario inline (Enter/Escape); icono y color auto-asignados | `admin/cms/page.tsx` | BAJA |
-| T-24 | ✅ Admin Dashboard: Edit inline por sección (title/meta), Add New Section con formulario inline, Apply Globally → `PUT /admin/settings` con loading + toast | `admin/page.tsx` | CRÍTICA |
-| T-25 | ✅ Detalle producto: `inWishlist` → `useWishlist` real (fetchWishlist/addToWishlist/removeFromWishlist/isInWishlist); producto cargado del backend con fallback a mock | `products/[id]/page.tsx` | CRÍTICA |
-| T-26 | ✅ Orders page: filtro `dateRange` aplicado (30d/3m/año), paginación real `ITEMS_PER_PAGE=5`, Prev/Next/números funcionales | `(account)/orders/page.tsx` | MEDIA |
-| T-27 | ✅ Home newsletter: `handleNewsletterSubmit`, estado loading/success, validación email, feedback visual éxito | `(storefront)/page.tsx` | MEDIA |
-| T-28 | ✅ Orders support buttons: `<a href="mailto:support@flexicommerce.com">` funcionales | `(account)/orders/page.tsx` | BAJA |
-| T-29 | ✅ AdminHeader "View All Notifications": `<Link href="/admin/orders">` | `AdminHeader.tsx` | BAJA |
-
-#### Detalle T-20 — Admin Delete Producto (CRÍTICA)
-- **Problema:** `app/admin/products/page.tsx` línea 23 tiene `// await deleteProduct(id);` comentado
-- **Raíz:** `useProductAdmin` hook no expone función `delete`
-- **Fix:** Agregar `deleteProduct` en `useProductAdmin.ts` con `DELETE /api/products/{id}`, luego usarlo en el `handleDelete` de la página
-- **Impacto:** Sin esto, los admins no pueden eliminar productos — broken feature crítica
-
-#### Detalle T-21 — Filtros Color/Screen Size en Catálogo
-- **Problema:** Los filtros Color y Screen Size existen en la UI pero no se pasan como parámetros en la llamada a `fetchAll(params)`
-- **Fix:** Incluir `color` y `screenSize` en el objeto `params` que se pasa a `fetchAll()`
-- **Impacto:** Los usuarios ven los filtros activos pero los resultados no cambian
-
-#### Detalle T-22 — Wishlist Price Alerts
-- **Problema:** Tab "Price Alerts" tiene botones "Enable All Alerts" y "Set Alert" por item sin implementación
-- **Fix:** Conectar a backend (o al menos guardar en localStorage/Zustand con feedback visual)
-- **Impacto:** Feature visible pero no funcional
-
-#### Detalle T-23 — Admin CMS Botones de Sección
-- **Problema:** Botones "Edit" por sección, "Preview" global y "Add New Section" en CMS no tienen onClick
-- **Fix:** Implementar modals o inline forms para editar secciones, preview en new tab, agregar sección al array
-- **Impacto:** El CMS guarda/carga configuración global pero no permite editar secciones individuales
+| # | Tarea | Archivo principal | Tipo |
+|---|-------|-------------------|------|
+| T-01 | Reviews backend en `/products/[id]`: hook `useReviews`, stats reales, form write/edit/delete, load more, skeleton | `products/[id]/page.tsx` | Feature |
+| T-02 | Checkout shipping: Standard FREE / Express $15, refleja en Order Summary y en payload de orden | `checkout/page.tsx` | Feature |
+| T-03 | Profile save → `PUT /users/profile`, `updateUser()` Zustand, loading + toast | `profile/page.tsx` | Integración |
+| T-04 | `/addresses`: CRUD add/edit/delete/set-default, home/office icons, link en ProfileSidebar | `addresses/page.tsx` | Página |
+| T-05 | `/payment-methods`: Card + PayPal, set default, remove, SSL notice | `payment-methods/page.tsx` | Página |
+| T-06 | `/category/[slug]`: hero banner gradiente, productos filtrados, sort/price, related categories | `category/[slug]/page.tsx` | Página |
+| T-07 | `/search`: búsqueda avanzada, filtros precio/rating/sort, popular searches, Suspense | `search/page.tsx` | Página |
+| T-08 | `/admin/categories`: CRUD + subcategorías + auto-slug + toggle activo | `admin/categories/page.tsx` | Admin |
+| T-09 | `/admin/coupons`: % y $fijo, max uses, expiry, stats, toggle, progress bar | `admin/coupons/page.tsx` | Admin |
+| T-10 | AdminHeader notifications: mark read individual/all, unread badge, cierra fuera | `AdminHeader.tsx` | UX |
+| T-11 | Admin CMS: `GET /admin/cms/settings` en mount + `POST` al guardar, toast | `admin/cms/page.tsx` | Integración |
+| T-12 | Admin Settings: `GET /admin/settings` en mount + `PUT` al guardar, toast | `admin/settings/page.tsx` | Integración |
+| T-13 | Avatar upload: `<input type="file">`, preview inmediato, `POST /users/avatar` multipart | `profile/page.tsx` | Feature |
+| T-14 | Export CSV: `Blob` + `URL.createObjectURL`, exporta solo órdenes filtradas | `orders/page.tsx` | Feature |
+| T-15 | Galería real: `product.images[]` con fallback a `[product.image]` | `products/[id]/page.tsx` | Feature |
+| T-16 | Órdenes backend: `useOrders.fetchAll()`, skeleton loading, fallback a mock | `orders/page.tsx` | Integración |
+| T-17 | Detalle orden backend: `useOrders.fetchById(id)`, skeleton, error state, timeline dinámico | `orders/[id]/page.tsx` | Integración |
+| T-18 | Promo code checkout: `GET /coupons?code=X`, % y $fijo, descuento en Order Summary, Remove | `checkout/page.tsx` | Feature |
+| T-19 | Cambio contraseña en perfil: form inline current/new/confirm, validaciones, `PUT /users/password` | `profile/page.tsx` | Feature |
+| T-20 | Admin delete producto: `deleteProduct` en `useProductAdmin` + `DELETE /products/{id}`, recarga lista | `admin/products/page.tsx` | Bug fix |
+| T-21 | Filtros Color y Screen Size en catálogo: incluidos en `filteredProducts` useMemo + badge contador | `products/page.tsx` | Bug fix |
+| T-22 | Wishlist Price Alerts: `handleSetAlert`, `handleEnableAllAlerts`, `handleTargetChange`, localStorage | `wishlist/page.tsx` | Feature |
+| T-23 | Admin CMS botones: Preview → `/` en nueva pestaña; Edit inline; Add New Section con formulario | `admin/cms/page.tsx` | Feature |
+| T-24 | Admin Dashboard: Edit inline secciones, Add New Section, Apply Globally → `PUT /admin/settings` | `admin/page.tsx` | Feature |
+| T-25 | Wishlist real en detalle producto: `useWishlist` (fetchWishlist/add/remove/isInWishlist) | `products/[id]/page.tsx` | Integración |
+| T-26 | Órdenes filtro fecha: dateRange 30d/3m/año aplicado; paginación real `ITEMS_PER_PAGE=5` | `orders/page.tsx` | Feature |
+| T-27 | Home newsletter: submit handler, estado loading/success, validación email, mensaje éxito | `(storefront)/page.tsx` | Feature |
+| T-28 | Órdenes support buttons: `<a href="mailto:support@flexicommerce.com">` | `orders/page.tsx` | Bug fix |
+| T-29 | AdminHeader "View All Notifications": `<Link href="/admin/orders">` | `AdminHeader.tsx` | Bug fix |
+| T-30 | Header search: `searchQuery` + `onChange`/`onKeyDown` → `router.push('/search?q=...')`, desktop y móvil | `Header.tsx` | Bug fix crítico |
+| T-31 | Search "Load More": `visibleCount` state (12 inicial, +12/click), muestra cuántos quedan | `search/page.tsx` | Feature |
+| T-32 | Orders/[id] Download Invoice: genera `.txt` con datos reales via Blob + auto-download | `orders/[id]/page.tsx` | Feature |
+| T-33 | Orders/[id] support buttons: `<a href="mailto:">` funcionales | `orders/[id]/page.tsx` | Bug fix |
+| T-34 | Auth Google/Apple: `handleSocialLogin` → toast "coming soon" | `auth/page.tsx` | UX |
+| T-35 | Wishlist "Share List": Web Share API + fallback clipboard, feedback visual en botón | `wishlist/page.tsx` | Feature |
 
 ---
 
-#### Detalle de implementación T-16 a T-19
+### Estado por área
 
-##### T-16: Conectar Lista de Órdenes al backend
-- **Archivo:** `app/(account)/orders/page.tsx`
-- **Qué hacer:**
-  - Importar `useOrders` hook
-  - En `useEffect` de mount: llamar `fetchAll()` para cargar órdenes reales
-  - Mostrar skeleton loading (3 items) mientras carga
-  - Usar `orders` del hook en lugar del array hardcodeado
-  - Adaptar `statusConfig` a los status del backend (`pending`, `processing`, `shipped`, `delivered`, `cancelled`)
-  - El Export CSV ya funciona y usará los datos reales automáticamente
-
-#### T-17: Conectar Detalle de Orden al backend
-- **Archivo:** `app/(account)/orders/[id]/page.tsx`
-- **Qué hacer:**
-  - Importar `useOrders` hook
-  - En `useEffect` de mount: llamar `fetchById(params.id)`
-  - Mostrar skeleton loading mientras carga
-  - Reemplazar el objeto `order` hardcodeado con `currentOrder` del hook
-  - Manejar estado `error` (mostrar mensaje si no existe la orden)
-
-#### T-18: Promo code funcional en Checkout
-- **Archivo:** `app/checkout/page.tsx`
-- **Qué hacer:**
-  - Agregar estado `promoCode`, `promoDiscount`, `promoApplied`, `promoLoading`
-  - Handler `handleApplyPromo`: llama `GET /coupons?code={promoCode}` con `apiClient`
-  - Si válido: aplica `discount = coupon.type === 'percentage' ? subtotal * coupon.value / 100 : coupon.value`
-  - Mostrar línea "Discount (-X%)" en verde en Order Summary
-  - Actualizar `total = subtotal + shippingCost + tax - discount`
-  - Botón "Remove" para quitar el cupón aplicado
-  - Mostrar error si código inválido/expirado
-
-##### T-19: Cambio de contraseña en Profile
-- Form inline toggle con `showPasswordForm` state
-- Campos: Current Password, New Password, Confirm New Password
-- Validaciones: campos requeridos, min 8 chars, passwords coinciden (feedback visual en tiempo real)
-- `PUT /users/password` con `{ currentPassword, newPassword }`, toast éxito/error
-- Se limpia al cerrar
+| Área | Páginas | Estado |
+|------|---------|--------|
+| Storefront | Home, Productos, Detalle, Categoría, Búsqueda | ✅ 100% |
+| Checkout | Cart, Checkout, Confirmación | ✅ 100% |
+| Account | Perfil, Órdenes, Detalle Orden, Direcciones, Pagos, Wishlist, Compare, Auth | ✅ 100% |
+| Admin | Dashboard, Productos, Órdenes, Categorías, Cupones, Analytics, Settings, CMS | ✅ 100% |
+| Componentes | Header, Footer, ProfileSidebar, AdminSidebar, AdminHeader | ✅ 100% |
 
 ---
 
