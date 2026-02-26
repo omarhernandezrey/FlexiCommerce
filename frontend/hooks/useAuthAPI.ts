@@ -16,14 +16,15 @@ export const useAuthAPI = () => {
         setError(null);
         const { data } = await authAPI.login(credentials);
         
-        // Save token to localStorage
+        // Save token to localStorage and cookie (cookie needed for middleware)
         if (data.token) {
           localStorage.setItem('authToken', data.token);
+          document.cookie = `auth-token=${data.token}; path=/; max-age=604800; samesite=lax`;
         }
-        
+
         // Update store
         storeLogin(data.user, data.token);
-        
+
         return data.user;
       } catch (err) {
         const message =
@@ -46,14 +47,15 @@ export const useAuthAPI = () => {
         setError(null);
         const { data } = await authAPI.register(userData);
         
-        // Save token to localStorage
+        // Save token to localStorage and cookie (cookie needed for middleware)
         if (data.token) {
           localStorage.setItem('authToken', data.token);
+          document.cookie = `auth-token=${data.token}; path=/; max-age=604800; samesite=lax`;
         }
-        
+
         // Update store
         storeLogin(data.user, data.token);
-        
+
         return data.user;
       } catch (err) {
         const message =
@@ -73,9 +75,10 @@ export const useAuthAPI = () => {
       setError(null);
       await authAPI.logout();
       
-      // Clear token
+      // Clear token from localStorage and cookie
       localStorage.removeItem('authToken');
-      
+      document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
+
       // Update store
       storeLogout();
     } catch (err) {

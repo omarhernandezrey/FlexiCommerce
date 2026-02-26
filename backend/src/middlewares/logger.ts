@@ -1,11 +1,20 @@
-export const logger = {
-  info(message: string, data?: unknown) {
-    console.log(`[INFO] ${message}`, data ? JSON.stringify(data) : '');
-  },
-  warn(message: string, data?: unknown) {
-    console.warn(`[WARN] ${message}`, data ? JSON.stringify(data) : '');
-  },
-  error(message: string, data?: unknown) {
-    console.error(`[ERROR] ${message}`, data ? JSON.stringify(data) : '');
-  },
+import { Request, Response, NextFunction } from 'express';
+import logger from '../utils/logger.js';
+
+export const httpLogger = (req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'http';
+
+    logger.log(level, `${req.method} ${req.originalUrl}`, {
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+  });
+
+  next();
 };

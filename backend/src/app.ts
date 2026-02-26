@@ -2,7 +2,13 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import yaml from 'js-yaml';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { httpLogger } from './middlewares/logger.js';
 
 // Importar rutas
 import authRoutes from './modules/auth/auth.routes.js';
@@ -19,10 +25,15 @@ import recommendationsRoutes from './modules/recommendations/recommendations.rou
 
 dotenv.config();
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export const app: Express = express();
 
+// HTTP request logging
+app.use(httpLogger);
+
 // Middlewares de seguridad
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(
   cors({
     origin: process.env.NODE_ENV === 'development' ? true : (process.env.CORS_ORIGIN || 'http://localhost:3000'),
@@ -33,6 +44,22 @@ app.use(
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Swagger UI (solo en desarrollo)
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    const openapiPath = path.join(__dirname, '..', '..', '..', 'openapi.yaml');
+    const swaggerDocument = yaml.load(fs.readFileSync(openapiPath, 'utf8')) as Record<string, unknown>;
+    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+      customSiteTitle: 'FlexiCommerce API Docs',
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    }));
+  } catch {
+    console.warn('⚠️  No se pudo cargar openapi.yaml para Swagger UI');
+  }
+}
 
 // Root route
 app.get('/', (_req: Request, res: Response) => {
@@ -52,6 +79,7 @@ app.get('/', (_req: Request, res: Response) => {
       analytics: '/api/analytics',
       wishlist: '/api/wishlist',
       health: '/api/health',
+      docs: process.env.NODE_ENV !== 'production' ? '/api/docs' : 'disabled in production',
     },
   });
 });

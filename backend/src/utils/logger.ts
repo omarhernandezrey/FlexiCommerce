@@ -1,29 +1,60 @@
-const LOG_LEVELS = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  debug: 3,
-} as const;
+import winston from 'winston';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-type LogLevel = keyof typeof LOG_LEVELS;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOG_DIR = path.join(__dirname, '..', '..', 'logs');
 
-const currentLevel: LogLevel = (process.env.LOG_LEVEL as LogLevel) || 'info';
+const { combine, timestamp, colorize, printf, json, errors } = winston.format;
 
-const shouldLog = (level: LogLevel): boolean => {
-  return LOG_LEVELS[level] <= LOG_LEVELS[currentLevel];
-};
+// Formato legible para desarrollo
+const devFormat = combine(
+  colorize({ all: true }),
+  timestamp({ format: 'HH:mm:ss' }),
+  errors({ stack: true }),
+  printf(({ level, message, timestamp, stack, ...meta }) => {
+    const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+    return `${timestamp} [${level}] ${stack || message}${metaStr}`;
+  })
+);
 
-export const logger = {
-  error: (message: string, ...args: unknown[]) => {
-    if (shouldLog('error')) console.error(`[ERROR] ${message}`, ...args);
-  },
-  warn: (message: string, ...args: unknown[]) => {
-    if (shouldLog('warn')) console.warn(`[WARN] ${message}`, ...args);
-  },
-  info: (message: string, ...args: unknown[]) => {
-    if (shouldLog('info')) console.log(`[INFO] ${message}`, ...args);
-  },
-  debug: (message: string, ...args: unknown[]) => {
-    if (shouldLog('debug')) console.log(`[DEBUG] ${message}`, ...args);
-  },
-};
+// Formato JSON estructurado para producción
+const prodFormat = combine(
+  timestamp(),
+  errors({ stack: true }),
+  json()
+);
+
+const transports: winston.transport[] = [
+  new winston.transports.Console({
+    format: process.env.NODE_ENV === 'production' ? prodFormat : devFormat,
+  }),
+];
+
+// En producción: guardar en archivos rotativos
+if (process.env.NODE_ENV === 'production') {
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(LOG_DIR, 'error.log'),
+      level: 'error',
+      format: prodFormat,
+      maxsize: 10 * 1024 * 1024, // 10MB
+      maxFiles: 5,
+    }),
+    new winston.transports.File({
+      filename: path.join(LOG_DIR, 'combined.log'),
+      format: prodFormat,
+      maxsize: 20 * 1024 * 1024, // 20MB
+      maxFiles: 10,
+    })
+  );
+}
+
+export const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  transports,
+  // No crashear el proceso en excepciones no manejadas
+  exitOnError: false,
+});
+
+export default logger;

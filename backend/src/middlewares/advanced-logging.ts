@@ -4,7 +4,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { logger } from './logger.js';
+import { logger } from '../utils/logger.js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 
