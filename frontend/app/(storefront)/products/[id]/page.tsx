@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useReviews } from '@/hooks/useReviews';
 import type { Review } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,8 @@ import { StarRating } from '@/components/ui/StarRating';
 import { ProductCard } from '@/components/products/ProductCard';
 import { MOCK_PRODUCTS } from '@/lib/constants';
 import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useProducts } from '@/hooks/useProducts';
 
 const COLOR_OPTIONS = [
   { name: 'Black', hex: '#1a1a1a' },
@@ -24,7 +26,22 @@ type Tab = typeof TABS[number];
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const { addItem } = useCart();
   const { user } = useAuth();
-  const product = MOCK_PRODUCTS.find((p) => p.id === params.id) || MOCK_PRODUCTS[0];
+  const { fetchById } = useProducts();
+  const { fetchWishlist, addToWishlist, removeFromWishlist, isInWishlist, items: wishlistItems } = useWishlist();
+
+  const [productData, setProductData] = useState(
+    MOCK_PRODUCTS.find((p) => p.id === params.id) || MOCK_PRODUCTS[0]
+  );
+
+  // Load product from backend, fallback to mock
+  useEffect(() => {
+    fetchById(params.id)
+      .then((data) => { if (data) setProductData(data); })
+      .catch(() => {/* keep mock */});
+    fetchWishlist().catch(() => {/* ignore */});
+  }, [params.id, fetchById, fetchWishlist]);
+
+  const product = productData;
 
   const {
     reviews,
@@ -90,12 +107,22 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       await deleteReview(userReview.id);
     }
   };
+
+  const handleToggleWishlist = async () => {
+    if (inWishlist && wishlistItem) {
+      await removeFromWishlist(wishlistItem.id, product.name);
+    } else {
+      await addToWishlist(product.id, product.name, product.price, product.image, product.category);
+    }
+  };
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].name);
   const [activeTab, setActiveTab] = useState<Tab>('Description');
-  const [inWishlist, setInWishlist] = useState(false);
+
+  const inWishlist = isInWishlist(product.id);
+  const wishlistItem = wishlistItems.find((i) => i.productId === product.id);
 
   const relatedProducts = MOCK_PRODUCTS.filter(
     (p) => p.category === product.category && p.id !== product.id
@@ -149,7 +176,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               </div>
             )}
             <button
-              onClick={() => setInWishlist(!inWishlist)}
+              onClick={handleToggleWishlist}
               className="absolute top-4 right-4 size-10 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
             >
               <MaterialIcon
@@ -252,7 +279,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               {addedToCart ? 'Added!' : 'Add to Cart'}
             </button>
             <button
-              onClick={() => setInWishlist(!inWishlist)}
+              onClick={handleToggleWishlist}
               className="px-3 sm:px-4 py-2.5 sm:py-3.5 border-2 border-primary/10 text-primary rounded-lg sm:rounded-xl hover:bg-primary/5 transition-colors"
             >
               <MaterialIcon

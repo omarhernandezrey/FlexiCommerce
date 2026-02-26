@@ -40,6 +40,19 @@ export default function StorefrontHome() {
   const prevSlide = () => { setCurrentSlide((p) => (p - 1 + HERO_SLIDES.length) % HERO_SLIDES.length); setAutoPlay(false); };
   const nextSlide = () => { setCurrentSlide((p) => (p + 1) % HERO_SLIDES.length); setAutoPlay(false); };
 
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterState, setNewsletterState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim() || !newsletterEmail.includes('@')) return;
+    setNewsletterState('loading');
+    // Simulate API call — replace with real endpoint when available
+    await new Promise((r) => setTimeout(r, 700));
+    setNewsletterState('success');
+    setNewsletterEmail('');
+  };
+
   return (
     <div className="section-wrapper">
       {/* Hero Slider */}
@@ -227,16 +240,31 @@ export default function StorefrontHome() {
         <p className="text-primary/60 mb-6 sm:mb-8 text-sm sm:text-base">
           Get 20% off your first order and unlock exclusive deals, early access to new arrivals, and members-only perks
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-          <input
-            type="email"
-            placeholder="Enter your email address"
-            className="flex-1 px-4 py-2.5 sm:py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-sm"
-          />
-          <button className="px-6 py-2.5 sm:py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap text-sm">
-            Subscribe Now
-          </button>
-        </div>
+        {newsletterState === 'success' ? (
+          <div className="flex items-center justify-center gap-2 max-w-md mx-auto py-3 px-6 bg-green-50 border border-green-200 rounded-lg">
+            <MaterialIcon name="check_circle" className="text-green-600 text-xl" />
+            <p className="text-green-700 font-bold text-sm">You're in! Check your inbox for your 20% discount code.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <input
+              type="email"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              placeholder="Enter your email address"
+              required
+              className="flex-1 px-4 py-2.5 sm:py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-sm"
+            />
+            <button
+              type="submit"
+              disabled={newsletterState === 'loading'}
+              className="px-6 py-2.5 sm:py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap text-sm disabled:opacity-70 flex items-center gap-2 justify-center"
+            >
+              {newsletterState === 'loading' && <MaterialIcon name="sync" className="text-base animate-spin" />}
+              {newsletterState === 'loading' ? 'Subscribing...' : 'Subscribe Now'}
+            </button>
+          </form>
+        )}
         <p className="text-xs text-primary/40 mt-4">We respect your privacy. Unsubscribe at any time.</p>
       </section>
     </div>

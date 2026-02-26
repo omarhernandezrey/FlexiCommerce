@@ -5,6 +5,8 @@ import { useProducts } from '@/hooks/useProducts';
 import { useOrdersAdmin } from '@/hooks/useOrdersAdmin';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { useToast } from '@/hooks/useToast';
+import apiClient from '@/lib/api-client';
 import Link from 'next/link';
 
 interface PageSection {
@@ -56,6 +58,14 @@ export default function AdminDashboard() {
   
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [editSectionTitle, setEditSectionTitle] = useState('');
+  const [editSectionMeta, setEditSectionMeta] = useState('');
+  const [addingSection, setAddingSection] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState('');
+  const [selectedFont, setSelectedFont] = useState('Inter');
+  const [applyingGlobally, setApplyingGlobally] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchProducts();
@@ -96,6 +106,55 @@ export default function AdminDashboard() {
         section.id === id ? { ...section, enabled: !section.enabled } : section
       )
     );
+  };
+
+  const handleEditSection = (section: PageSection) => {
+    setEditingSectionId(section.id);
+    setEditSectionTitle(section.title);
+    setEditSectionMeta(section.meta);
+  };
+
+  const handleSaveSection = () => {
+    if (!editSectionTitle.trim()) return;
+    setPageSections((prev) =>
+      prev.map((s) =>
+        s.id === editingSectionId ? { ...s, title: editSectionTitle.trim(), meta: editSectionMeta.trim() } : s
+      )
+    );
+    setEditingSectionId(null);
+  };
+
+  const handleAddSection = () => {
+    if (!newSectionTitle.trim()) return;
+    const icons = ['view_carousel', 'grid_view', 'campaign', 'email', 'stars', 'local_offer'];
+    const newSection: PageSection = {
+      id: `section-${Date.now()}`,
+      title: newSectionTitle.trim(),
+      icon: icons[pageSections.length % icons.length],
+      meta: 'New section · Not configured',
+      enabled: true,
+    };
+    setPageSections((prev) => [...prev, newSection]);
+    setNewSectionTitle('');
+    setAddingSection(false);
+    toast({ message: 'Section added. Click "Full Editor" to configure it.', type: 'success' });
+  };
+
+  const handleApplyGlobally = async () => {
+    setApplyingGlobally(true);
+    try {
+      await apiClient.put('/admin/settings', {
+        primaryColor,
+        accentColor,
+        font: selectedFont,
+        maintenanceMode,
+      });
+      toast({ message: 'Branding applied globally', type: 'success' });
+    } catch {
+      toast({ message: 'Failed to apply. Settings saved locally.', type: 'error' });
+    } finally {
+      setApplyingGlobally(false);
+    }
   };
 
   const stats = [
@@ -219,31 +278,92 @@ export default function AdminDashboard() {
                   <MaterialIcon name={section.icon} className="text-xl" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-primary text-sm">{section.title}</p>
-                  <p className="text-xs text-primary/40">{section.meta}</p>
+                  {editingSectionId === section.id ? (
+                    <div className="flex flex-col gap-1">
+                      <input
+                        value={editSectionTitle}
+                        onChange={(e) => setEditSectionTitle(e.target.value)}
+                        className="w-full px-2 py-1 border border-primary/30 rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Section title"
+                        autoFocus
+                      />
+                      <input
+                        value={editSectionMeta}
+                        onChange={(e) => setEditSectionMeta(e.target.value)}
+                        className="w-full px-2 py-1 border border-slate-200 rounded text-xs text-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Meta / description"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="font-bold text-primary text-sm">{section.title}</p>
+                      <p className="text-xs text-primary/40">{section.meta}</p>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                  <button className="size-10 rounded-lg border border-primary/10 flex items-center justify-center text-primary/40 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all">
-                    <MaterialIcon name="edit" className="text-lg" />
-                  </button>
-                  <button 
-                    onClick={() => toggleSectionVisibility(section.id)}
-                    className={`size-10 rounded-lg border flex items-center justify-center transition-all ${
-                      section.enabled
-                        ? 'border-success/30 text-success hover:bg-success/5 hover:border-success/50'
-                        : 'border-primary/10 text-primary/40 hover:border-primary/30 hover:bg-primary/5'
-                    }`}
-                  >
-                    <MaterialIcon name={section.enabled ? 'visibility' : 'visibility_off'} className="text-lg" />
-                  </button>
+                  {editingSectionId === section.id ? (
+                    <>
+                      <button
+                        onClick={handleSaveSection}
+                        className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingSectionId(null)}
+                        className="px-3 py-1.5 border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary/5 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleEditSection(section)}
+                        className="size-10 rounded-lg border border-primary/10 flex items-center justify-center text-primary/40 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
+                      >
+                        <MaterialIcon name="edit" className="text-lg" />
+                      </button>
+                      <button
+                        onClick={() => toggleSectionVisibility(section.id)}
+                        className={`size-10 rounded-lg border flex items-center justify-center transition-all ${
+                          section.enabled
+                            ? 'border-success/30 text-success hover:bg-success/5 hover:border-success/50'
+                            : 'border-primary/10 text-primary/40 hover:border-primary/30 hover:bg-primary/5'
+                        }`}
+                      >
+                        <MaterialIcon name={section.enabled ? 'visibility' : 'visibility_off'} className="text-lg" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
 
-            <button className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-primary/20 text-primary/60 rounded-xl hover:border-primary/40 hover:text-primary transition-all text-sm font-bold mt-2 group">
-              <MaterialIcon name="add_circle" className="text-lg group-hover:scale-110 transition-transform" />
-              Add New Section
-            </button>
+            {addingSection ? (
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border-2 border-primary/30 mt-2">
+                <MaterialIcon name="add_circle" className="text-primary text-xl shrink-0" />
+                <input
+                  value={newSectionTitle}
+                  onChange={(e) => setNewSectionTitle(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') setAddingSection(false); }}
+                  className="flex-1 px-3 py-1.5 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  placeholder="Section name..."
+                  autoFocus
+                />
+                <button onClick={handleAddSection} disabled={!newSectionTitle.trim()} className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors disabled:opacity-40">Add</button>
+                <button onClick={() => { setAddingSection(false); setNewSectionTitle(''); }} className="px-3 py-1.5 border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary/5 transition-colors">Cancel</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAddingSection(true)}
+                className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-primary/20 text-primary/60 rounded-xl hover:border-primary/40 hover:text-primary transition-all text-sm font-bold mt-2 group"
+              >
+                <MaterialIcon name="add_circle" className="text-lg group-hover:scale-110 transition-transform" />
+                Add New Section
+              </button>
+            )}
           </div>
         </div>
 
@@ -308,7 +428,11 @@ export default function AdminDashboard() {
             {/* Font */}
             <div>
               <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Global Font</p>
-              <select className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white hover:border-primary/20 transition-colors">
+              <select
+                value={selectedFont}
+                onChange={(e) => setSelectedFont(e.target.value)}
+                className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white hover:border-primary/20 transition-colors"
+              >
                 <option>Inter</option>
                 <option>Montserrat</option>
                 <option>Playfair Display</option>
@@ -336,8 +460,13 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <button className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm">
-              Apply Globally
+            <button
+              onClick={handleApplyGlobally}
+              disabled={applyingGlobally}
+              className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {applyingGlobally && <MaterialIcon name="sync" className="text-base animate-spin" />}
+              {applyingGlobally ? 'Applying...' : 'Apply Globally'}
             </button>
           </div>
         </div>

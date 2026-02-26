@@ -31,10 +31,13 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   cancelled: { label: 'Cancelled',  color: 'bg-gray-100 text-gray-600' },
 };
 
+const ITEMS_PER_PAGE = 5;
+
 export default function OrdersPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchId, setSearchId] = useState('');
   const [dateRange, setDateRange] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { orders: apiOrders, loading, fetchAll } = useOrders();
 
@@ -57,8 +60,38 @@ export default function OrdersPage() {
   const filteredOrders = displayOrders.filter((o) => {
     const matchesStatus = filterStatus === 'all' || o.status === filterStatus;
     const matchesSearch = searchId === '' || o.id.toLowerCase().includes(searchId.toLowerCase());
-    return matchesStatus && matchesSearch;
+
+    let matchesDate = true;
+    if (dateRange !== 'all') {
+      const orderDate = new Date(o.date);
+      const now = new Date();
+      if (dateRange === '30d') {
+        const cutoff = new Date(now);
+        cutoff.setDate(cutoff.getDate() - 30);
+        matchesDate = orderDate >= cutoff;
+      } else if (dateRange === '3m') {
+        const cutoff = new Date(now);
+        cutoff.setMonth(cutoff.getMonth() - 3);
+        matchesDate = orderDate >= cutoff;
+      } else {
+        // year filter e.g. '2024', '2023'
+        matchesDate = orderDate.getFullYear().toString() === dateRange;
+      }
+    }
+
+    return matchesStatus && matchesSearch && matchesDate;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE));
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleFilterChange = (setter: (v: string) => void) => (v: string) => {
+    setter(v);
+    setCurrentPage(1);
+  };
 
   const exportToCSV = () => {
     const headers = ['Order ID', 'Date', 'Status', 'Items', 'Total'];
@@ -122,7 +155,7 @@ export default function OrdersPage() {
               <MaterialIcon name="calendar_today" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base pointer-events-none" />
               <select
                 value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
+                onChange={(e) => handleFilterChange(setDateRange)(e.target.value)}
                 className="appearance-none pl-9 pr-8 h-10 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white cursor-pointer"
               >
                 <option value="all">All Time</option>
@@ -146,7 +179,7 @@ export default function OrdersPage() {
             ].map((status) => (
               <button
                 key={status.value}
-                onClick={() => setFilterStatus(status.value)}
+                onClick={() => handleFilterChange(setFilterStatus)(status.value)}
                 className={`px-4 h-10 rounded-lg font-semibold text-sm whitespace-nowrap transition-colors ${
                   filterStatus === status.value
                     ? 'bg-primary text-white'
@@ -181,7 +214,7 @@ export default function OrdersPage() {
       {/* Orders List */}
       {!loading && filteredOrders.length > 0 && (
         <div className="spacing-section">
-          {filteredOrders.map((order) => {
+          {paginatedOrders.map((order) => {
             const status = statusConfig[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-600' };
             return (
               <div
@@ -246,28 +279,39 @@ export default function OrdersPage() {
       {!loading && filteredOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4">
           <p className="text-sm text-primary/40">
-            Showing {filteredOrders.length} of {displayOrders.length} orders
+            Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredOrders.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary/60 hover:border-primary/30 hover:text-primary transition-colors">
-              <MaterialIcon name="chevron_left" className="text-base" />
-              Previous
-            </button>
-            {[1, 2, 3].map((page) => (
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2 flex-wrap">
               <button
-                key={page}
-                className={`size-9 rounded-lg text-sm font-bold transition-colors ${
-                  page === 1 ? 'bg-primary text-white' : 'border border-primary/10 text-primary hover:bg-primary/5'
-                }`}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary/60 hover:border-primary/30 hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {page}
+                <MaterialIcon name="chevron_left" className="text-base" />
+                Previous
               </button>
-            ))}
-            <button className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary hover:border-primary/30 transition-colors">
-              Next
-              <MaterialIcon name="chevron_right" className="text-base" />
-            </button>
-          </div>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`size-9 rounded-lg text-sm font-bold transition-colors ${
+                    page === currentPage ? 'bg-primary text-white' : 'border border-primary/10 text-primary hover:bg-primary/5'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary hover:border-primary/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+                <MaterialIcon name="chevron_right" className="text-base" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -283,12 +327,18 @@ export default function OrdersPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <button className="px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors text-sm">
+          <a
+            href="mailto:support@flexicommerce.com"
+            className="px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors text-sm"
+          >
             Visit Help Center
-          </button>
-          <button className="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm">
+          </a>
+          <a
+            href="mailto:support@flexicommerce.com?subject=Order%20Support"
+            className="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
+          >
             Chat with Support
-          </button>
+          </a>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { IMAGES } from '@/lib/constants';
+import Link from 'next/link';
 
 interface Notification {
   id: string;
@@ -201,9 +202,9 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
               {/* Footer */}
               <div className="px-5 py-3 border-t border-primary/10 text-center">
-                <button className="text-xs font-bold text-primary hover:text-primary/70 transition-colors">
+                <Link href="/admin/orders" className="text-xs font-bold text-primary hover:text-primary/70 transition-colors">
                   View All Notifications
-                </button>
+                </Link>
               </div>
             </div>
           )}

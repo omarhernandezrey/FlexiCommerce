@@ -1,7 +1,7 @@
 # FlexiCommerce — Frontend Roadmap & Status Completo
 
 > **Documento maestro de desarrollo. Cualquier IA o desarrollador debe leer este archivo PRIMERO antes de tocar código.**
-> Última actualización: 2026-02-26
+> Última actualización: 2026-02-26 (T-29 completada)
 
 ---
 
@@ -669,7 +669,7 @@ frontend/
 
 ---
 
-### ✅ TODAS LAS TAREAS COMPLETADAS (23/23)
+### ✅ TODAS LAS TAREAS COMPLETADAS (31/31)
 
 ---
 
@@ -681,6 +681,12 @@ frontend/
 | T-21 | ✅ Catálogo `/products`: filtros Color y Screen Size incluidos en `filteredProducts` useMemo + `hasActiveFilters` + contador badge móvil | `(storefront)/products/page.tsx` | MEDIA |
 | T-22 | ✅ Wishlist Price Alerts: `handleSetAlert`, `handleEnableAllAlerts`, `handleTargetChange` con persistencia en localStorage; botones con estado visual activo/inactivo | `(account)/wishlist/page.tsx` | MEDIA |
 | T-23 | ✅ Admin CMS: Preview abre `/` en nueva pestaña; Edit por sección con inline inputs; Add New Section con formulario inline (Enter/Escape); icono y color auto-asignados | `admin/cms/page.tsx` | BAJA |
+| T-24 | ✅ Admin Dashboard: Edit inline por sección (title/meta), Add New Section con formulario inline, Apply Globally → `PUT /admin/settings` con loading + toast | `admin/page.tsx` | CRÍTICA |
+| T-25 | ✅ Detalle producto: `inWishlist` → `useWishlist` real (fetchWishlist/addToWishlist/removeFromWishlist/isInWishlist); producto cargado del backend con fallback a mock | `products/[id]/page.tsx` | CRÍTICA |
+| T-26 | ✅ Orders page: filtro `dateRange` aplicado (30d/3m/año), paginación real `ITEMS_PER_PAGE=5`, Prev/Next/números funcionales | `(account)/orders/page.tsx` | MEDIA |
+| T-27 | ✅ Home newsletter: `handleNewsletterSubmit`, estado loading/success, validación email, feedback visual éxito | `(storefront)/page.tsx` | MEDIA |
+| T-28 | ✅ Orders support buttons: `<a href="mailto:support@flexicommerce.com">` funcionales | `(account)/orders/page.tsx` | BAJA |
+| T-29 | ✅ AdminHeader "View All Notifications": `<Link href="/admin/orders">` | `AdminHeader.tsx` | BAJA |
 
 #### Detalle T-20 — Admin Delete Producto (CRÍTICA)
 - **Problema:** `app/admin/products/page.tsx` línea 23 tiene `// await deleteProduct(id);` comentado
