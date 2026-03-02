@@ -9,13 +9,17 @@ const createJestConfig = nextJest({
 const config: Config = {
   testEnvironment: 'jsdom',
   // Runs after jest environment is set up (loads @testing-library/jest-dom matchers)
-  setupFilesAfterFramework: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: [
     '**/__tests__/**/*.{ts,tsx}',
     '**/*.{test,spec}.{ts,tsx}',
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/e2e/',            // Playwright tests — run with: npm run test:e2e
   ],
   collectCoverageFrom: [
     'hooks/**/*.{ts,tsx}',

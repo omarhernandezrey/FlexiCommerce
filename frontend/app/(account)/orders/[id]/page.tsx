@@ -6,6 +6,7 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { useOrders } from '@/hooks/useOrders';
 import { Order } from '@/lib/api.service';
+import { formatCOP } from '@/lib/format';
 
 const statusConfig = {
   pending:   { label: 'Processing', color: 'bg-blue-100 text-blue-800',   icon: 'hourglass_top' },
@@ -41,9 +42,9 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       `Status: ${currentOrder.status}`,
       ``,
       `ITEMS:`,
-      ...currentOrder.items.map((item) => `  Product ${item.productId} — Qty: ${item.quantity} — $${item.price.toFixed(2)}`),
+      ...currentOrder.items.map((item) => `  Product ${item.productId} — Qty: ${item.quantity} — ${formatCOP(item.price)}`),
       ``,
-      `TOTAL: $${currentOrder.total.toFixed(2)}`,
+      `TOTAL: ${formatCOP(currentOrder.total)}`,
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -162,10 +163,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                       <p className="font-semibold text-primary mb-1">Product #{item.productId.slice(0, 8)}</p>
                       <div className="flex gap-4 text-sm text-slate-600 mb-1">
                         <span>Qty: <span className="font-semibold text-primary">{item.quantity}</span></span>
-                        <span>Price: <span className="font-semibold text-primary">${item.price.toFixed(2)}</span></span>
+                        <span>Price: <span className="font-semibold text-primary">{formatCOP(item.price)}</span></span>
                       </div>
                       <p className="text-base font-bold text-primary">
-                        Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                        Subtotal: {formatCOP(item.price * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -233,7 +234,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               <div className="space-y-3 mb-6 pb-6 border-b border-slate-200 text-sm">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-primary">${itemsSubtotal.toFixed(2)}</span>
+                  <span className="font-semibold text-primary">{formatCOP(itemsSubtotal)}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Shipping</span>
@@ -241,13 +242,13 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Tax (8%)</span>
-                  <span className="font-semibold text-primary">${tax.toFixed(2)}</span>
+                  <span className="font-semibold text-primary">{formatCOP(tax)}</span>
                 </div>
               </div>
 
               <div className="mb-6 pb-6 border-b border-slate-200 flex justify-between items-center">
                 <span className="font-bold text-slate-700">Total</span>
-                <span className="text-2xl font-bold text-primary">${totalWithTax.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-primary">{formatCOP(totalWithTax)}</span>
               </div>
 
               <Link

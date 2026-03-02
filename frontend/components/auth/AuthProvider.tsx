@@ -1,45 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 
-const publicRoutes = ['/auth', '/'];
-
+/**
+ * Proveedor de autenticación.
+ * Zustand persiste automáticamente el estado en localStorage.
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Componente para proteger rutas en el cliente.
+ * El middleware.ts protege en el servidor (usando cookies).
+ * Este componente agrega protección en el cliente después de la hidratación de Zustand.
+ */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  const { isAuthenticated, token } = useAuthStore();
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
 
+  // Esperar a que React monte el componente (y Zustand hidrate desde localStorage)
   useEffect(() => {
-    // Check if user is authenticated
-    const checkAuth = () => {
-      const token = localStorage.getItem('authToken');
-      
-      // If no token and no user in store, redirect to login
-      if (!token && !user) {
-        setIsLoading(false);
-        router.push('/auth');
-        return;
-      }
+    setMounted(true);
+  }, []);
 
-      setIsLoading(false);
-    };
+  // Después de montar, verificar autenticación
+  useEffect(() => {
+    if (mounted && !isAuthenticated && !token) {
+      router.replace('/auth');
+    }
+  }, [mounted, isAuthenticated, token, router]);
 
-    checkAuth();
-  }, [user, router]);
+  // Durante SSR/hidratación, no mostrar nada para evitar flash de contenido no autorizado
+  if (!mounted) return null;
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  // Si no está autenticado, no renderizar (la redirección está en camino)
+  if (!isAuthenticated && !token) return null;
 
   return <>{children}</>;
 }

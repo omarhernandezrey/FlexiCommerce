@@ -11,7 +11,7 @@ export default function StorefrontLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 container-main pt-6 pb-24 sm:py-8 md:py-12">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 container-main pt-6 pb-24 sm:py-8 md:py-12">{children}</main>
       <Footer />
       <MobileBottomNav />
       <BackToTop />

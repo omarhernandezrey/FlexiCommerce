@@ -12,6 +12,7 @@ import { MOCK_PRODUCTS } from '@/lib/constants';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useProducts } from '@/hooks/useProducts';
+import { formatCOP } from '@/lib/format';
 
 const COLOR_OPTIONS = [
   { name: 'Black', hex: '#1a1a1a' },
@@ -20,7 +21,7 @@ const COLOR_OPTIONS = [
   { name: 'Rose Gold', hex: '#f4a4a4' },
 ];
 
-const TABS = ['Description', 'Specifications', 'Reviews', 'Shipping & Returns'] as const;
+const TABS = ['Descripción', 'Especificaciones', 'Reseñas', 'Envío y Devoluciones'] as const;
 type Tab = typeof TABS[number];
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
@@ -67,7 +68,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const getInitials = (name: string) =>
     name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    new Date(dateStr).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' });
 
   // Review handlers
   const handleLoadMoreReviews = async () => {
@@ -119,7 +120,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].name);
-  const [activeTab, setActiveTab] = useState<Tab>('Description');
+  const [activeTab, setActiveTab] = useState<Tab>('Descripción');
 
   const inWishlist = isInWishlist(product.id);
   const wishlistItem = wishlistItems.find((i) => i.productId === product.id);
@@ -153,9 +154,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     <div className="space-y-8 sm:space-y-12 pb-24 sm:pb-20 md:pb-0">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary/40 overflow-x-auto">
-        <Link href="/" className="hover:text-primary transition-colors whitespace-nowrap">Home</Link>
+        <Link href="/" className="hover:text-primary transition-colors whitespace-nowrap">Inicio</Link>
         <MaterialIcon name="chevron_right" className="text-base flex-shrink-0" />
-        <Link href="/products" className="hover:text-primary transition-colors whitespace-nowrap">Products</Link>
+        <Link href="/products" className="hover:text-primary transition-colors whitespace-nowrap">Productos</Link>
         <MaterialIcon name="chevron_right" className="text-base flex-shrink-0" />
         <span className="text-primary font-medium truncate">{product.name}</span>
       </nav>
@@ -213,16 +214,16 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div className="flex items-center gap-2 sm:gap-3">
             <StarRating rating={product.rating} reviews={product.reviews} />
             <span className="text-xs text-primary/40">|</span>
-            <span className="text-xs text-primary/60 font-medium">In Stock</span>
+            <span className="text-xs text-primary/60 font-medium">En stock</span>
           </div>
 
           {/* Price */}
           <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-            <span className="text-3xl sm:text-4xl font-extrabold text-primary">${product.price.toFixed(2)}</span>
+            <span className="text-3xl sm:text-4xl font-extrabold text-primary">{formatCOP(product.price)}</span>
             {product.originalPrice && (
               <>
-                <span className="text-base sm:text-lg text-primary/40 line-through">${product.originalPrice.toFixed(2)}</span>
-                <span className="text-xs sm:text-sm font-bold text-red-500">Save ${(product.originalPrice - product.price).toFixed(2)}</span>
+                <span className="text-base sm:text-lg text-primary/40 line-through">{formatCOP(product.originalPrice)}</span>
+                <span className="text-xs sm:text-sm font-bold text-red-500">Ahorra {formatCOP(Number(product.originalPrice) - Number(product.price))}</span>
               </>
             )}
           </div>
@@ -251,7 +252,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
           {/* Quantity */}
           <div>
-            <p className="text-xs sm:text-sm font-bold text-primary mb-2 sm:mb-3">Quantity</p>
+            <p className="text-xs sm:text-sm font-bold text-primary mb-2 sm:mb-3">Cantidad</p>
             <div className="flex items-center gap-2 sm:gap-3 bg-primary/5 rounded-xl p-1 w-fit">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -276,7 +277,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl hover:bg-primary/90 transition-colors text-sm sm:text-base"
             >
               <MaterialIcon name={addedToCart ? 'check' : 'shopping_bag'} className="text-base" />
-              {addedToCart ? 'Added!' : 'Add to Cart'}
+              {addedToCart ? '¡Agregado!' : 'Agregar al carrito'}
             </button>
             <button
               onClick={handleToggleWishlist}
@@ -293,9 +294,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           {/* Trust Badges */}
           <div className="border border-primary/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3 text-xs sm:text-sm">
             {[
-              { icon: 'local_shipping', text: 'Free shipping on orders over $100' },
-              { icon: 'verified_user', text: '2-year warranty included' },
-              { icon: 'assignment_return', text: '30-day easy returns' },
+              { icon: 'local_shipping', text: 'Envío gratis en pedidos mayores a $100' },
+              { icon: 'verified_user', text: 'Garantía de 2 años incluida' },
+              { icon: 'assignment_return', text: 'Devoluciones fáciles en 30 días' },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-3 text-sm">
                 <MaterialIcon name={item.icon} className="text-primary text-base" />
@@ -327,19 +328,19 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
         {/* Tab Content */}
         <div className="p-6">
-          {activeTab === 'Description' && (
+          {activeTab === 'Descripción' && (
             <div className="space-y-6">
               <p className="text-primary/60 leading-relaxed">
-                {product.name} is a high-quality product crafted with premium materials.
-                It offers exceptional performance and durability, perfect for everyday use.
-                Available in multiple colors and sizes to suit your preferences.
+                {product.name} es un producto de alta calidad elaborado con materiales premium.
+                Ofrece un rendimiento y durabilidad excepcionales, perfecto para el uso diario.
+                Disponible en múltiples colores y tallas para adaptarse a tus preferencias.
               </p>
               <div className="grid md:grid-cols-2 gap-6">
                 {[
-                  { icon: 'battery_charging_full', title: '40-Hour Battery Life', desc: 'Listen all week long with a single charge. 10 minutes of fast charging gives you 5 hours of playback.' },
-                  { icon: 'spatial_audio', title: 'Spatial Soundscape', desc: 'Immersive 3D audio that places you at the center of your music, movies, and games.' },
-                  { icon: 'noise_aware', title: 'Active Noise Cancellation', desc: 'Industry-leading ANC technology blocks out unwanted background noise for pure focus.' },
-                  { icon: 'devices', title: 'Multi-Device Pairing', desc: 'Seamlessly switch between up to 3 devices simultaneously with instant connection.' },
+                  { icon: 'battery_charging_full', title: 'Batería de 40 horas', desc: 'Escucha toda la semana con una sola carga. 10 minutos de carga rápida te dan 5 horas de reproducción.' },
+                  { icon: 'spatial_audio', title: 'Sonido Espacial', desc: 'Audio 3D inmersivo que te coloca en el centro de tu música, películas y juegos.' },
+                  { icon: 'noise_aware', title: 'Cancelación Activa de Ruido', desc: 'Tecnología ANC líder en la industria que bloquea el ruido de fondo para máxima concentración.' },
+                  { icon: 'devices', title: 'Conexión Multi-Dispositivo', desc: 'Cambia entre hasta 3 dispositivos simultáneamente con conexión instantánea.' },
                 ].map((feat) => (
                   <div key={feat.title} className="bg-primary/5 p-6 rounded-xl border border-primary/10">
                     <MaterialIcon name={feat.icon} className="text-primary text-3xl mb-4" />
@@ -351,15 +352,15 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
           )}
 
-          {activeTab === 'Specifications' && (
+          {activeTab === 'Especificaciones' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { label: 'Category', value: product.category },
-                { label: 'Price', value: `$${product.price.toFixed(2)}` },
-                { label: 'Rating', value: `${product.rating} / 5` },
-                { label: 'Reviews', value: `${product.reviews} reviews` },
+                { label: 'Categoría', value: product.category },
+                { label: 'Precio', value: formatCOP(product.price) },
+                { label: 'Calificación', value: `${product.rating} / 5` },
+                { label: 'Reseñas', value: `${product.reviews} reseñas` },
                 { label: 'SKU', value: `FC-${product.id}` },
-                { label: 'Availability', value: 'In Stock' },
+                { label: 'Disponibilidad', value: 'En stock' },
               ].map((spec) => (
                 <div key={spec.label} className="flex justify-between py-3 border-b border-primary/5">
                   <span className="text-sm font-bold text-primary/40">{spec.label}</span>
@@ -369,7 +370,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
           )}
 
-          {activeTab === 'Reviews' && (
+          {activeTab === 'Reseñas' && (
             <div className="space-y-6">
               {/* Rating Summary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-primary/5 rounded-xl">
@@ -391,7 +392,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     })}
                   </div>
                   <span className="text-sm text-primary/60 font-medium">
-                    Based on {stats.count > 0 ? stats.count : product.reviews} reviews
+                    Basado en {stats.count > 0 ? stats.count : product.reviews} reseñas
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -418,7 +419,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
               {/* Keyword Tags */}
               <div className="flex flex-wrap gap-2">
-                {['Great Quality', 'Fast Shipping', 'Good Value', 'Durable', 'Highly Recommended'].map((tag) => (
+                {['Gran calidad', 'Envío rápido', 'Buen precio', 'Duradero', 'Muy recomendado'].map((tag) => (
                   <span
                     key={tag}
                     className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full"
@@ -434,19 +435,19 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   /* User already reviewed — show their review with edit/delete */
                   <div className="bg-primary/5 rounded-xl p-5 border border-primary/10">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-bold text-primary">Your Review</span>
+                      <span className="text-sm font-bold text-primary">Tu Reseña</span>
                       <div className="flex gap-3">
                         <button
                           onClick={handleEditReview}
                           className="text-xs font-bold text-primary hover:text-primary/70 transition-colors"
                         >
-                          Edit
+                          Editar
                         </button>
                         <button
                           onClick={handleDeleteReview}
                           className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
                         >
-                          Delete
+                          Eliminar
                         </button>
                       </div>
                     </div>
@@ -468,11 +469,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   /* Write / Edit review form */
                   <form onSubmit={handleSubmitReview} className="bg-white rounded-xl p-5 border border-primary/10 space-y-4">
                     <h3 className="font-bold text-primary text-sm">
-                      {isEditingReview ? 'Edit Your Review' : 'Write a Review'}
+                      {isEditingReview ? 'Editar tu reseña' : 'Escribir una reseña'}
                     </h3>
                     {/* Interactive Stars */}
                     <div>
-                      <p className="text-xs font-bold text-primary/60 mb-2">Your Rating</p>
+                      <p className="text-xs font-bold text-primary/60 mb-2">Tu Calificación</p>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
@@ -494,11 +495,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     </div>
                     {/* Comment */}
                     <div>
-                      <p className="text-xs font-bold text-primary/60 mb-2">Comment (optional)</p>
+                      <p className="text-xs font-bold text-primary/60 mb-2">Comentario (opcional)</p>
                       <textarea
                         value={reviewComment}
                         onChange={(e) => setReviewComment(e.target.value)}
-                        placeholder="Share your experience with this product..."
+                        placeholder="Comparte tu experiencia con este producto..."
                         rows={3}
                         maxLength={500}
                         className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -512,7 +513,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                         disabled={reviewRating === 0 || reviewSubmitting}
                         className="flex-1 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
-                        {reviewSubmitting ? 'Submitting...' : isEditingReview ? 'Save Changes' : 'Publish Review'}
+                        {reviewSubmitting ? 'Enviando...' : isEditingReview ? 'Guardar cambios' : 'Publicar reseña'}
                       </button>
                       {isEditingReview && (
                         <button
@@ -520,7 +521,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                           onClick={() => { setIsEditingReview(false); setReviewRating(0); setReviewComment(''); }}
                           className="px-4 py-2.5 border border-primary/10 text-primary text-sm font-bold rounded-xl hover:bg-primary/5 transition-colors"
                         >
-                          Cancel
+                          Cancelar
                         </button>
                       )}
                     </div>
@@ -530,9 +531,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 /* Not logged in — prompt to login */
                 <div className="bg-primary/5 rounded-xl p-6 text-center border border-primary/10">
                   <MaterialIcon name="rate_review" className="text-3xl text-primary/30 mb-2" />
-                  <p className="text-sm text-primary/60 mb-3">Sign in to leave a review</p>
+                  <p className="text-sm text-primary/60 mb-3">Inicia sesión para dejar una reseña</p>
                   <Link href="/auth" className="inline-block bg-primary text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
-                    Sign In
+                    Iniciar sesión
                   </Link>
                 </div>
               )}
@@ -568,7 +569,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                                 <span className="font-bold text-sm text-primary">{review.user.name}</span>
                                 <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
                                   <MaterialIcon name="verified" className="text-[10px]" />
-                                  Verified
+                                  Verificado
                                 </span>
                               </div>
                               <div className="flex mt-0.5">
@@ -597,27 +598,27 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                       disabled={reviewsLoading}
                       className="w-full py-4 border border-primary/10 rounded-xl font-bold text-primary/60 hover:bg-primary hover:text-white transition-all disabled:opacity-40"
                     >
-                      {reviewsLoading ? 'Loading...' : 'Load More Reviews'}
+                      {reviewsLoading ? 'Cargando...' : 'Cargar más reseñas'}
                     </button>
                   )}
                 </>
               ) : (
                 <div className="text-center py-8">
                   <MaterialIcon name="rate_review" className="text-4xl text-primary/20 mb-2" />
-                  <p className="text-sm text-primary/40">No reviews yet. Be the first to review!</p>
+                  <p className="text-sm text-primary/40">Aún no hay reseñas. ¡Sé el primero en reseñar!</p>
                 </div>
               )}
             </div>
           )}
 
-          {activeTab === 'Shipping & Returns' && (
+          {activeTab === 'Envío y Devoluciones' && (
             <div className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-6">
                 {[
-                  { icon: 'local_shipping', title: 'Free Standard Shipping', desc: 'Free shipping on all orders over $100. Estimated delivery 5-7 business days.' },
-                  { icon: 'bolt', title: 'Express Delivery', desc: 'Get it in 2-3 business days with Express shipping for $15. Order before 2pm for same-day dispatch.' },
-                  { icon: 'assignment_return', title: '30-Day Free Returns', desc: 'Not satisfied? Return your item within 30 days of delivery, no questions asked.' },
-                  { icon: 'verified_user', title: '2-Year Warranty', desc: 'Every product comes with a full 2-year manufacturer warranty covering all defects.' },
+                  { icon: 'local_shipping', title: 'Envío Estándar Gratis', desc: 'Envío gratis en todos los pedidos mayores a $100. Entrega estimada en 5-7 días hábiles.' },
+                  { icon: 'bolt', title: 'Entrega Express', desc: 'Recíbelo en 2-3 días hábiles con envío Express por $15. Pide antes de las 2pm para envío el mismo día.' },
+                  { icon: 'assignment_return', title: 'Devoluciones Gratis en 30 días', desc: '¿No quedaste satisfecho? Devuelve tu artículo dentro de los 30 días de entrega, sin preguntas.' },
+                  { icon: 'verified_user', title: 'Garantía de 2 años', desc: 'Cada producto incluye garantía completa del fabricante por 2 años que cubre todos los defectos.' },
                 ].map((item) => (
                   <div key={item.title} className="bg-primary/5 p-5 rounded-xl border border-primary/10 flex gap-4">
                     <div className="size-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
@@ -633,13 +634,13 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               <div className="bg-primary/5 rounded-xl p-5 border border-primary/10">
                 <h4 className="font-bold text-primary mb-3 flex items-center gap-2">
                   <MaterialIcon name="info" className="text-base" />
-                  Return Policy Details
+                  Detalles de la Política de Devoluciones
                 </h4>
                 <ul className="space-y-2 text-sm text-primary/60">
-                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Items must be unused and in original packaging.</li>
-                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Include all original accessories and documentation.</li>
-                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Returns processed within 3-5 business days of receipt.</li>
-                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Refund issued to original payment method.</li>
+                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Los artículos deben estar sin usar y en su empaque original.</li>
+                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Incluir todos los accesorios y documentación originales.</li>
+                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Devoluciones procesadas en 3-5 días hábiles tras la recepción.</li>
+                  <li className="flex items-start gap-2"><MaterialIcon name="check_circle" className="text-green-500 text-base mt-0.5 shrink-0" />Reembolso acreditado al método de pago original.</li>
                 </ul>
               </div>
             </div>
@@ -651,12 +652,12 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       {relatedProducts.length > 0 && (
         <div className="spacing-section">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-primary">Related Products</h2>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-primary">Productos Relacionados</h2>
             <Link
               href="/products"
               className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
             >
-              View All <MaterialIcon name="arrow_forward" className="text-base" />
+              Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { useOrders } from '@/hooks/useOrders';
 import { IMAGES } from '@/lib/constants';
+import { formatCOP } from '@/lib/format';
 
 // Unified display type used in the template
 interface DisplayOrder {
@@ -50,7 +51,7 @@ export default function OrdersPage() {
     ? apiOrders.map((o) => ({
         id: o.id,
         date: new Date(o.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-        total: `$${o.total.toFixed(2)}`,
+        total: formatCOP(o.total),
         status: o.status,
         items: o.items.length,
         image: IMAGES.userAvatar,

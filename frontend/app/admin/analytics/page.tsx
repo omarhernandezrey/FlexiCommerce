@@ -6,6 +6,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { useToast } from '@/hooks/useToast';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
+import { formatCOP } from '@/lib/format';
 
 export default function AnalyticsPage() {
   const { metrics, dailySales, topProducts, loading, dateRange, fetchMetrics, fetchDailySales, fetchTopProducts, setDateRange, exportReport } = useAnalytics();
@@ -109,7 +110,7 @@ export default function AnalyticsPage() {
                     <MaterialIcon name="trending_up" className="text-primary text-lg" />
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-primary">${metrics.totalSales.toFixed(0)}</p>
+                <p className="text-3xl font-bold text-primary">{formatCOP(metrics.totalSales)}</p>
               </div>
 
               <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-all">
@@ -129,7 +130,7 @@ export default function AnalyticsPage() {
                     <MaterialIcon name="account_balance_wallet" className="text-success text-lg" />
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-success">${metrics.averageOrderValue.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-success">{formatCOP(metrics.averageOrderValue)}</p>
               </div>
 
               <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-all">
@@ -185,11 +186,11 @@ export default function AnalyticsPage() {
                                 width: `${(day.sales / Math.max(...dailySales.map((d) => d.sales))) * 100}%`,
                               }}
                             >
-                              <span className="text-xs font-bold text-white">${day.sales.toFixed(0)}</span>
+                              <span className="text-xs font-bold text-white">{formatCOP(day.sales)}</span>
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm font-bold text-primary w-20 text-right">${day.sales.toFixed(2)}</p>
+                        <p className="text-sm font-bold text-primary w-20 text-right">{formatCOP(day.sales)}</p>
                       </div>
                     ))}
                   </div>
@@ -224,7 +225,7 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs bg-success/10 text-success px-2 py-1 rounded-full font-semibold">{product.unitsSold} vendidos</span>
-                        <p className="text-sm font-bold text-primary">${product.revenue.toFixed(2)}</p>
+                        <p className="text-sm font-bold text-primary">{formatCOP(product.revenue)}</p>
                       </div>
                     </div>
                   ))}
@@ -262,7 +263,7 @@ export default function AnalyticsPage() {
                       <tr key={idx} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 text-sm text-slate-900 font-semibold">{product.productName}</td>
                         <td className="px-6 py-4 text-sm text-slate-600 font-medium">{product.unitsSold}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-primary">${product.revenue.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-primary">{formatCOP(product.revenue)}</td>
                         <td className="px-6 py-4 text-sm">
                           <span
                             className={`px-3 py-1 rounded-lg text-xs font-bold inline-flex items-center gap-1 ${

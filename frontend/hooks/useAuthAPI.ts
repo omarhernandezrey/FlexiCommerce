@@ -14,21 +14,21 @@ export const useAuthAPI = () => {
       try {
         setLoading(true);
         setError(null);
-        const { data } = await authAPI.login(credentials);
-        
-        // Save token to localStorage and cookie (cookie needed for middleware)
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-          document.cookie = `auth-token=${data.token}; path=/; max-age=604800; samesite=lax`;
+        const response = await authAPI.login(credentials);
+        // El backend envuelve la respuesta: { success: true, data: { token, user } }
+        // Compatibilidad con ambos formatos
+        const payload = (response.data as any)?.data ?? response.data;
+
+        if (payload.token) {
+          document.cookie = `auth-token=${payload.token}; path=/; max-age=604800; samesite=lax`;
         }
 
-        // Update store
-        storeLogin(data.user, data.token);
+        storeLogin(payload.user, payload.token);
 
-        return data.user;
+        return payload.user;
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : 'Login failed';
+          err instanceof Error ? err.message : 'Error al iniciar sesión';
         setError(message);
         throw err;
       } finally {
@@ -45,21 +45,19 @@ export const useAuthAPI = () => {
       try {
         setLoading(true);
         setError(null);
-        const { data } = await authAPI.register(userData);
-        
-        // Save token to localStorage and cookie (cookie needed for middleware)
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-          document.cookie = `auth-token=${data.token}; path=/; max-age=604800; samesite=lax`;
+        const response = await authAPI.register(userData);
+        const payload = (response.data as any)?.data ?? response.data;
+
+        if (payload.token) {
+          document.cookie = `auth-token=${payload.token}; path=/; max-age=604800; samesite=lax`;
         }
 
-        // Update store
-        storeLogin(data.user, data.token);
+        storeLogin(payload.user, payload.token);
 
-        return data.user;
+        return payload.user;
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : 'Registration failed';
+          err instanceof Error ? err.message : 'Error al registrarse';
         setError(message);
         throw err;
       } finally {
@@ -73,18 +71,35 @@ export const useAuthAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      await authAPI.logout();
       
-      // Clear token from localStorage and cookie
-      localStorage.removeItem('authToken');
-      document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
-
-      // Update store
+      // Hacer logout en el backend
+      try {
+        await authAPI.logout();
+      } catch (err) {
+        // Si el backend falla, igual limpiamos localmente
+        console.warn('Backend logout falló, limpiando localmente:', err);
+      }
+      
+      // Limpiar todo localmente
       storeLogout();
+      
+      // Limpiar cookies
+      document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
+      
+      // Limpiar localStorage completamente
+      localStorage.removeItem('auth-store');
+      
+      return true;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Logout failed';
       setError(message);
+      
+      // Aún así limpiar aunque falle
+      storeLogout();
+      localStorage.removeItem('auth-store');
+      document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
+      
       throw err;
     } finally {
       setLoading(false);
@@ -95,12 +110,13 @@ export const useAuthAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await authAPI.getCurrentUser();
-      storeLogin(data);
-      return data;
+      const response = await authAPI.getCurrentUser();
+      const payload = (response.data as any)?.data ?? response.data;
+      storeLogin(payload);
+      return payload;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Error fetching user';
+        err instanceof Error ? err.message : 'Error al obtener usuario';
       setError(message);
       throw err;
     } finally {
@@ -112,20 +128,18 @@ export const useAuthAPI = () => {
     try {
       setLoading(true);
       setError(null);
-      const { data } = await authAPI.refreshToken();
-      
-      // Save new token
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
+      const response = await authAPI.refreshToken();
+      const payload = (response.data as any)?.data ?? response.data;
+
+      if (payload.token) {
+        storeLogin(payload.user, payload.token);
+        document.cookie = `auth-token=${payload.token}; path=/; max-age=604800; samesite=lax`;
       }
-      
-      // Update store
-      storeLogin(data.user, data.token);
-      
-      return data.token;
+
+      return payload.token;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Error refreshing token';
+        err instanceof Error ? err.message : 'Error al renovar sesión';
       setError(message);
       throw err;
     } finally {

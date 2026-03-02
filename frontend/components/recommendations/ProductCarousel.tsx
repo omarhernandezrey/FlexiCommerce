@@ -118,7 +118,7 @@ export default function ProductCarousel({
                   <div className="flex items-center gap-1 mb-2">
                     <span className="text-yellow-400">★</span>
                     <span className="text-xs font-semibold text-gray-900">
-                      {product.avgRating.toFixed(1)}
+                      {Number(product.avgRating).toFixed(1)}
                     </span>
                     <span className="text-xs text-gray-500">
                       ({product.reviewCount})
@@ -127,7 +127,7 @@ export default function ProductCarousel({
 
                   {/* Price */}
                   <p className="text-lg font-bold text-blue-600">
-                    ${product.price.toFixed(2)}
+                    ${Number(product.price).toFixed(2)}
                   </p>
                 </div>
               </div>

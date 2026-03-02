@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { create } from 'zustand';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -10,29 +10,33 @@ interface ToastMessage {
   type: ToastType;
 }
 
-interface ToastOptions {
-  message: string;
-  type?: ToastType;
-  duration?: number;
+interface ToastStore {
+  toasts: ToastMessage[];
+  addToast: (message: string, type?: ToastType, duration?: number) => void;
+  dismiss: (id: number) => void;
 }
 
-export const useToast = () => {
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-  const toast = useCallback(({ message, type = 'info', duration = 3000 }: ToastOptions) => {
+// Estado global compartido por todos los componentes
+const useToastStore = create<ToastStore>((set) => ({
+  toasts: [],
+  addToast: (message, type = 'info', duration = 4000) => {
     const id = Date.now();
-    const newToast: ToastMessage = { id, message, type };
-
-    setToasts((prev) => [...prev, newToast]);
-
+    set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
     setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
+      set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
     }, duration);
-  }, []);
+  },
+  dismiss: (id) =>
+    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+}));
 
-  const dismiss = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+// Hook con la misma interfaz que antes — ahora usa estado global
+export const useToast = () => {
+  const { toasts, addToast, dismiss } = useToastStore();
+
+  const toast = ({ message, type = 'info' }: { message: string; type?: ToastType; duration?: number }) => {
+    addToast(message, type);
+  };
 
   return { toasts, toast, dismiss };
 };

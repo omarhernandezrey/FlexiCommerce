@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { StarRating } from '@/components/ui/StarRating';
 import { type MockProduct } from '@/lib/constants';
 import { useCart } from '@/hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
+import { formatCOP } from '@/lib/format';
 
 interface ProductCardProps {
   product: MockProduct;
@@ -14,15 +15,20 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const [addedToCart, setAddedToCart] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { addItem } = useCart();
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
-  const isFav = isFavorite(product.id);
+  // mounted evita hydration mismatch: localStorage no existe en el servidor
+  useEffect(() => setMounted(true), []);
+  const isFav = mounted && isFavorite(product.id);
+  const price = Number(product.price) || 0;
+  const originalPrice = product.originalPrice != null ? Number(product.originalPrice) : undefined;
 
   const handleAddToCart = () => {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price,
       image: product.image,
       quantity: 1,
     });
@@ -47,6 +53,9 @@ export function ProductCard({ product }: ProductCardProps) {
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             src={product.image}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = `https://placehold.co/400x400/f1f5f9/94a3b8?text=${encodeURIComponent(product.name)}`;
+            }}
           />
         </Link>
         <button
@@ -81,11 +90,11 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-center justify-between pt-1 sm:pt-2 gap-1">
           <div className="flex items-center gap-1">
             <span className="text-base sm:text-lg md:text-xl font-extrabold text-primary">
-              ${product.price.toFixed(2)}
+              {formatCOP(price)}
             </span>
-            {product.originalPrice && (
+            {originalPrice != null && (
               <span className="text-xs text-primary/40 line-through">
-                ${product.originalPrice.toFixed(2)}
+                {formatCOP(originalPrice)}
               </span>
             )}
           </div>

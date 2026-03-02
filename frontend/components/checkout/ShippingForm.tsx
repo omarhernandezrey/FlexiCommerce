@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
-import { useForm } from '@/hooks/useForm';
 import { validationPatterns } from '@/lib/validation';
 
 interface ShippingFormProps {
@@ -23,7 +22,7 @@ export interface ShippingData {
 }
 
 export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
-  const initialValues: ShippingData = {
+  const [values, setValues] = useState<ShippingData>({
     firstName: '',
     lastName: '',
     email: '',
@@ -34,51 +33,46 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
     zipCode: '',
     country: '',
     ...initialData,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setValues((prev) => ({ ...prev, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
   };
 
-  const { values, errors, touched, handleChange, handleSubmit } = useForm({
-    initialValues,
-    validate: (values: ShippingData) => {
-      const newErrors: Record<string, string> = {};
+  const validate = (vals: ShippingData): Record<string, string> => {
+    const newErrors: Record<string, string> = {};
+    if (!vals.firstName.trim()) newErrors.firstName = 'Nombre es requerido';
+    if (!vals.lastName.trim()) newErrors.lastName = 'Apellido es requerido';
+    if (!vals.email) newErrors.email = 'Email es requerido';
+    else if (!validationPatterns.email.value.test(vals.email)) newErrors.email = 'Email inválido';
+    if (!vals.phone) newErrors.phone = 'Teléfono es requerido';
+    if (!vals.street.trim()) newErrors.street = 'Dirección es requerida';
+    if (!vals.city.trim()) newErrors.city = 'Ciudad es requerida';
+    if (!vals.zipCode) newErrors.zipCode = 'Código postal es requerido';
+    return newErrors;
+  };
 
-      if (!values.firstName.trim()) {
-        newErrors.firstName = 'Nombre es requerido';
-      }
-      if (!values.lastName.trim()) {
-        newErrors.lastName = 'Apellido es requerido';
-      }
-      if (!values.email) {
-        newErrors.email = 'Email es requerido';
-      } else if (!validationPatterns.email.value.test(values.email)) {
-        newErrors.email = 'Email inválido';
-      }
-      if (!values.phone) {
-        newErrors.phone = 'Teléfono es requerido';
-      }
-      if (!values.street.trim()) {
-        newErrors.street = 'Dirección es requerida';
-      }
-      if (!values.city.trim()) {
-        newErrors.city = 'Ciudad es requerida';
-      }
-      if (!values.zipCode) {
-        newErrors.zipCode = 'Código postal es requerido';
-      }
-
-      return newErrors;
-    },
-    onSubmit: (values: ShippingData) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Mark all fields as touched so errors show
+    const allTouched = Object.fromEntries(Object.keys(values).map((k) => [k, true]));
+    setTouched(allTouched);
+    const newErrors = validate(values);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
       onNext(values);
-    },
-  });
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-primary mb-2">
-            Nombre
-          </label>
+          <label className="block text-sm font-semibold text-primary mb-2">Nombre</label>
           <input
             type="text"
             name="firstName"
@@ -94,9 +88,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-primary mb-2">
-            Apellido
-          </label>
+          <label className="block text-sm font-semibold text-primary mb-2">Apellido</label>
           <input
             type="text"
             name="lastName"
@@ -114,9 +106,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-primary mb-2">
-            Email
-          </label>
+          <label className="block text-sm font-semibold text-primary mb-2">Email</label>
           <input
             type="email"
             name="email"
@@ -132,9 +122,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-primary mb-2">
-            Teléfono
-          </label>
+          <label className="block text-sm font-semibold text-primary mb-2">Teléfono</label>
           <input
             type="tel"
             name="phone"
@@ -151,9 +139,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-primary mb-2">
-          Dirección
-        </label>
+        <label className="block text-sm font-semibold text-primary mb-2">Dirección</label>
         <input
           type="text"
           name="street"
@@ -170,9 +156,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-primary mb-2">
-            Ciudad
-          </label>
+          <label className="block text-sm font-semibold text-primary mb-2">Ciudad</label>
           <input
             type="text"
             name="city"
@@ -188,9 +172,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-primary mb-2">
-            Código Postal
-          </label>
+          <label className="block text-sm font-semibold text-primary mb-2">Código Postal</label>
           <input
             type="text"
             name="zipCode"

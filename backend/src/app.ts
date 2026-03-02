@@ -9,6 +9,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { httpLogger } from './middlewares/logger.js';
+import { generalRateLimiter, authRateLimiter } from './middlewares/rateLimiter.js';
+import { metricsMiddleware, metricsHandler } from './middlewares/metrics.js';
 
 // Importar rutas
 import authRoutes from './modules/auth/auth.routes.js';
@@ -28,6 +30,9 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const app: Express = express();
+
+// Métricas Prometheus (debe ir primero para capturar todos los requests)
+app.use(metricsMiddleware);
 
 // HTTP request logging
 app.use(httpLogger);
@@ -92,6 +97,14 @@ app.get('/api/health', (_req: Request, res: Response) => {
     message: 'Backend is running',
   });
 });
+
+// Prometheus metrics endpoint (D5-01 — Monitoring)
+app.get('/api/metrics', metricsHandler);
+
+// Rate limiting distribuido (Redis si disponible, memoria si no)
+app.use('/api', generalRateLimiter());
+app.use('/api/auth/login', authRateLimiter());
+app.use('/api/auth/register', authRateLimiter());
 
 // API Routes
 app.use('/api/auth', authRoutes);

@@ -5,18 +5,19 @@ import { useRouter } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { ShippingForm, type ShippingData } from '@/components/checkout/ShippingForm';
-import { PaymentForm, type PaymentMethod } from '@/components/checkout/PaymentForm';
+import { WompiPaymentStep } from '@/components/checkout/WompiPaymentStep';
 import { useCart } from '@/hooks/useCart';
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from '@/hooks/useToast';
+import { useWompiCheckout } from '@/hooks/useWompiCheckout';
 import apiClient from '@/lib/api-client';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
+import { formatCOP } from '@/lib/format';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [shippingData, setShippingData] = useState<ShippingData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
   const [showShippingMethod, setShowShippingMethod] = useState(false);
@@ -28,6 +29,7 @@ export default function CheckoutPage() {
   const { items, getTotalPrice } = useCart();
   const { create } = useOrders();
   const { toast } = useToast();
+  const { openCheckout } = useWompiCheckout();
 
   // If no items, redirect to cart
   useEffect(() => {
@@ -37,8 +39,8 @@ export default function CheckoutPage() {
   }, [items, router]);
 
   const steps = ['shipping', 'payment', 'review'];
-  const stepLabels = { shipping: 'Shipping', payment: 'Payment', review: 'Review' };
-  const stepIcons = { shipping: 'local_shipping', payment: 'credit_card', review: 'receipt_long' };
+  const stepLabels = { shipping: 'Envío', payment: 'Método de pago', review: 'Revisión' };
+  const stepIcons = { shipping: 'local_shipping', payment: 'account_balance_wallet', review: 'receipt_long' };
 
   const handleShippingNext = (data: ShippingData) => {
     setShippingData(data);
@@ -49,46 +51,57 @@ export default function CheckoutPage() {
     setCurrentStep(1);
   };
 
-  const handlePaymentNext = (method: PaymentMethod) => {
-    setPaymentMethod(method);
+  const handlePaymentNext = () => {
     setCurrentStep(2);
   };
 
-  const handleCreateOrder = async () => {
+  const handlePagarConWompi = async () => {
     if (!shippingData) return;
 
     setIsCreatingOrder(true);
     try {
-      const orderData = {
+      // 1. Crear la orden en la BD (status: PENDING) — el total lo calcula el servidor
+      const order = await create({
         items: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
           price: item.price,
         })),
-        total: getTotalPrice() + shippingCost + tax,
-        status: 'pending' as const,
-        userId: '', // Se establece desde el backend
-        createdAt: new Date().toISOString(),
-      };
-
-      const order = await create(orderData);
-
-      toast({
-        message: 'Orden creada exitosamente',
-        type: 'success',
+        shippingAddress: {
+          firstName: shippingData.firstName,
+          lastName: shippingData.lastName,
+          email: shippingData.email,
+          phone: shippingData.phone,
+          address: `${shippingData.street}, ${shippingData.city}`,
+        },
+        shippingMethod,
+        shippingCost,
       });
 
-      // Redirect to confirmation
-      router.push(`/checkout/confirmation?orderId=${order.id}`);
+      // 2. Abrir el widget de Wompi con el orderId y los datos del cliente
+      await openCheckout({
+        orderId: order.id,
+        customerEmail: shippingData.email,
+        customerName: `${shippingData.firstName} ${shippingData.lastName}`,
+      });
+
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al crear la orden';
-      toast({
-        message,
-        type: 'error',
-      });
-    } finally {
+      const axiosError = error as { response?: { data?: { error?: string; message?: string } }; message?: string };
+      const backendMsg =
+        axiosError?.response?.data?.error ||
+        axiosError?.response?.data?.message ||
+        axiosError?.message ||
+        'Error al iniciar el pago';
+
+      // Si el producto no existe en la BD, el carrito está desactualizado
+      const message = backendMsg.includes('no encontrado')
+        ? 'Uno o más productos del carrito ya no están disponibles. Por favor vacía el carrito y agrégalos de nuevo.'
+        : backendMsg;
+
+      toast({ message, type: 'error' });
       setIsCreatingOrder(false);
     }
+    // No hacer setIsCreatingOrder(false) en el finally — el widget toma control
   };
 
   const handleApplyPromo = async () => {
@@ -114,12 +127,12 @@ export default function CheckoutPage() {
 
       setPromoDiscount(discount);
       setPromoApplied(coupon.code);
-      toast({ message: `Promo code "${coupon.code}" applied! -$${discount.toFixed(2)}`, type: 'success' });
+      toast({ message: `Código "${coupon.code}" aplicado! -${formatCOP(discount)}`, type: 'success' });
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
-      if (msg === 'expired') toast({ message: 'This promo code has expired', type: 'error' });
-      else if (msg === 'min_order') toast({ message: 'Order total too low for this code', type: 'error' });
-      else toast({ message: 'Invalid or unavailable promo code', type: 'error' });
+      if (msg === 'expired') toast({ message: 'Este código promocional ha expirado', type: 'error' });
+      else if (msg === 'min_order') toast({ message: 'El total del pedido es muy bajo para este código', type: 'error' });
+      else toast({ message: 'Código promocional inválido o no disponible', type: 'error' });
       setPromoDiscount(0);
       setPromoApplied('');
     } finally {
@@ -134,7 +147,7 @@ export default function CheckoutPage() {
   };
 
   const subtotal = getTotalPrice();
-  const shippingCost = shippingMethod === 'express' ? 15 : 0;
+  const shippingCost = shippingMethod === 'express' ? 15000 : 0;
   const tax = subtotal * 0.08;
   const total = subtotal + shippingCost + tax - promoDiscount;
 
@@ -206,7 +219,7 @@ export default function CheckoutPage() {
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       1
                     </div>
-                    <h2 className="text-xl font-extrabold text-primary">Shipping Address</h2>
+                    <h2 className="text-xl font-extrabold text-primary">Dirección de Envío</h2>
                   </div>
                   <ShippingForm
                     onNext={handleShippingNext}
@@ -220,7 +233,7 @@ export default function CheckoutPage() {
                         <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                           2
                         </div>
-                        <h2 className="text-xl font-extrabold text-primary">Shipping Method</h2>
+                        <h2 className="text-xl font-extrabold text-primary">Método de Envío</h2>
                       </div>
 
                       <div className="space-y-3 mb-6">
@@ -243,10 +256,10 @@ export default function CheckoutPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <p className="font-bold text-primary text-sm">Standard Shipping</p>
-                              <span className="text-sm font-extrabold text-green-600">FREE</span>
+                              <p className="font-bold text-primary text-sm">Envío Estándar</p>
+                              <span className="text-sm font-extrabold text-green-600">GRATIS</span>
                             </div>
-                            <p className="text-xs text-primary/50 mt-0.5">5–7 business days</p>
+                            <p className="text-xs text-primary/50 mt-0.5">5–7 días hábiles</p>
                           </div>
                           <MaterialIcon name="local_shipping" className="text-primary/40 text-xl" />
                         </button>
@@ -270,10 +283,10 @@ export default function CheckoutPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <p className="font-bold text-primary text-sm">Express Shipping</p>
-                              <span className="text-sm font-extrabold text-primary">$15.00</span>
+                              <p className="font-bold text-primary text-sm">Envío Express</p>
+                              <span className="text-sm font-extrabold text-primary">$ 15.000</span>
                             </div>
-                            <p className="text-xs text-primary/50 mt-0.5">2–3 business days</p>
+                            <p className="text-xs text-primary/50 mt-0.5">2–3 días hábiles</p>
                           </div>
                           <MaterialIcon name="bolt" className="text-primary/40 text-xl" />
                         </button>
@@ -283,7 +296,7 @@ export default function CheckoutPage() {
                         onClick={handleContinueToPayment}
                         className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                       >
-                        Continue to Payment
+                        Continuar al Pago
                         <MaterialIcon name="arrow_forward" />
                       </button>
                     </div>
@@ -297,16 +310,16 @@ export default function CheckoutPage() {
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       2
                     </div>
-                    <h2 className="text-xl font-extrabold text-primary">Payment Method</h2>
+                    <h2 className="text-xl font-extrabold text-primary">Método de Pago</h2>
                   </div>
-                  <PaymentForm onNext={handlePaymentNext} />
+                  <WompiPaymentStep onNext={handlePaymentNext} />
                   <div className="pt-6 mt-6 border-t border-primary/10">
                     <button
                       onClick={() => setCurrentStep(0)}
                       className="flex items-center gap-2 text-primary font-semibold hover:text-primary/70 transition-colors text-sm"
                     >
                       <MaterialIcon name="arrow_back" className="text-base" />
-                      Back to Shipping
+                      Volver al Envío
                     </button>
                   </div>
                 </div>
@@ -318,7 +331,7 @@ export default function CheckoutPage() {
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       3
                     </div>
-                    <h2 className="text-xl font-extrabold text-primary">Review Order</h2>
+                    <h2 className="text-xl font-extrabold text-primary">Revisar Pedido</h2>
                   </div>
 
                   {shippingData && (
@@ -326,13 +339,13 @@ export default function CheckoutPage() {
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-sm font-bold text-primary flex items-center gap-2">
                           <MaterialIcon name="local_shipping" className="text-base" />
-                          Shipping
+                          Envío
                         </p>
                         <button
                           onClick={() => setCurrentStep(0)}
                           className="text-xs text-primary/60 hover:text-primary font-semibold"
                         >
-                          Edit
+                          Editar
                         </button>
                       </div>
                       <p className="font-bold text-primary">{shippingData.firstName} {shippingData.lastName}</p>
@@ -341,7 +354,7 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-2 mt-2 pt-2 border-t border-primary/10">
                         <MaterialIcon name={shippingMethod === 'express' ? 'bolt' : 'local_shipping'} className="text-primary/60 text-sm" />
                         <span className="text-xs text-primary/60">
-                          {shippingMethod === 'standard' ? 'Standard (5–7 days) — Free' : 'Express (2–3 days) — $15.00'}
+                          {shippingMethod === 'standard' ? 'Estándar (5–7 días) — Gratis' : 'Express (2–3 días) — $ 15.000'}
                         </span>
                       </div>
                     </div>
@@ -351,19 +364,17 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-bold text-primary flex items-center gap-2">
                         <MaterialIcon name="credit_card" className="text-base" />
-                        Payment Method
+                        Método de Pago
                       </p>
                       <button
                         onClick={() => setCurrentStep(1)}
                         className="text-xs text-primary/60 hover:text-primary font-semibold"
                       >
-                        Edit
+                        Editar
                       </button>
                     </div>
-                    <p className="font-bold text-primary capitalize">
-                      {paymentMethod === 'card' && 'Credit / Debit Card'}
-                      {paymentMethod === 'paypal' && 'PayPal'}
-                      {paymentMethod === 'transfer' && 'Bank Transfer'}
+                    <p className="font-bold text-primary">
+                      Wompi — Tarjeta · PSE · Nequi · Daviplata
                     </p>
                   </div>
 
@@ -373,26 +384,39 @@ export default function CheckoutPage() {
                       className="flex items-center gap-2 text-primary font-semibold hover:text-primary/70 transition-colors text-sm"
                     >
                       <MaterialIcon name="arrow_back" className="text-base" />
-                      Back to Payment
+                      Volver
                     </button>
                     <button
-                      onClick={handleCreateOrder}
+                      onClick={handlePagarConWompi}
                       disabled={isCreatingOrder}
-                      className="sm:ml-auto px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="sm:ml-auto px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base"
                     >
-                      {isCreatingOrder && <MaterialIcon name="hourglass_bottom" />}
-                      {isCreatingOrder ? 'Processing...' : 'Complete Purchase'}
+                      {isCreatingOrder ? (
+                        <>
+                          <MaterialIcon name="hourglass_bottom" className="animate-spin" />
+                          Preparando pago...
+                        </>
+                      ) : (
+                        <>
+                          <MaterialIcon name="account_balance_wallet" />
+                          Pagar con Wompi
+                        </>
+                      )}
                     </button>
                   </div>
+                  {/* Métodos de pago aceptados */}
+                  <p className="text-center text-xs text-primary/40 mt-4">
+                    Tarjeta · PSE · Nequi · Daviplata · Bancolombia — procesado por Wompi
+                  </p>
                 </div>
               )}
 
               {/* Trust Badges */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { icon: 'lock', label: 'SSL Secure', desc: 'Encrypted checkout' },
-                  { icon: 'assignment_return', label: '30-Day Returns', desc: 'Easy returns' },
-                  { icon: 'local_shipping', label: 'Fast Shipping', desc: '2-3 business days' },
+                  { icon: 'lock', label: 'SSL Seguro', desc: 'Checkout encriptado' },
+                  { icon: 'assignment_return', label: 'Devoluciones 30 días', desc: 'Devoluciones fáciles' },
+                  { icon: 'local_shipping', label: 'Envío Rápido', desc: '2-3 días hábiles' },
                 ].map((badge) => (
                   <div
                     key={badge.label}
@@ -409,17 +433,20 @@ export default function CheckoutPage() {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl border border-primary/10 p-6 sticky top-24">
-                <h3 className="text-lg font-extrabold text-primary spacing-header">Order Summary</h3>
+                <h3 className="text-lg font-extrabold text-primary spacing-header">Resumen del Pedido</h3>
 
-                <div className="space-y-4 spacing-header pb-6 border-b border-primary/10 max-h-64 overflow-y-auto">
+                <div className="space-y-4 spacing-header pb-6 border-b border-primary/10 max-h-72 overflow-y-auto pt-2 px-1">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <div className="relative">
-                        <div className="w-16 h-16 bg-primary/5 rounded-lg flex-shrink-0 overflow-hidden">
+                      <div className="relative flex-shrink-0">
+                        <div className="w-16 h-16 bg-primary/5 rounded-lg overflow-hidden">
                           <img
                             src={item.image}
                             alt={item.name}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = `https://placehold.co/64x64/f1f5f9/94a3b8?text=${encodeURIComponent(item.name.charAt(0))}`;
+                            }}
                           />
                         </div>
                         <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -429,7 +456,7 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <p className="text-sm font-bold text-primary leading-tight">{item.name}</p>
                         <p className="text-sm font-extrabold text-primary mt-1">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {formatCOP(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -442,8 +469,8 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-between px-3 py-2.5 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-2">
                         <MaterialIcon name="local_offer" className="text-green-600 text-base" />
-                        <span className="text-sm font-bold text-green-700">{promoApplied} applied</span>
-                        <span className="text-sm text-green-600">-${promoDiscount.toFixed(2)}</span>
+                        <span className="text-sm font-bold text-green-700">{promoApplied} aplicado</span>
+                        <span className="text-sm text-green-600">-{formatCOP(promoDiscount)}</span>
                       </div>
                       <button onClick={removePromo} className="text-green-600 hover:text-green-800 transition-colors">
                         <MaterialIcon name="close" className="text-base" />
@@ -456,7 +483,7 @@ export default function CheckoutPage() {
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
-                        placeholder="Promo code"
+                        placeholder="Código promocional"
                         className="flex-1 px-3 py-2 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
                       <button
@@ -465,7 +492,7 @@ export default function CheckoutPage() {
                         className="px-4 py-2 border border-primary text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center gap-1"
                       >
                         {promoLoading && <MaterialIcon name="sync" className="text-sm animate-spin" />}
-                        Apply
+                        Aplicar
                       </button>
                     </div>
                   )}
@@ -474,29 +501,29 @@ export default function CheckoutPage() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-primary/60">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatCOP(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-primary/60">
-                    <span>Shipping</span>
+                    <span>Envío</span>
                     {shippingMethod === 'standard' ? (
-                      <span className="text-green-600 font-semibold">Free</span>
+                      <span className="text-green-600 font-semibold">Gratis</span>
                     ) : (
-                      <span>${shippingCost.toFixed(2)}</span>
+                      <span>{formatCOP(shippingCost)}</span>
                     )}
                   </div>
                   <div className="flex justify-between text-primary/60">
-                    <span>Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>Impuesto (8%)</span>
+                    <span>{formatCOP(tax)}</span>
                   </div>
                   {promoDiscount > 0 && (
                     <div className="flex justify-between text-green-600 font-semibold">
-                      <span>Discount ({promoApplied})</span>
-                      <span>-${promoDiscount.toFixed(2)}</span>
+                      <span>Descuento ({promoApplied})</span>
+                      <span>-{formatCOP(promoDiscount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-extrabold text-primary pt-3 border-t border-primary/10 text-base">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatCOP(total)}</span>
                   </div>
                 </div>
               </div>

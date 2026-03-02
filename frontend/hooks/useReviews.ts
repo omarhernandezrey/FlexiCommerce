@@ -45,9 +45,10 @@ export const useReviews = (productId: string) => {
     async (page = 1, limit = 10) => {
       try {
         setLoading(true);
-        const response = await apiClient.get(`/reviews/product/${productId}?page=${page}&limit=${limit}`);
-        setReviews(response.data.reviews || []);
-        return response.data;
+        const response = await apiClient.get(`/api/reviews/product/${productId}?page=${page}&limit=${limit}`);
+        const data = response.data?.data ?? response.data;
+        setReviews(Array.isArray(data) ? data : data?.reviews ?? []);
+        return data;
       } catch (error) {
         console.error('Error fetching reviews:', error);
         toast({ message: 'Error al cargar reviews', type: 'error' });
@@ -62,9 +63,10 @@ export const useReviews = (productId: string) => {
   // Fetch stats
   const fetchStats = useCallback(async () => {
     try {
-      const response = await apiClient.get(`/reviews/stats/${productId}`);
-      setStats(response.data);
-      return response.data;
+      const response = await apiClient.get(`/api/reviews/stats/${productId}`);
+      const data = response.data?.data ?? response.data;
+      setStats(data);
+      return data;
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -73,10 +75,11 @@ export const useReviews = (productId: string) => {
   // Check if user has already reviewed
   const checkUserReview = useCallback(async () => {
     try {
-      const response = await apiClient.get(`/reviews/check/${productId}`);
-      setHasUserReview(response.data.has_review);
-      if (response.data.review) {
-        setUserReview(response.data.review);
+      const response = await apiClient.get(`/api/reviews/check/${productId}`);
+      const data = response.data?.data ?? response.data;
+      setHasUserReview(data.has_review);
+      if (data.review) {
+        setUserReview(data.review);
       }
     } catch (error) {
       console.error('Error checking user review:', error);
@@ -88,20 +91,21 @@ export const useReviews = (productId: string) => {
     async (rating: number, comment: string) => {
       try {
         setLoading(true);
-        const response = await apiClient.post('/reviews', {
+        const response = await apiClient.post('/api/reviews', {
           productId,
           rating,
           comment: comment || null,
         });
-        
-        setUserReview(response.data.review);
+
+        const review = response.data?.data ?? response.data?.review ?? response.data;
+        setUserReview(review);
         setHasUserReview(true);
         
         // Refresh reviews and stats
         await Promise.all([fetchReviews(), fetchStats(), checkUserReview()]);
         
         toast({ message: 'Review creado exitosamente', type: 'success' });
-        return response.data.review;
+        return review;
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error al crear review';
         toast({ message, type: 'error' });
@@ -118,18 +122,19 @@ export const useReviews = (productId: string) => {
     async (reviewId: string, rating: number, comment: string) => {
       try {
         setLoading(true);
-        const response = await apiClient.put(`/reviews/${reviewId}`, {
+        const response = await apiClient.put(`/api/reviews/${reviewId}`, {
           rating,
           comment: comment || null,
         });
 
-        setUserReview(response.data.review);
+        const updatedReview = response.data?.data ?? response.data?.review ?? response.data;
+        setUserReview(updatedReview);
         
         // Refresh reviews and stats
         await Promise.all([fetchReviews(), fetchStats(), checkUserReview()]);
         
         toast({ message: 'Review actualizado exitosamente', type: 'success' });
-        return response.data.review;
+        return updatedReview;
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error al actualizar review';
         toast({ message, type: 'error' });
@@ -146,7 +151,7 @@ export const useReviews = (productId: string) => {
     async (reviewId: string) => {
       try {
         setLoading(true);
-        await apiClient.delete(`/reviews/${reviewId}`);
+        await apiClient.delete(`/api/reviews/${reviewId}`);
         
         setHasUserReview(false);
         setUserReview(null);

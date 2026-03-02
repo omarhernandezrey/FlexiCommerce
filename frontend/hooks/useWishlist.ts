@@ -23,7 +23,7 @@ export const useWishlist = () => {
   const fetchWishlist = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/wishlist');
+      const response = await apiClient.get('/api/wishlist');
       setItems(response.data || []);
       return response.data;
     } catch (error) {
@@ -39,7 +39,7 @@ export const useWishlist = () => {
     async (productId: string, productName: string, price: number, image: string, category: string) => {
       try {
         setLoading(true);
-        await apiClient.post('/wishlist', {
+        await apiClient.post('/api/wishlist', {
           productId,
           productName,
           price,
@@ -75,7 +75,7 @@ export const useWishlist = () => {
     async (wishlistId: string, productName: string) => {
       try {
         setLoading(true);
-        await apiClient.delete(`/wishlist/${wishlistId}`);
+        await apiClient.delete(`/api/wishlist/${wishlistId}`);
         setItems((prev) => prev.filter((item) => item.id !== wishlistId));
         toast({ message: `${productName} removido de la lista de deseos`, type: 'success' });
         return true;
@@ -101,7 +101,7 @@ export const useWishlist = () => {
   const clearWishlist = useCallback(async () => {
     try {
       setLoading(true);
-      await apiClient.delete('/wishlist');
+      await apiClient.delete('/api/wishlist');
       setItems([]);
       toast({ message: 'Lista de deseos vaciada', type: 'success' });
       return true;

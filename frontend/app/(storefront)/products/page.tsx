@@ -16,6 +16,14 @@ const CATEGORY_FILTERS = [
   { name: 'Smart Gadgets', icon: 'developer_mode', count: 450 },
 ];
 
+// Traducciones de categorías para mostrar en español
+const CATEGORY_LABELS: Record<string, string> = {
+  'Electronics': 'Electrónica',
+  'Fashion': 'Moda',
+  'Home Decor': 'Decoración del Hogar',
+  'Smart Gadgets': 'Gadgets Inteligentes',
+};
+
 const COLOR_SWATCHES = [
   { name: 'Black', bg: 'bg-black' },
   { name: 'Silver', bg: 'bg-gray-400' },
@@ -134,13 +142,13 @@ export default function ProductsPage() {
     <div className="bg-white rounded-xl border border-primary/10 p-6 space-y-6 sticky top-24">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-extrabold text-primary">Filters</h3>
+        <h3 className="font-extrabold text-primary">Filtros</h3>
         {hasActiveFilters && (
           <button
             onClick={resetFilters}
             className="text-xs font-bold text-primary/60 hover:text-primary transition-colors"
           >
-            Clear all
+            Limpiar todo
           </button>
         )}
       </div>
@@ -150,7 +158,7 @@ export default function ProductsPage() {
         <MaterialIcon name="search" className="absolute left-3 top-2.5 text-primary/40 text-base" />
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder="Buscar productos..."
           value={searchTerm}
           onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           className="w-full pl-9 pr-3 py-2 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-primary/5"
@@ -159,7 +167,7 @@ export default function ProductsPage() {
 
       {/* Categories */}
       <div>
-        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Categories</h4>
+        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Categorías</h4>
         <div className="space-y-1">
           {CATEGORY_FILTERS.map((cat) => (
             <label key={cat.name} className="flex items-center gap-3 cursor-pointer group py-1.5">
@@ -170,7 +178,7 @@ export default function ProductsPage() {
                 className="rounded border-primary/20 text-primary focus:ring-primary/20 size-3.5"
               />
               <MaterialIcon name={cat.icon} className="text-primary/40 text-base group-hover:text-primary transition-colors" />
-              <span className="text-sm text-primary/60 group-hover:text-primary transition-colors flex-1">{cat.name}</span>
+              <span className="text-sm text-primary/60 group-hover:text-primary transition-colors flex-1">{CATEGORY_LABELS[cat.name] || cat.name}</span>
               <span className="text-xs text-primary/30 font-medium">{cat.count.toLocaleString()}</span>
             </label>
           ))}
@@ -179,7 +187,7 @@ export default function ProductsPage() {
 
       {/* Price Range */}
       <div>
-        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Price Range</h4>
+        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Rango de Precio</h4>
         <input
           type="range"
           min="0"
@@ -196,7 +204,7 @@ export default function ProductsPage() {
 
       {/* Rating */}
       <div>
-        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Rating</h4>
+        <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Calificación</h4>
         <div className="space-y-1">
           {[4, 3, 2, 1].map((stars) => (
             <button
@@ -216,7 +224,7 @@ export default function ProductsPage() {
                   />
                 ))}
               </div>
-              <span>& Up</span>
+              <span>y más</span>
             </button>
           ))}
         </div>
@@ -228,6 +236,7 @@ export default function ProductsPage() {
           <MaterialIcon name="palette" className="text-base" />
           Color
         </h4>
+
         <div className="flex flex-wrap gap-3">
           {COLOR_SWATCHES.map((color) => (
             <button
@@ -246,7 +255,7 @@ export default function ProductsPage() {
       <div>
         <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3 flex items-center gap-2">
           <MaterialIcon name="straighten" className="text-base" />
-          Screen Size
+          Tamaño de Pantalla
         </h4>
         <div className="grid grid-cols-2 gap-2">
           {SCREEN_SIZES.map((size) => (
@@ -276,7 +285,7 @@ export default function ProductsPage() {
           className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
         >
           <MaterialIcon name="tune" className="text-base" />
-          Filters
+          Filtros
           {hasActiveFilters && (
             <span className="size-4 bg-primary text-white text-[10px] rounded-full flex items-center justify-center font-bold">
               {selectedCategories.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < 500 ? 1 : 0) + selectedColors.length + (selectedScreenSize ? 1 : 0)}
@@ -285,7 +294,7 @@ export default function ProductsPage() {
         </button>
         {mobileFiltersOpen && (
           <button onClick={() => setMobileFiltersOpen(false)} className="text-primary/60 text-sm">
-            Close
+            Cerrar
           </button>
         )}
       </div>
@@ -308,7 +317,7 @@ export default function ProductsPage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between spacing-header">
             <p className="text-sm text-primary/60">
-              Showing <span className="font-bold text-primary">{filteredProducts.length}</span> products
+              Mostrando <span className="font-bold text-primary">{filteredProducts.length}</span> productos
             </p>
             <div className="relative">
               <select
@@ -316,10 +325,10 @@ export default function ProductsPage() {
                 onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
                 className="appearance-none bg-white border border-primary/10 rounded-lg pl-4 pr-8 py-2 text-sm font-medium text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
               >
-                <option value="popular">Sort: Most Popular</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Best Rating</option>
+                <option value="popular">Ordenar: Más populares</option>
+                <option value="price-low">Precio: Menor a mayor</option>
+                <option value="price-high">Precio: Mayor a menor</option>
+                <option value="rating">Mejor calificación</option>
               </select>
               <MaterialIcon name="expand_more" className="absolute right-2 top-2.5 text-primary/40 pointer-events-none text-base" />
             </div>
@@ -337,16 +346,16 @@ export default function ProductsPage() {
               <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
                 <MaterialIcon name="manage_search" className="text-primary text-4xl" />
               </div>
-              <h3 className="text-xl font-extrabold text-primary mb-2">No products found</h3>
+              <h3 className="text-xl font-extrabold text-primary mb-2">No se encontraron productos</h3>
               <p className="text-primary/60 text-sm mb-6 text-center max-w-xs">
-                Try adjusting your filters or search terms
+                Intenta ajustar tus filtros o términos de búsqueda
               </p>
               {hasActiveFilters && (
                 <button
                   onClick={resetFilters}
                   className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
                 >
-                  Clear Filters
+                  Limpiar filtros
                 </button>
               )}
             </div>
@@ -361,7 +370,7 @@ export default function ProductsPage() {
                 className="flex items-center gap-1 px-3 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <MaterialIcon name="chevron_left" className="text-base" />
-                Prev
+                Anterior
               </button>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 const page = i + 1;
@@ -384,7 +393,7 @@ export default function ProductsPage() {
                 disabled={currentPage === totalPages}
                 className="flex items-center gap-1 px-3 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                Next
+                Siguiente
                 <MaterialIcon name="chevron_right" className="text-base" />
               </button>
             </div>

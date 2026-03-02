@@ -176,7 +176,7 @@ export default function AdminProductsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <p className="font-bold text-primary text-lg">
-                            ${product.price.toFixed(2)}
+                            ${Number(product.price).toFixed(2)}
                           </p>
                         </td>
                         <td className="px-6 py-4">

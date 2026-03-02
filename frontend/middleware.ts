@@ -2,7 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/account', '/cart', '/checkout'];
+const PROTECTED_ROUTES = [
+  '/account',
+  '/cart',
+  '/checkout',
+  // Rutas del route group (account) — no llevan el prefijo "account" en la URL
+  '/profile',
+  '/orders',
+  '/addresses',
+  '/payment-methods',
+  '/wishlist',
+  '/compare',
+];
 // Routes that require ADMIN role
 const ADMIN_ROUTES = ['/admin'];
 // Routes that should redirect to home if already authenticated
@@ -62,5 +73,13 @@ export const config = {
     '/checkout/:path*',
     '/admin/:path*',
     '/auth',
+    // Rutas del route group (account)
+    '/profile',
+    '/orders',
+    '/orders/:path*',
+    '/addresses',
+    '/payment-methods',
+    '/wishlist',
+    '/compare',
   ],
 };

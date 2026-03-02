@@ -10,32 +10,32 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthAPI } from '@/hooks/useAuthAPI';
 
 const MEGA_MENU_ITEMS = {
-  Electronics: {
+  Electrónica: {
     featured: [
       { name: 'Smartphones', icon: 'smartphone', count: 245 },
       { name: 'Laptops', icon: 'laptop', count: 128 },
-      { name: 'Audio Devices', icon: 'headphones', count: 342 },
-      { name: 'Smart Watches', icon: 'watch', count: 89 },
+      { name: 'Dispositivos de Audio', icon: 'headphones', count: 342 },
+      { name: 'Relojes Inteligentes', icon: 'watch', count: 89 },
     ],
     trending: [
-      'Wireless Earbuds',
-      'USB-C Chargers',
-      'Phone Cases',
-      'Screen Protectors',
+      'Auriculares Inalámbricos',
+      'Cargadores USB-C',
+      'Fundas para Celular',
+      'Protectores de Pantalla',
     ],
   },
-  Fashion: {
+  Moda: {
     featured: [
-      { name: 'Mens Clothing', icon: 'checkroom', count: 521 },
-      { name: 'Womens Clothing', icon: 'checkroom', count: 634 },
-      { name: 'Accessories', icon: 'shopping_bag', count: 289 },
-      { name: 'Footwear', icon: 'directions_walk', count: 412 },
+      { name: 'Ropa de Hombre', icon: 'checkroom', count: 521 },
+      { name: 'Ropa de Mujer', icon: 'checkroom', count: 634 },
+      { name: 'Accesorios', icon: 'shopping_bag', count: 289 },
+      { name: 'Calzado', icon: 'directions_walk', count: 412 },
     ],
     trending: [
-      'Summer Dresses',
-      'Casual Sneakers',
-      'Designer Bags',
-      'Winter Jackets',
+      'Vestidos de Verano',
+      'Zapatillas Casuales',
+      'Bolsos de Diseñador',
+      'Chaquetas de Invierno',
     ],
   },
 };
@@ -77,6 +77,14 @@ export function Header() {
 
   return (
     <>
+      {/* Skip to main content — accesibilidad teclado */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold"
+      >
+        Ir al contenido principal
+      </a>
+
       <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-primary/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Bar */}
@@ -85,8 +93,11 @@ export function Header() {
           <button
             className="lg:hidden p-2 text-primary hover:bg-primary/5 rounded-full"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
           >
-            <MaterialIcon name={mobileMenuOpen ? 'close' : 'menu'} />
+            <MaterialIcon name={mobileMenuOpen ? 'close' : 'menu'} aria-hidden="true" />
           </button>
 
           {/* Logo */}
@@ -100,18 +111,20 @@ export function Header() {
           </Link>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="flex-1 max-w-2xl hidden md:block">
+          <form onSubmit={handleSearchSubmit} className="flex-1 max-w-2xl hidden md:block" role="search">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/40">
-                <MaterialIcon name="search" className="text-xl" />
+                <MaterialIcon name="search" className="text-xl" aria-hidden="true" />
               </div>
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
                 className="block w-full pl-10 pr-3 py-2 border-none bg-primary/5 rounded-lg focus:ring-2 focus:ring-primary/20 placeholder-primary/40 text-sm transition-all"
-                placeholder="Search products, brands, or features..."
-                type="text"
+                placeholder="Buscar productos, marcas o características..."
+                type="search"
+                aria-label="Buscar productos"
+                autoComplete="off"
               />
             </div>
           </form>
@@ -121,16 +134,18 @@ export function Header() {
             <Link
               href="/wishlist"
               className="p-2 text-primary hover:bg-primary/5 rounded-full relative"
+              aria-label="Ver lista de deseos"
             >
-              <MaterialIcon name="favorite" />
+              <MaterialIcon name="favorite" aria-hidden="true" />
             </Link>
             <Link
               href="/cart"
               className="p-2 text-primary hover:bg-primary/5 rounded-full relative"
+              aria-label={mounted && totalItems > 0 ? `Ver carrito (${totalItems} artículos)` : 'Ver carrito'}
             >
-              <MaterialIcon name="shopping_cart" />
+              <MaterialIcon name="shopping_cart" aria-hidden="true" />
               {mounted && totalItems > 0 && (
-                <span className="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                <span className="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full" aria-hidden="true">
                   {totalItems}
                 </span>
               )}
@@ -141,6 +156,9 @@ export function Header() {
               <button
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                 className="flex items-center gap-2 p-1 pl-1 pr-3 hover:bg-primary/5 rounded-full border border-primary/10"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="true"
+                aria-label="Abrir menú de cuenta"
               >
                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                   {mounted && user?.firstName ? (
@@ -156,7 +174,7 @@ export function Header() {
                   )}
                 </div>
                 <span className="text-sm font-semibold hidden lg:inline">
-                  {mounted && user?.firstName ? user.firstName : 'Account'}
+                  {mounted && user?.firstName ? user.firstName : 'Cuenta'}
                 </span>
               </button>
 
@@ -211,7 +229,7 @@ export function Header() {
         </div>
 
         {/* Mega Menu Nav - Desktop */}
-        <nav className="hidden lg:flex items-center gap-8 py-3 text-sm font-medium border-t border-primary/5">
+        <nav aria-label="Categorías de productos" className="hidden lg:flex items-center gap-8 py-3 text-sm font-medium border-t border-primary/5">
           {Object.entries(MEGA_MENU_ITEMS).map(([category, items]) => (
             <div
               key={category}
@@ -231,7 +249,7 @@ export function Header() {
                     <div className="grid grid-cols-2 gap-8">
                       {/* Featured Categories */}
                       <div>
-                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Featured Categories</h3>
+                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Categorías Destacadas</h3>
                         <div className="space-y-2">
                           {items.featured.map((item) => (
                             <Link
@@ -244,7 +262,7 @@ export function Header() {
                               </div>
                               <div>
                                 <p className="text-sm font-semibold text-primary group-hover:text-primary/80">{item.name}</p>
-                                <p className="text-xs text-slate-500">{item.count} items</p>
+                                <p className="text-xs text-slate-500">{item.count} artículos</p>
                               </div>
                             </Link>
                           ))}
@@ -253,7 +271,7 @@ export function Header() {
 
                       {/* Trending Products */}
                       <div>
-                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Trending Now</h3>
+                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Tendencias</h3>
                         <div className="space-y-2">
                           {items.trending.map((trend) => (
                             <Link
@@ -268,9 +286,9 @@ export function Header() {
 
                         {/* Special Banner */}
                         <div className="mt-4 p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
-                          <p className="text-xs font-bold text-primary mb-2">EXCLUSIVE OFFER</p>
-                          <p className="text-sm font-bold text-primary">Get 20% off on all {category}</p>
-                          <p className="text-xs text-slate-600">Use code: {category.toUpperCase()}20</p>
+                          <p className="text-xs font-bold text-primary mb-2">OFERTA EXCLUSIVA</p>
+                          <p className="text-sm font-bold text-primary">20% de descuento en todo {category}</p>
+                          <p className="text-xs text-slate-600">Código: {category.toUpperCase()}20</p>
                         </div>
                       </div>
                     </div>
@@ -281,10 +299,10 @@ export function Header() {
           ))}
           <div className="h-4 w-px bg-primary/10 mx-2" />
           <Link href="/products" className="text-primary/60 hover:text-primary font-semibold transition-colors">
-            New Arrivals
+            Novedades
           </Link>
           <Link href="/products" className="text-red-600 font-semibold italic hover:text-red-700 transition-colors">
-            Clearance Sale
+            Liquidación
           </Link>
         </nav>
 
@@ -321,9 +339,9 @@ export function Header() {
             </div>
             <div className="flex flex-col overflow-hidden flex-1">
               <h2 className="truncate text-lg font-bold text-primary">
-                {mounted && user?.firstName ? `${user.firstName} ${user.lastName}` : 'Guest'}
+                {mounted && user?.firstName ? `${user.firstName} ${user.lastName}` : 'Invitado'}
               </h2>
-              <p className="text-xs font-medium text-primary/60">Premium Member</p>
+              <p className="text-xs font-medium text-primary/60">Miembro Premium</p>
             </div>
             <button 
               onClick={() => setMobileMenuOpen(false)}
@@ -342,7 +360,7 @@ export function Header() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { handleSearchSubmit(); setMobileMenuOpen(false); } }}
                 className="w-full rounded-xl border-none bg-primary/5 py-3 pl-11 pr-4 text-sm font-medium text-primary placeholder:text-primary/40 focus:ring-2 focus:ring-primary/20"
-                placeholder="Search FlexiCommerce"
+                placeholder="Buscar en FlexiCommerce"
                 type="text"
               />
             </label>
@@ -352,7 +370,7 @@ export function Header() {
           <div className="flex-1 overflow-y-auto px-4 pb-6">
             {/* Main Categories */}
             <div className="mb-6">
-              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Shop Categories</h3>
+              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Categorías</h3>
               <div className="flex flex-col gap-1">
                 {Object.entries(MEGA_MENU_ITEMS).map(([category, items]) => (
                   <details key={category} className="group">
@@ -382,7 +400,7 @@ export function Header() {
 
             {/* Quick Access Section */}
             <div className="mb-6 pt-4 border-t border-primary/5">
-              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">My Activity</h3>
+              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Mi Actividad</h3>
               <div className="flex flex-col gap-1">
                 <Link
                   href="/wishlist"
@@ -390,7 +408,7 @@ export function Header() {
                   className="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 transition-colors"
                 >
                   <MaterialIcon name="favorite" className="text-primary/70" />
-                  <span className="text-sm font-semibold">Wishlist</span>
+                  <span className="text-sm font-semibold">Lista de deseos</span>
                   <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold">12</span>
                 </Link>
                 <Link
@@ -399,14 +417,14 @@ export function Header() {
                   className="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 transition-colors"
                 >
                   <MaterialIcon name="shopping_bag" className="text-primary/70" />
-                  <span className="text-sm font-semibold">Orders</span>
+                  <span className="text-sm font-semibold">Pedidos</span>
                 </Link>
               </div>
             </div>
 
             {/* Account & Support */}
             <div className="pt-4 border-t border-primary/5">
-              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Support & Settings</h3>
+              <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Soporte y Ajustes</h3>
               <div className="flex flex-col gap-1">
                 <Link
                   href="/profile"
@@ -414,7 +432,7 @@ export function Header() {
                   className="flex items-center gap-3 rounded-xl px-3 py-3 text-primary hover:bg-primary/5 transition-colors"
                 >
                   <MaterialIcon name="settings" className="text-primary/70" />
-                  <span className="text-sm font-semibold">Settings</span>
+                  <span className="text-sm font-semibold">Ajustes</span>
                 </Link>
               </div>
             </div>
@@ -428,19 +446,19 @@ export function Header() {
                   <MaterialIcon name="language" className="text-sm text-primary/70" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-primary">EN / USD</span>
-                  <span className="text-[10px] text-primary/40">English · United States</span>
+                  <span className="text-xs font-bold text-primary">ES / MXN</span>
+                  <span className="text-[10px] text-primary/40">Español · México</span>
                 </div>
               </div>
               <MaterialIcon name="chevron_right" className="text-primary/40" />
             </div>
             <div className="mt-4 flex items-center justify-between px-2">
               <p className="text-[10px] text-primary/30">© 2024 FlexiCommerce</p>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="text-[10px] font-bold text-primary/40 hover:text-primary transition-colors"
               >
-                Logout
+                Cerrar sesión
               </button>
             </div>
           </div>

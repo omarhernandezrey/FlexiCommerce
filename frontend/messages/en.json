@@ -1,0 +1,93 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Try again",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "account": "My account",
+    "orders": "My orders",
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Sign up",
+    "admin": "Administration",
+    "searchPlaceholder": "Search products...",
+    "skipToContent": "Skip to main content"
+  },
+  "home": {
+    "hero": {
+      "title": "Welcome to FlexiCommerce",
+      "subtitle": "Your trusted online store",
+      "cta": "Browse products"
+    },
+    "featured": "Featured products",
+    "newArrivals": "New arrivals",
+    "categories": "Categories"
+  },
+  "products": {
+    "title": "Products",
+    "addToCart": "Add to cart",
+    "addToWishlist": "Add to wishlist",
+    "removeFromWishlist": "Remove from wishlist",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "price": "Price",
+    "quantity": "Quantity",
+    "reviews": "Reviews",
+    "noProducts": "No products found",
+    "filter": "Filter",
+    "sort": "Sort"
+  },
+  "cart": {
+    "title": "Shopping cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue shopping",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "total": "Total",
+    "checkout": "Proceed to checkout",
+    "remove": "Remove",
+    "quantity": "Quantity"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "address": "Shipping address",
+    "payment": "Payment method",
+    "review": "Review order",
+    "placeOrder": "Place order",
+    "orderConfirmed": "Order confirmed!"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Create account",
+    "email": "Email address",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginError": "Invalid credentials",
+    "registerError": "Error creating account"
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "notFoundMessage": "The page you're looking for doesn't exist",
+    "serverError": "Server error",
+    "serverErrorMessage": "Something went wrong. Please try again.",
+    "goHome": "Go back home"
+  }
+}

@@ -26,7 +26,7 @@ export interface Order {
   userId: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'processing' | 'cancelled';
   createdAt: string;
   shippingAddress?: {
     firstName: string;
@@ -35,6 +35,9 @@ export interface Order {
     phone: string;
     address: string;
   };
+  shippingMethod?: string;
+  shippingCost?: number;
+  currency?: string;
 }
 
 export interface OrderItem {
@@ -134,27 +137,5 @@ export const paymentsAPI = {
   verify: (paymentId: string) => apiClient.get(`/api/payments/${paymentId}`),
 };
 
-// Add request interceptor for auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Add response interceptor for error handling
-apiClient.interceptors.response.use(
-  (response) => response, // Keep full response
-  (error) => {
-    if (error.response?.status === 401) {
-      // Redirect to login
-      localStorage.removeItem('authToken');
-      window.location.href = '/auth';
-    }
-    return Promise.reject(error);
-  }
-);
+// Los interceptores de autenticación y manejo de errores 401
+// están centralizados en lib/api-client.ts para evitar duplicados.

@@ -5,12 +5,15 @@ import { authenticate } from '../../middlewares/auth.js';
 const router = Router();
 const controller = new PaymentsController();
 
+// ─── Wompi webhook (SIN authenticate — viene de los servidores de Wompi) ──
+router.post('/wompi/webhook', controller.wompiWebhook);
+
+// ─── Rutas autenticadas ────────────────────────────────────────────────────
 router.post('/', authenticate, controller.create);
 router.get('/:orderId', authenticate, controller.getByOrder);
 
-// Stripe Payment Intent endpoints
-router.post('/intent/create', authenticate, controller.createPaymentIntent);
-router.post('/intent/confirm', authenticate, controller.confirmPaymentIntent);
-router.post('/process', authenticate, controller.processPayment);
+// ─── Wompi: sesión y verificación ─────────────────────────────────────────
+router.post('/wompi/session', authenticate, controller.createWompiSession);
+router.post('/wompi/verify/:transactionId', authenticate, controller.verifyTransaction);
 
 export default router;

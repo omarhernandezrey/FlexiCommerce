@@ -75,6 +75,3 @@ export const useCartStore = create<CartStore>()(
     }
   )
 );
-
-// Exportar hook para compatibilidad
-export const useCart = useCartStore;

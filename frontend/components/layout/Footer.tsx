@@ -16,7 +16,7 @@ export function Footer() {
               <h2 className="text-sm sm:text-lg font-extrabold text-primary uppercase">FlexiCommerce</h2>
             </div>
             <p className="text-primary/60 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6">
-              Redefining the digital shopping landscape with scalable, enterprise-grade technology and premium user experiences.
+              Redefiniendo el panorama del comercio digital con tecnología escalable de nivel empresarial y experiencias de usuario premium.
             </p>
             <div className="flex gap-4">
               <a className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl" href="#">
@@ -33,7 +33,7 @@ export function Footer() {
 
           {/* Shop */}
           <div>
-            <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Shop</h3>
+            <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Tienda</h3>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-sm text-primary/60">
               {FOOTER_LINKS.shop.map((item) => (
                 <li key={item}>
@@ -47,7 +47,7 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Company</h3>
+            <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Empresa</h3>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-sm text-primary/60">
               {FOOTER_LINKS.company.map((item) => (
                 <li key={item}>
@@ -59,7 +59,7 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Support</h3>
+            <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Soporte</h3>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-sm text-primary/60">
               {FOOTER_LINKS.support.map((item) => (
                 <li key={item}>
@@ -71,12 +71,12 @@ export function Footer() {
         </div>
 
         <div className="pt-6 sm:pt-8 border-t border-primary/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-          <p className="text-[10px] sm:text-xs text-primary/40">© 2024 FlexiCommerce Inc. All rights reserved.</p>
+          <p className="text-[10px] sm:text-xs text-primary/40">© 2024 FlexiCommerce Inc. Todos los derechos reservados.</p>
           <div className="flex gap-4 sm:gap-6 text-[8px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-widest">
-            <a className="hover:text-primary transition-colors" href="#">Privacy</a>
-            <a className="hover:text-primary transition-colors" href="#">Terms</a>
+            <a className="hover:text-primary transition-colors" href="#">Privacidad</a>
+            <a className="hover:text-primary transition-colors" href="#">Términos</a>
             <a className="hover:text-primary transition-colors" href="#">Cookies</a>
-            <a className="hidden sm:inline hover:text-primary transition-colors" href="#">Accessibility</a>
+            <a className="hidden sm:inline hover:text-primary transition-colors" href="#">Accesibilidad</a>
           </div>
         </div>
       </div>

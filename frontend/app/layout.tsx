@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
+import { ClientLayout } from "./client-layout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FlexiCommerce | Premium E-Commerce Experience",
-  description: "Production-ready e-commerce platform — scalable, enterprise-grade technology and premium user experiences.",
+  title: "FlexiCommerce | Experiencia de Compra Premium",
+  description: "Plataforma de comercio electrónico lista para producción — tecnología escalable de nivel empresarial y experiencias de usuario premium.",
 };
 
 export default function RootLayout({
@@ -28,7 +29,9 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background-light text-primary font-display">
-        {children}
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

@@ -6,10 +6,32 @@ export class ReviewsController {
 
   getByProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-      const reviews = await this.service.getByProduct(req.params.productId);
-      res.json({ success: true, data: reviews });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const data = await this.service.getByProduct(req.params.productId, page, limit);
+      res.json({ success: true, data });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error';
+      res.status(500).json({ success: false, error: message });
+    }
+  };
+
+  getStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const data = await this.service.getStats(req.params.productId);
+      res.json({ success: true, data });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al obtener estadísticas';
+      res.status(500).json({ success: false, error: message });
+    }
+  };
+
+  checkUserReview = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const data = await this.service.checkUserReview(req.params.productId, req.user.id);
+      res.json({ success: true, data });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al verificar reseña';
       res.status(500).json({ success: false, error: message });
     }
   };
@@ -20,6 +42,16 @@ export class ReviewsController {
       res.status(201).json({ success: true, data: review });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al crear reseña';
+      res.status(400).json({ success: false, error: message });
+    }
+  };
+
+  update = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const review = await this.service.update(req.params.id, req.user.id, req.body);
+      res.json({ success: true, data: review });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al actualizar reseña';
       res.status(400).json({ success: false, error: message });
     }
   };

@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
   const subtotal = getTotalPrice();
   const tax = subtotal * 0.08;
@@ -56,6 +58,9 @@ export default function CartPage() {
                             src={item.image}
                             alt={item.name}
                             className="w-16 sm:w-20 md:w-28 h-16 sm:h-20 md:h-28 rounded-lg object-cover"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = `https://placehold.co/200x200/f1f5f9/94a3b8?text=${encodeURIComponent(item.name)}`;
+                            }}
                           />
                           <div className="absolute -top-2 -right-2 bg-primary text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full">
                             {item.quantity}x
@@ -127,13 +132,13 @@ export default function CartPage() {
 
                 {/* Continue Shopping */}
                 <div className="card-padding bg-slate-50/50 border-t border-slate-200">
-                  <Link
-                    href="/products"
+                  <button
+                    onClick={() => router.back()}
                     className="inline-flex items-center gap-2 text-primary font-semibold text-sm sm:text-base hover:text-primary/80 transition-colors"
                   >
                     <MaterialIcon name="arrow_back" className="text-base sm:text-lg" />
                     Continuar Comprando
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

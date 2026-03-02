@@ -1,0 +1,93 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "retry": "Intentar de nuevo",
+    "back": "Volver",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "nav": {
+    "home": "Inicio",
+    "products": "Productos",
+    "categories": "Categorías",
+    "cart": "Carrito",
+    "wishlist": "Lista de deseos",
+    "account": "Mi cuenta",
+    "orders": "Mis pedidos",
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "register": "Registrarse",
+    "admin": "Administración",
+    "searchPlaceholder": "Buscar productos...",
+    "skipToContent": "Ir al contenido principal"
+  },
+  "home": {
+    "hero": {
+      "title": "Bienvenido a FlexiCommerce",
+      "subtitle": "Tu tienda en línea de confianza",
+      "cta": "Ver productos"
+    },
+    "featured": "Productos destacados",
+    "newArrivals": "Nuevas llegadas",
+    "categories": "Categorías"
+  },
+  "products": {
+    "title": "Productos",
+    "addToCart": "Agregar al carrito",
+    "addToWishlist": "Agregar a favoritos",
+    "removeFromWishlist": "Quitar de favoritos",
+    "inStock": "En stock",
+    "outOfStock": "Sin stock",
+    "price": "Precio",
+    "quantity": "Cantidad",
+    "reviews": "Reseñas",
+    "noProducts": "No se encontraron productos",
+    "filter": "Filtrar",
+    "sort": "Ordenar"
+  },
+  "cart": {
+    "title": "Carrito de compras",
+    "empty": "Tu carrito está vacío",
+    "continueShopping": "Seguir comprando",
+    "subtotal": "Subtotal",
+    "shipping": "Envío",
+    "total": "Total",
+    "checkout": "Proceder al pago",
+    "remove": "Eliminar",
+    "quantity": "Cantidad"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "address": "Dirección de envío",
+    "payment": "Método de pago",
+    "review": "Revisar pedido",
+    "placeOrder": "Confirmar pedido",
+    "orderConfirmed": "¡Pedido confirmado!"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "loginError": "Credenciales incorrectas",
+    "registerError": "Error al crear cuenta"
+  },
+  "errors": {
+    "notFound": "Página no encontrada",
+    "notFoundMessage": "La página que buscas no existe",
+    "serverError": "Error del servidor",
+    "serverErrorMessage": "Algo salió mal. Por favor intenta de nuevo.",
+    "goHome": "Volver al inicio"
+  }
+}

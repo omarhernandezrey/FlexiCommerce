@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
+import { formatCOP } from '@/lib/format';
 
 export default function WishlistPage() {
   const { items, loading, removeFromWishlist, clearWishlist } = useWishlist();
@@ -47,7 +48,7 @@ export default function WishlistPage() {
     const allTargets: Record<string, number> = { ...alertTargets };
     items.forEach((item) => {
       allEnabled[item.id] = true;
-      if (!allTargets[item.id]) allTargets[item.id] = parseFloat((item.price * 0.9).toFixed(0));
+      if (!allTargets[item.id]) allTargets[item.id] = parseFloat((Number(item.price) * 0.9).toFixed(0));
     });
     setAlertsEnabled(allEnabled);
     setAlertTargets(allTargets);
@@ -162,9 +163,9 @@ export default function WishlistPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 spacing-header">
         {[
           { label: 'Total Items', value: stats.total, icon: 'favorite' },
-          { label: 'Min Price', value: `$${stats.minPrice.toFixed(2)}`, icon: 'arrow_downward' },
-          { label: 'Max Price', value: `$${stats.maxPrice.toFixed(2)}`, icon: 'arrow_upward' },
-          { label: 'Total Value', value: `$${stats.totalValue.toFixed(2)}`, icon: 'account_balance_wallet' },
+          { label: 'Min Price', value: formatCOP(stats.minPrice), icon: 'arrow_downward' },
+          { label: 'Max Price', value: formatCOP(stats.maxPrice), icon: 'arrow_upward' },
+          { label: 'Total Value', value: formatCOP(stats.totalValue), icon: 'account_balance_wallet' },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-primary/10 p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -259,7 +260,7 @@ export default function WishlistPage() {
                     {item.productName}
                   </h3>
                   <p className="text-lg font-extrabold text-primary mb-4">
-                    ${item.price.toFixed(2)}
+                    {formatCOP(item.price)}
                   </p>
 
                   <div className="mt-auto space-y-2">
@@ -351,7 +352,7 @@ export default function WishlistPage() {
                     </td>
                   </tr>
                   {[
-                    { label: 'Price', key: 'price' as const, format: (v: number | string) => typeof v === 'number' ? `$${v.toFixed(2)}` : String(v) },
+                    { label: 'Price', key: 'price' as const, format: (v: number | string) => typeof v === 'number' ? formatCOP(v) : String(v) },
                     { label: 'Category', key: 'category' as const, format: (v: number | string) => String(v) },
                   ].map((row) => (
                     <tr key={row.label} className="border-b border-primary/5">
@@ -453,7 +454,7 @@ export default function WishlistPage() {
                   <p className="text-sm font-bold text-primary line-clamp-1">{item.productName}</p>
                   <p className="text-xs text-primary/40 mt-0.5">{item.category}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <p className="text-base font-extrabold text-primary">${item.price.toFixed(2)}</p>
+                    <p className="text-base font-extrabold text-primary">{formatCOP(item.price)}</p>
                     <span className="text-[10px] text-primary/40 font-medium">Current price</span>
                   </div>
                 </div>
@@ -465,7 +466,7 @@ export default function WishlistPage() {
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm">$</span>
                     <input
                       type="number"
-                      value={alertTargets[item.id] ?? parseFloat((item.price * 0.9).toFixed(0))}
+                      value={alertTargets[item.id] ?? parseFloat((Number(item.price) * 0.9).toFixed(0))}
                       onChange={(e) => handleTargetChange(item.id, parseFloat(e.target.value) || 0)}
                       className="w-24 pl-6 pr-3 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
@@ -474,7 +475,7 @@ export default function WishlistPage() {
 
                 {/* Toggle */}
                 <button
-                  onClick={() => handleSetAlert(item.id, alertTargets[item.id] ?? parseFloat((item.price * 0.9).toFixed(0)))}
+                  onClick={() => handleSetAlert(item.id, alertTargets[item.id] ?? parseFloat((Number(item.price) * 0.9).toFixed(0)))}
                   className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     alertsEnabled[item.id]
                       ? 'bg-primary text-white border border-primary'

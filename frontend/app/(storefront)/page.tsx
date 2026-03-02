@@ -8,19 +8,19 @@ import { MOCK_PRODUCTS, IMAGES, CATEGORIES } from '@/lib/constants';
 
 const HERO_SLIDES = [
   {
-    title: 'Elevate Your Everyday Style',
-    description: 'Experience the perfect blend of performance and aesthetics with our curated premium arrivals.',
-    tag: 'Summer Collection 2024',
+    title: 'Eleva Tu Estilo Cotidiano',
+    description: 'Experimenta la combinación perfecta de rendimiento y estética con nuestras novedades curadas.',
+    tag: 'Colección Verano 2024',
   },
   {
-    title: 'Premium Quality Guaranteed',
-    description: 'Discover our latest collection with exclusive designs and premium materials.',
-    tag: 'New Arrivals',
+    title: 'Calidad Premium Garantizada',
+    description: 'Descubre nuestra última colección con diseños exclusivos y materiales de primera.',
+    tag: 'Novedades',
   },
   {
-    title: 'Limited Edition Exclusive',
-    description: 'Grab your favorite items before they sell out. Limited stock available now.',
-    tag: 'Flash Sale',
+    title: 'Edición Limitada Exclusiva',
+    description: 'Consigue tus artículos favoritos antes de que se agoten. Stock limitado disponible ahora.',
+    tag: 'Oferta Flash',
   },
 ];
 
@@ -81,13 +81,13 @@ export default function StorefrontHome() {
                   href="/products"
                   className="px-6 sm:px-8 py-2.5 sm:py-3 bg-white text-primary font-bold rounded-lg hover:bg-gray-100 transition-all shadow-lg text-sm sm:text-base"
                 >
-                  Shop Now
+                  Comprar ahora
                 </Link>
                 <Link
                   href="/products"
                   className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-white/40 text-white font-bold rounded-lg hover:bg-white/10 transition-all text-sm sm:text-base"
                 >
-                  View All
+                  Ver todos
                 </Link>
               </div>
             </div>
@@ -131,14 +131,14 @@ export default function StorefrontHome() {
       <section className="spacing-section">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Browse Categories</h2>
-            <p className="text-primary/60 text-xs sm:text-sm mt-1">Find what you&apos;re looking for</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Explorar Categorías</h2>
+            <p className="text-primary/60 text-xs sm:text-sm mt-1">Encuentra lo que buscas</p>
           </div>
           <Link
             href="/products"
             className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
           >
-            View All <MaterialIcon name="arrow_forward" className="text-base" />
+            Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
@@ -167,14 +167,14 @@ export default function StorefrontHome() {
       <section className="spacing-section">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Trending Now</h2>
-            <p className="text-primary/60 text-xs sm:text-sm mt-1">Best selling products this week</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Tendencias</h2>
+            <p className="text-primary/60 text-xs sm:text-sm mt-1">Los productos más vendidos esta semana</p>
           </div>
           <Link
             href="/products"
             className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
           >
-            View All <MaterialIcon name="arrow_forward" className="text-base" />
+            Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
@@ -189,20 +189,20 @@ export default function StorefrontHome() {
         <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2"></div>
         <div className="relative z-10 grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
           <div>
-            <span className="text-white/60 font-bold tracking-widest uppercase text-xs">Enterprise Ready</span>
+            <span className="text-white/60 font-bold tracking-widest uppercase text-xs">Listo para Empresas</span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mt-3 sm:mt-4 leading-tight">
-              Engineered for Scale,<br />Built for Success
+              Diseñado para Escalar,<br />Construido para el Éxito
             </h2>
             <p className="text-white/70 mt-4 sm:mt-6 text-sm sm:text-base md:text-lg leading-relaxed">
-              FlexiCommerce isn&apos;t just a shop; it&apos;s a multi-tenant powerhouse designed for global brands
-              requiring high performance, security, and infinite scalability.
+              FlexiCommerce no es solo una tienda; es una plataforma multi-tenant diseñada para marcas globales
+              que requieren alto rendimiento, seguridad y escalabilidad infinita.
             </p>
             <div className="mt-8 sm:mt-10 grid sm:grid-cols-2 gap-4 sm:gap-6">
               {[
-                { icon: 'hub', title: 'Multi-Tenant', desc: 'Manage hundreds of stores from a single unified hub.' },
-                { icon: 'speed', title: 'Ultra Fast', desc: '99.9% Uptime with sub-second page load speeds.' },
-                { icon: 'security', title: 'Encrypted', desc: 'PCI-DSS Level 1 compliant secure transactions.' },
-                { icon: 'cloud_sync', title: 'Live Sync', desc: 'Real-time inventory and logistics tracking.' },
+                { icon: 'hub', title: 'Multi-Tenant', desc: 'Gestiona cientos de tiendas desde un hub unificado.' },
+                { icon: 'speed', title: 'Ultra Rápido', desc: '99.9% de disponibilidad con cargas sub-segundo.' },
+                { icon: 'security', title: 'Encriptado', desc: 'Transacciones seguras PCI-DSS Nivel 1.' },
+                { icon: 'cloud_sync', title: 'Sincronización en Vivo', desc: 'Inventario y logística en tiempo real.' },
               ].map((f) => (
                 <div key={f.title} className="flex gap-3 sm:gap-4">
                   <div className="size-11 sm:size-12 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center shrink-0">
@@ -225,10 +225,10 @@ export default function StorefrontHome() {
             <div className="absolute -bottom-6 -left-6 bg-white p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-xl text-primary max-w-xs">
               <div className="flex items-center gap-2 mb-2">
                 <div className="size-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-extrabold uppercase text-primary/40">Global Traffic</span>
+                <span className="text-[10px] font-extrabold uppercase text-primary/40">Tráfico Global</span>
               </div>
               <p className="text-xl sm:text-2xl font-extrabold">4.2M+</p>
-              <p className="text-xs text-primary/60 font-medium italic">Active Daily Transactions</p>
+              <p className="text-xs text-primary/60 font-medium italic">Transacciones Diarias Activas</p>
             </div>
           </div>
         </div>
@@ -236,14 +236,14 @@ export default function StorefrontHome() {
 
       {/* Newsletter */}
       <section className="bg-primary/5 rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 text-center">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-primary mb-2">Join the Elite Commerce Club</h2>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-primary mb-2">Únete al Club Élite de Comercio</h2>
         <p className="text-primary/60 mb-6 sm:mb-8 text-sm sm:text-base">
-          Get 20% off your first order and unlock exclusive deals, early access to new arrivals, and members-only perks
+          Obtén 20% de descuento en tu primer pedido y accede a ofertas exclusivas, acceso anticipado a novedades y beneficios exclusivos para miembros
         </p>
         {newsletterState === 'success' ? (
           <div className="flex items-center justify-center gap-2 max-w-md mx-auto py-3 px-6 bg-green-50 border border-green-200 rounded-lg">
             <MaterialIcon name="check_circle" className="text-green-600 text-xl" />
-            <p className="text-green-700 font-bold text-sm">You're in! Check your inbox for your 20% discount code.</p>
+            <p className="text-green-700 font-bold text-sm">¡Ya eres miembro! Revisa tu bandeja de entrada para tu código de 20% de descuento.</p>
           </div>
         ) : (
           <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
@@ -251,7 +251,7 @@ export default function StorefrontHome() {
               type="email"
               value={newsletterEmail}
               onChange={(e) => setNewsletterEmail(e.target.value)}
-              placeholder="Enter your email address"
+              placeholder="Ingresa tu correo electrónico"
               required
               className="flex-1 px-4 py-2.5 sm:py-3 border border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-sm"
             />
@@ -261,11 +261,11 @@ export default function StorefrontHome() {
               className="px-6 py-2.5 sm:py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap text-sm disabled:opacity-70 flex items-center gap-2 justify-center"
             >
               {newsletterState === 'loading' && <MaterialIcon name="sync" className="text-base animate-spin" />}
-              {newsletterState === 'loading' ? 'Subscribing...' : 'Subscribe Now'}
+              {newsletterState === 'loading' ? 'Suscribiendo...' : 'Suscribirse'}
             </button>
           </form>
         )}
-        <p className="text-xs text-primary/40 mt-4">We respect your privacy. Unsubscribe at any time.</p>
+        <p className="text-xs text-primary/40 mt-4">Respetamos tu privacidad. Cancela la suscripción cuando quieras.</p>
       </section>
     </div>
   );

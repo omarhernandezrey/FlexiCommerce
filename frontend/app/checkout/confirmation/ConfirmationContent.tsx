@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { useOrders } from '@/hooks/useOrders';
 import { useCart } from '@/hooks/useCart';
+import { formatCOP } from '@/lib/format';
 
 export function ConfirmationContent() {
   const searchParams = useSearchParams();
@@ -60,7 +61,7 @@ export function ConfirmationContent() {
     );
   }
 
-  const subtotal = currentOrder.total;
+  const subtotal = Number(currentOrder.total);
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
@@ -128,7 +129,7 @@ export function ConfirmationContent() {
               </div>
               <div>
                 <p className="text-xs text-primary/40 mb-1 font-medium uppercase tracking-wider">Total</p>
-                <p className="font-extrabold text-primary">${total.toFixed(2)}</p>
+                <p className="font-extrabold text-primary">{formatCOP(total)}</p>
               </div>
             </div>
 
@@ -143,7 +144,7 @@ export function ConfirmationContent() {
                         <p className="font-bold text-primary text-sm">{item.productName}</p>
                         <p className="text-xs text-primary/40">Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-bold text-primary">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-bold text-primary">{formatCOP(item.price * item.quantity)}</p>
                     </div>
                   ))}
                 </div>
@@ -154,7 +155,7 @@ export function ConfirmationContent() {
             <div className="space-y-2 text-sm pb-6 mb-6 border-b border-primary/10">
               <div className="flex justify-between text-primary/60">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{formatCOP(subtotal)}</span>
               </div>
               <div className="flex justify-between text-primary/60">
                 <span>Shipping</span>
@@ -162,11 +163,11 @@ export function ConfirmationContent() {
               </div>
               <div className="flex justify-between text-primary/60">
                 <span>Tax (8%)</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>{formatCOP(tax)}</span>
               </div>
               <div className="flex justify-between font-extrabold text-primary text-base pt-2 border-t border-primary/10 mt-2">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatCOP(total)}</span>
               </div>
             </div>
 

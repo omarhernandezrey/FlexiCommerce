@@ -31,7 +31,12 @@ export class OrdersController {
 
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const order = await this.service.create(req.user.id, req.body.items);
+      const order = await this.service.create(req.user.id, req.body.items, {
+        shippingAddress: req.body.shippingAddress,
+        shippingMethod: req.body.shippingMethod,
+        shippingCost: req.body.shippingCost,
+        currency: 'COP',
+      });
 
       // Send confirmation email
       try {

@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { useCompare } from '@/hooks/useCompare';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import Link from 'next/link';
+import { formatCOP } from '@/lib/format';
 
 const SPEC_GROUPS = [
   {
     label: 'General Info',
     rows: [
-      { label: 'Price', key: 'price', format: (v: unknown) => typeof v === 'number' ? `$${v.toFixed(2)}` : '—' },
+      { label: 'Price', key: 'price', format: (v: unknown) => v != null ? formatCOP(Number(v)) : '—' },
       { label: 'Category', key: 'category', format: (v: unknown) => String(v ?? '—') },
       { label: 'Rating', key: 'rating', format: (v: unknown) => typeof v === 'number' ? `${v} / 5` : '—' },
     ],
@@ -117,7 +118,7 @@ export default function ComparePage() {
                           {product.name}
                         </h3>
                         <p className="text-lg font-extrabold text-primary mt-1">
-                          ${product.price.toFixed(2)}
+                          {formatCOP(product.price)}
                         </p>
                       </div>
                     </div>

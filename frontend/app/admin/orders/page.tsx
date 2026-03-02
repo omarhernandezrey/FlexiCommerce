@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/useToast';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import Link from 'next/link';
+import { formatCOP } from '@/lib/format';
 
 const statusConfig = {
   pending: { label: 'Pendiente', color: 'bg-amber-100 text-amber-800', icon: 'hourglass_top' },
@@ -91,7 +92,7 @@ export default function AdminOrdersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium">Ingresos Totales</p>
-                  <p className="text-3xl font-bold text-primary mt-2">${totalRevenue.toFixed(0)}</p>
+                  <p className="text-3xl font-bold text-primary mt-2">{formatCOP(totalRevenue)}</p>
                 </div>
                 <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center">
                   <MaterialIcon name="trending_up" className="text-primary text-2xl" />
@@ -178,7 +179,7 @@ export default function AdminOrdersPage() {
                           <td className="px-6 py-4 text-sm text-slate-600">{order.userId.slice(0, 8)}...</td>
                           <td className="px-6 py-4">
                             <p className="font-bold text-primary text-lg">
-                              ${order.total.toFixed(2)}
+                              {formatCOP(order.total)}
                             </p>
                           </td>
                           <td className="px-6 py-4">

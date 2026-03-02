@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { useAuthAPI } from '@/hooks/useAuthAPI';
 import { useToast } from '@/hooks/useToast';
+import { useAuthStore } from '@/store/auth';
 import { validationPatterns } from '@/lib/validation';
 import { IMAGES } from '@/lib/constants';
 
@@ -23,18 +24,23 @@ export default function AuthPage() {
 
   const { login, register, loading, error: authError } = useAuthAPI();
   const { toast } = useToast();
+  const { isAuthenticated, token } = useAuthStore();
 
   const handleSocialLogin = (provider: 'Google' | 'Apple') => {
-    toast({ message: `${provider} login coming soon. Please use email/password for now.`, type: 'info' });
+    toast({ message: `Inicio de sesión con ${provider} próximamente. Por favor usa correo y contraseña.`, type: 'info' });
   };
 
   // Si el usuario ya está autenticado, redirigir a home
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
+    // Verificar tanto en Zustand como en localStorage (por si Zustand aún no restauró)
+    const storeAuth = useAuthStore.getState();
+    const hasToken = storeAuth.token || storeAuth.isAuthenticated;
+    
+    if (hasToken) {
+      console.debug('[Auth Page] Usuario ya autenticado, redirigiendo a inicio');
       router.push('/');
     }
-  }, [router]);
+  }, [router, isAuthenticated, token]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -143,11 +149,11 @@ export default function AuthPage() {
             <span className="text-2xl font-black tracking-tight">FlexiCommerce</span>
           </div>
           <h1 className="text-5xl font-black leading-tight mb-6">
-            Elevate your <br />shopping experience.
+            Eleva tu <br />experiencia de compra.
           </h1>
           <p className="text-lg text-white/80 max-w-md leading-relaxed">
-            Join thousands of shoppers and store owners who trust FlexiCommerce for a seamless,
-            modern retail journey.
+            Únete a miles de compradores y vendedores que confían en FlexiCommerce para una
+            experiencia de compra moderna y sin complicaciones.
           </p>
           <div className="mt-12 flex items-center gap-4">
             <div className="flex -space-x-3">
@@ -167,7 +173,7 @@ export default function AuthPage() {
                 src={IMAGES.userAvatar}
               />
             </div>
-            <p className="text-sm font-medium text-white/90">Trusted by over 10k+ active users</p>
+            <p className="text-sm font-medium text-white/90">Más de 10k+ usuarios activos confían en nosotros</p>
           </div>
         </div>
       </div>
@@ -185,10 +191,10 @@ export default function AuthPage() {
 
           <div className="spacing-section text-center lg:text-left">
             <h2 className="text-2xl sm:text-3xl font-black text-primary spacing-header">
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
             </h2>
             <p className="text-[#5d6a89] font-medium">
-              {isLogin ? 'Welcome back! Please enter your details.' : 'Join us today. It\'s free!'}
+              {isLogin ? '¡Bienvenido de nuevo! Ingresa tus datos.' : '¡Únete hoy. Es gratis!'}
             </p>
           </div>
 
@@ -202,7 +208,7 @@ export default function AuthPage() {
                   : 'border-transparent text-[#5d6a89] hover:text-primary'
               }`}
             >
-              Sign In
+              Iniciar sesión
             </button>
             <button
               onClick={() => handleTabSwitch(false)}
@@ -212,7 +218,7 @@ export default function AuthPage() {
                   : 'border-transparent text-[#5d6a89] hover:text-primary'
               }`}
             >
-              Create Account
+              Crear cuenta
             </button>
           </div>
 
@@ -248,7 +254,7 @@ export default function AuthPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white px-4 text-[#5d6a89] font-semibold tracking-wider">
-                Or continue with email
+                O continúa con correo electrónico
               </span>
             </div>
           </div>
@@ -259,7 +265,7 @@ export default function AuthPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-primary mb-2" htmlFor="firstName">
-                    First Name
+                    Nombre
                   </label>
                   <input
                     id="firstName"
@@ -275,7 +281,7 @@ export default function AuthPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-primary mb-2" htmlFor="lastName">
-                    Last Name
+                    Apellido
                   </label>
                   <input
                     id="lastName"
@@ -294,7 +300,7 @@ export default function AuthPage() {
 
             <div>
               <label className="block text-sm font-bold text-primary mb-2" htmlFor="email">
-                Email Address
+                Correo electrónico
               </label>
               <input
                 id="email"
@@ -312,11 +318,11 @@ export default function AuthPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-bold text-primary" htmlFor="password">
-                  Password
+                  Contraseña
                 </label>
                 {isLogin && (
                   <a className="text-sm font-bold text-primary hover:underline underline-offset-4" href="#">
-                    Forgot password?
+                    ¿Olvidaste tu contraseña?
                   </a>
                 )}
               </div>
@@ -345,7 +351,7 @@ export default function AuthPage() {
             {!isLogin && (
               <div>
                 <label className="block text-sm font-bold text-primary mb-2" htmlFor="confirmPassword">
-                  Confirm Password
+                  Confirmar contraseña
                 </label>
                 <input
                   id="confirmPassword"
@@ -371,7 +377,7 @@ export default function AuthPage() {
                   type="checkbox"
                 />
                 <label className="ml-2 text-sm font-medium text-[#5d6a89]" htmlFor="remember">
-                  Remember me for 30 days
+                  Recuérdame por 30 días
                 </label>
               </div>
             )}
@@ -390,31 +396,31 @@ export default function AuthPage() {
               {loading && <MaterialIcon name="hourglass_bottom" />}
               {loading
                 ? isLogin
-                  ? 'Signing in...'
-                  : 'Creating account...'
+                  ? 'Iniciando sesión...'
+                  : 'Creando cuenta...'
                 : isLogin
-                ? 'Sign In'
-                : 'Create Account'}
+                ? 'Iniciar sesión'
+                : 'Crear cuenta'}
             </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-[#5d6a89] font-medium">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+            {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
             <button
               onClick={() => handleTabSwitch(!isLogin)}
               type="button"
               className="text-primary font-bold hover:underline underline-offset-4 ml-1"
             >
-              {isLogin ? 'Sign up for free' : 'Sign in'}
+              {isLogin ? 'Regístrate gratis' : 'Inicia sesión'}
             </button>
           </p>
 
           <footer className="mt-16 text-center text-xs text-gray-400 space-x-4">
             <a className="hover:text-primary transition-colors" href="#">
-              Privacy Policy
+              Política de privacidad
             </a>
             <a className="hover:text-primary transition-colors" href="#">
-              Terms of Service
+              Términos de servicio
             </a>
           </footer>
         </div>

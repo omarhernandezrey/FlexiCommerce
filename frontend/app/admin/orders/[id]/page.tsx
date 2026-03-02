@@ -6,6 +6,7 @@ import { useOrdersAdmin } from '@/hooks/useOrdersAdmin';
 import { useToast } from '@/hooks/useToast';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
+import { formatCOP } from '@/lib/format';
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
@@ -189,7 +190,7 @@ export default function AdminOrderDetailPage() {
                       <p className="font-semibold text-primary">Producto: {item.productId}</p>
                       <p className="text-sm text-slate-600">Cantidad: {item.quantity}</p>
                     </div>
-                    <p className="font-bold text-primary">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold text-primary">{formatCOP(item.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
@@ -204,7 +205,7 @@ export default function AdminOrderDetailPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <p className="text-slate-600">Subtotal</p>
-                  <p className="font-semibold text-primary">${currentOrder.total.toFixed(2)}</p>
+                  <p className="font-semibold text-primary">{formatCOP(currentOrder.total)}</p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-slate-600">Envío</p>
@@ -212,7 +213,7 @@ export default function AdminOrderDetailPage() {
                 </div>
                 <div className="border-t border-slate-200 pt-3 flex justify-between">
                   <p className="font-semibold text-slate-700">Total</p>
-                  <p className="text-2xl font-bold text-primary">${currentOrder.total.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-primary">{formatCOP(currentOrder.total)}</p>
                 </div>
               </div>
             </div>

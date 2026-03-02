@@ -1,0 +1,33 @@
+groups:
+  - name: flexicommerce
+    interval: 30s
+    rules:
+      # Alerta cuando el tiempo de respuesta p95 supera 500ms
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tiempo de respuesta elevado"
+          description: "El p95 del tiempo de respuesta supera 500ms durante más de 2 minutos"
+
+      # Alerta cuando la tasa de errores 5xx supera el 5%
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta tasa de errores 5xx"
+          description: "Más del 5% de las solicitudes están devolviendo errores 5xx"
+
+      # Alerta cuando el servidor no responde
+      - alert: BackendDown
+        expr: up{job="flexicommerce-backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend de FlexiCommerce caído"
+          description: "El backend no está respondiendo"

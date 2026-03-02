@@ -538,7 +538,7 @@ export default function AdminDashboard() {
                     }`}>
                       {order.status}
                     </span>
-                    <p className="font-extrabold text-primary text-sm">${order.total.toFixed(2)}</p>
+                    <p className="font-extrabold text-primary text-sm">${Number(order.total).toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -570,7 +570,7 @@ export default function AdminDashboard() {
                     <p className="font-bold text-primary text-sm">{product.name}</p>
                     <p className="text-xs text-primary/40">Stock: {product.stock}</p>
                   </div>
-                  <p className="font-extrabold text-primary text-sm">${product.price.toFixed(2)}</p>
+                  <p className="font-extrabold text-primary text-sm">${Number(product.price).toFixed(2)}</p>
                 </div>
               ))}
             </div>

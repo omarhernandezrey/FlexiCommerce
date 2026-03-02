@@ -9,17 +9,17 @@ import { useProducts } from '@/hooks/useProducts';
 import { MOCK_PRODUCTS, type MockProduct } from '@/lib/constants';
 
 const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Most Relevant' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Highest Rated' },
-  { value: 'newest', label: 'Newest' },
+  { value: 'relevance', label: 'Más relevante' },
+  { value: 'price_asc', label: 'Precio: Menor a mayor' },
+  { value: 'price_desc', label: 'Precio: Mayor a menor' },
+  { value: 'rating', label: 'Mejor calificación' },
+  { value: 'newest', label: 'Más recientes' },
 ];
 
 const RATING_OPTIONS = [4, 3, 2, 1];
 
 const PRICE_RANGES = [
-  { label: 'Under $50', min: 0, max: 50 },
+  { label: 'Menos de $50', min: 0, max: 50 },
   { label: '$50 – $200', min: 50, max: 200 },
   { label: '$200 – $500', min: 200, max: 500 },
   { label: '$500 – $1,000', min: 500, max: 1000 },
@@ -27,8 +27,8 @@ const PRICE_RANGES = [
 ];
 
 const POPULAR_SEARCHES = [
-  'Wireless Headphones', 'Smart Watch', 'Laptop Stand', 'USB-C Hub',
-  'Mechanical Keyboard', 'Noise Cancelling', 'Gaming Mouse', 'LED Desk Lamp',
+  'Auriculares Inalámbricos', 'Smartwatch', 'Soporte para Laptop', 'Hub USB-C',
+  'Teclado Mecánico', 'Cancelación de Ruido', 'Mouse Gaming', 'Lámpara LED',
 ];
 
 function SearchContent() {
@@ -122,9 +122,9 @@ function SearchContent() {
     <div className="space-y-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-primary/40">
-        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+        <Link href="/" className="hover:text-primary transition-colors">Inicio</Link>
         <MaterialIcon name="chevron_right" className="text-base" />
-        <span className="text-primary font-medium">Search</span>
+        <span className="text-primary font-medium">Búsqueda</span>
         {query && (
           <>
             <MaterialIcon name="chevron_right" className="text-base" />
@@ -143,7 +143,7 @@ function SearchContent() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Search products, brands, categories..."
+              placeholder="Buscar productos, marcas, categorías..."
               className="flex-1 px-4 py-4 text-primary text-base placeholder:text-primary/30 focus:outline-none bg-transparent"
             />
             {inputValue && (
@@ -159,7 +159,7 @@ function SearchContent() {
               type="submit"
               className="m-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors text-sm shrink-0"
             >
-              Search
+              Buscar
             </button>
           </div>
         </form>
@@ -167,7 +167,7 @@ function SearchContent() {
         {/* Popular Searches (shown before first search) */}
         {!hasSearched && (
           <div className="mt-4">
-            <p className="text-xs font-bold text-primary/40 mb-3 uppercase tracking-wider">Popular searches</p>
+            <p className="text-xs font-bold text-primary/40 mb-3 uppercase tracking-wider">Búsquedas populares</p>
             <div className="flex flex-wrap gap-2">
               {POPULAR_SEARCHES.map((term) => (
                 <button
@@ -190,20 +190,20 @@ function SearchContent() {
           <aside className="lg:col-span-1 space-y-4">
             <div className="bg-white rounded-xl border border-primary/10 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-primary text-sm">Filters</h3>
+                <h3 className="font-extrabold text-primary text-sm">Filtros</h3>
                 {hasFilters && (
                   <button
                     onClick={clearFilters}
                     className="text-xs font-bold text-primary/50 hover:text-primary transition-colors"
                   >
-                    Clear all
+                    Limpiar todo
                   </button>
                 )}
               </div>
 
               {/* Sort */}
               <div className="mb-6">
-                <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Sort By</p>
+                <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Ordenar por</p>
                 <div className="space-y-1.5">
                   {SORT_OPTIONS.map((opt) => (
                     <button
@@ -224,7 +224,7 @@ function SearchContent() {
 
               {/* Price Range */}
               <div className="mb-6">
-                <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Price Range</p>
+                <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Rango de Precio</p>
                 <div className="space-y-1.5">
                   {PRICE_RANGES.map((range) => {
                     const isActive = priceRange?.min === range.min && priceRange?.max === range.max;
@@ -248,7 +248,7 @@ function SearchContent() {
 
               {/* Min Rating */}
               <div>
-                <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Min Rating</p>
+                <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Calificación mínima</p>
                 <div className="space-y-1.5">
                   {RATING_OPTIONS.map((r) => (
                     <button
@@ -270,7 +270,7 @@ function SearchContent() {
                           />
                         ))}
                       </div>
-                      <span className="text-xs font-semibold">& up</span>
+                      <span className="text-xs font-semibold">y más</span>
                       {minRating === r && <MaterialIcon name="check" className="text-sm text-primary ml-auto" />}
                     </button>
                   ))}
@@ -285,11 +285,11 @@ function SearchContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-extrabold text-primary text-lg">
-                  {loading ? 'Searching...' : `${sorted.length} results`}
-                  {query && <span className="font-normal text-primary/50"> for &ldquo;{query}&rdquo;</span>}
+                  {loading ? 'Buscando...' : `${sorted.length} resultados`}
+                  {query && <span className="font-normal text-primary/50"> para &ldquo;{query}&rdquo;</span>}
                 </h2>
                 {hasFilters && (
-                  <p className="text-xs text-primary/40 mt-0.5">Filters applied</p>
+                  <p className="text-xs text-primary/40 mt-0.5">Filtros aplicados</p>
                 )}
               </div>
             </div>
@@ -303,12 +303,12 @@ function SearchContent() {
             ) : sorted.length === 0 ? (
               <div className="bg-white rounded-2xl border border-primary/10 p-16 text-center">
                 <MaterialIcon name="search_off" className="text-5xl text-primary/20 mb-4" />
-                <h3 className="font-extrabold text-primary text-xl mb-2">No results found</h3>
+                <h3 className="font-extrabold text-primary text-xl mb-2">No se encontraron resultados</h3>
                 <p className="text-sm text-primary/50 mb-2">
-                  We couldn&apos;t find anything matching &ldquo;{query}&rdquo;
+                  No encontramos nada que coincida con &ldquo;{query}&rdquo;
                 </p>
                 {hasFilters && (
-                  <p className="text-xs text-primary/40 mb-6">Try clearing your filters</p>
+                  <p className="text-xs text-primary/40 mb-6">Intenta limpiar tus filtros</p>
                 )}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   {hasFilters && (
@@ -316,20 +316,20 @@ function SearchContent() {
                       onClick={clearFilters}
                       className="px-5 py-2.5 border-2 border-primary text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors"
                     >
-                      Clear Filters
+                      Limpiar filtros
                     </button>
                   )}
                   <Link
                     href="/products"
                     className="px-5 py-2.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
                   >
-                    Browse All Products
+                    Ver todos los productos
                   </Link>
                 </div>
 
-                {/* Suggestions */}
+                {/* Sugerencias */}
                 <div className="mt-8 text-left">
-                  <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Try searching for</p>
+                  <p className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Intenta buscar</p>
                   <div className="flex flex-wrap gap-2 justify-center">
                     {POPULAR_SEARCHES.slice(0, 6).map((term) => (
                       <button
@@ -358,7 +358,7 @@ function SearchContent() {
                       onClick={() => setVisibleCount((c) => c + 12)}
                       className="border-2 border-primary text-primary font-bold px-8 py-3 rounded-xl hover:bg-primary hover:text-white transition-all text-sm"
                     >
-                      Load More Results ({sorted.length - visibleCount} remaining)
+                      Cargar más resultados ({sorted.length - visibleCount} restantes)
                     </button>
                   </div>
                 )}
@@ -372,8 +372,8 @@ function SearchContent() {
       {!hasSearched && (
         <div className="text-center py-12">
           <MaterialIcon name="manage_search" className="text-6xl text-primary/15 mb-4" />
-          <h2 className="text-2xl font-extrabold text-primary mb-2">Search FlexiCommerce</h2>
-          <p className="text-primary/50 text-base">Find products, brands, and categories</p>
+          <h2 className="text-2xl font-extrabold text-primary mb-2">Buscar en FlexiCommerce</h2>
+          <p className="text-primary/50 text-base">Encuentra productos, marcas y categorías</p>
         </div>
       )}
     </div>

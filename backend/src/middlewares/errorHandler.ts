@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import * as Sentry from '@sentry/node';
 
 export class AppError extends Error {
   public statusCode: number;
@@ -19,6 +20,11 @@ export const errorHandler = (
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ error: err.message });
     return;
+  }
+
+  // Capture unexpected 500 errors in Sentry
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err);
   }
 
   console.error('Error no manejado:', err);

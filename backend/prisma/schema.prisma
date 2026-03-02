@@ -69,12 +69,16 @@ model Product {
 }
 
 model Order {
-  id        String      @id @default(uuid())
-  userId    String      @map("user_id")
-  status    OrderStatus @default(PENDING)
-  total     Decimal     @db.Decimal(10, 2)
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  id              String      @id @default(uuid())
+  userId          String      @map("user_id")
+  status          OrderStatus @default(PENDING)
+  total           Decimal     @db.Decimal(10, 2)
+  shippingAddress Json?       @map("shipping_address")
+  shippingMethod  String?     @map("shipping_method")
+  shippingCost    Decimal?    @db.Decimal(10, 2) @map("shipping_cost")
+  currency        String      @default("COP")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
 
   user    User        @relation(fields: [userId], references: [id])
   items   OrderItem[]
@@ -123,6 +127,11 @@ enum PaymentMethod {
   DEBIT_CARD
   PAYPAL
   STRIPE
+  WOMPI
+  PSE
+  NEQUI
+  DAVIPLATA
+  BANCOLOMBIA_TRANSFER
 }
 
 enum PaymentStatus {

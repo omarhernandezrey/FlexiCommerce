@@ -9,62 +9,62 @@ import { MOCK_PRODUCTS, CATEGORIES, type MockProduct } from '@/lib/constants';
 
 const CATEGORY_META: Record<string, { title: string; description: string; gradient: string; icon: string }> = {
   electronics: {
-    title: 'Electronics',
-    description: 'Discover the latest in consumer electronics — headphones, laptops, smartphones, and more.',
+    title: 'Electrónica',
+    description: 'Descubre lo último en electrónica de consumo — auriculares, laptops, smartphones y más.',
     gradient: 'from-blue-600 to-indigo-800',
     icon: 'devices',
   },
   fashion: {
-    title: 'Fashion',
-    description: 'Explore premium clothing, accessories, and footwear from top designers worldwide.',
+    title: 'Moda',
+    description: 'Explora ropa, accesorios y calzado premium de los mejores diseñadores del mundo.',
     gradient: 'from-pink-500 to-rose-700',
     icon: 'checkroom',
   },
   'home-decor': {
-    title: 'Home Decor',
-    description: 'Transform your space with curated furniture, lighting, and interior accessories.',
+    title: 'Decoración del Hogar',
+    description: 'Transforma tu espacio con muebles, iluminación y accesorios de interior curados.',
     gradient: 'from-amber-500 to-orange-700',
     icon: 'chair',
   },
   'smart-gadgets': {
-    title: 'Smart Gadgets',
-    description: 'The smartest gadgets to make your life easier, more connected, and more fun.',
+    title: 'Gadgets Inteligentes',
+    description: 'Los gadgets más inteligentes para hacer tu vida más fácil, conectada y divertida.',
     gradient: 'from-green-500 to-teal-700',
     icon: 'smart_toy',
   },
   sports: {
-    title: 'Sports & Outdoors',
-    description: 'Gear up for your next adventure with premium sports equipment and activewear.',
+    title: 'Deportes y Aire Libre',
+    description: 'Equípate para tu próxima aventura con equipo deportivo premium y ropa activa.',
     gradient: 'from-orange-500 to-red-700',
     icon: 'sports',
   },
   tech: {
-    title: 'Tech',
-    description: 'Cutting-edge technology products for work, play, and everything in between.',
+    title: 'Tecnología',
+    description: 'Productos tecnológicos de vanguardia para trabajo, entretenimiento y todo lo demás.',
     gradient: 'from-violet-600 to-purple-800',
     icon: 'memory',
   },
   lifestyle: {
-    title: 'Lifestyle',
-    description: 'Premium lifestyle products designed for those who appreciate quality and style.',
+    title: 'Estilo de Vida',
+    description: 'Productos premium de estilo de vida diseñados para quienes aprecian la calidad y el estilo.',
     gradient: 'from-cyan-500 to-blue-700',
     icon: 'spa',
   },
 };
 
 const SORT_OPTIONS = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Highest Rated' },
-  { value: 'newest', label: 'Newest First' },
+  { value: 'featured', label: 'Destacados' },
+  { value: 'price_asc', label: 'Precio: Menor a mayor' },
+  { value: 'price_desc', label: 'Precio: Mayor a menor' },
+  { value: 'rating', label: 'Mejor calificación' },
+  { value: 'newest', label: 'Más recientes' },
 ];
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const meta = CATEGORY_META[slug] || {
     title: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    description: `Browse all products in this category.`,
+    description: `Explora todos los productos de esta categoría.`,
     gradient: 'from-primary to-primary/70',
     icon: 'category',
   };
@@ -103,9 +103,9 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     <div className="space-y-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-primary/40">
-        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+        <Link href="/" className="hover:text-primary transition-colors">Inicio</Link>
         <MaterialIcon name="chevron_right" className="text-base" />
-        <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
+        <Link href="/products" className="hover:text-primary transition-colors">Productos</Link>
         <MaterialIcon name="chevron_right" className="text-base" />
         <span className="text-primary font-medium">{meta.title}</span>
       </nav>
@@ -122,7 +122,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             <div className="size-12 bg-white/20 rounded-xl flex items-center justify-center">
               <MaterialIcon name={meta.icon} className="text-white text-2xl" />
             </div>
-            <span className="text-white/70 text-sm font-bold uppercase tracking-widest">Category</span>
+            <span className="text-white/70 text-sm font-bold uppercase tracking-widest">Categoría</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight">
             {meta.title}
@@ -132,13 +132,13 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           </p>
           <div className="flex items-center gap-3">
             <span className="bg-white/20 text-white text-sm font-bold px-4 py-2 rounded-full">
-              {filtered.length} Products
+              {filtered.length} Productos
             </span>
             <Link
               href={`/products?category=${encodeURIComponent(categoryName)}`}
               className="bg-white text-primary font-bold text-sm px-4 py-2 rounded-full hover:bg-white/90 transition-colors flex items-center gap-1.5"
             >
-              View All <MaterialIcon name="arrow_forward" className="text-sm" />
+              Ver todos <MaterialIcon name="arrow_forward" className="text-sm" />
             </Link>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-primary/50 font-medium">
-            {loading ? 'Loading...' : `${filtered.length} products`}
+            {loading ? 'Cargando...' : `${filtered.length} productos`}
           </span>
         </div>
 
@@ -156,7 +156,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
           {/* Price Max */}
           <div className="flex items-center gap-2 bg-primary/5 rounded-xl px-3 py-2">
             <MaterialIcon name="attach_money" className="text-primary/60 text-sm" />
-            <span className="text-xs font-bold text-primary/60">Max:</span>
+            <span className="text-xs font-bold text-primary/60">Máx:</span>
             <select
               value={priceMax}
               onChange={(e) => setPriceMax(Number(e.target.value))}
@@ -192,14 +192,14 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-primary/10 p-16 text-center">
           <MaterialIcon name="search_off" className="text-5xl text-primary/20 mb-4" />
-          <h3 className="font-extrabold text-primary text-xl mb-2">No products found</h3>
-          <p className="text-sm text-primary/50 mb-6">Try adjusting your filters or explore other categories</p>
+          <h3 className="font-extrabold text-primary text-xl mb-2">No se encontraron productos</h3>
+          <p className="text-sm text-primary/50 mb-6">Intenta ajustar tus filtros o explorar otras categorías</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
           >
             <MaterialIcon name="arrow_back" className="text-base" />
-            Browse All Products
+            Ver todos los productos
           </Link>
         </div>
       ) : (
@@ -216,7 +216,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
               href={`/products?category=${encodeURIComponent(categoryName)}`}
               className="inline-flex items-center gap-2 border-2 border-primary text-primary font-bold px-8 py-3 rounded-xl hover:bg-primary hover:text-white transition-all text-sm"
             >
-              View All {meta.title} Products
+              Ver todos los productos de {meta.title}
               <MaterialIcon name="arrow_forward" className="text-base" />
             </Link>
           </div>
@@ -225,7 +225,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
       {/* Related Categories */}
       <div className="spacing-section">
-        <h2 className="text-xl font-extrabold text-primary mb-4">Other Categories</h2>
+        <h2 className="text-xl font-extrabold text-primary mb-4">Otras Categorías</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {CATEGORIES.filter((c) => c.name !== meta.title).slice(0, 4).map((cat) => {
             const catSlug = cat.name.toLowerCase().replace(/\s+/g, '-');
