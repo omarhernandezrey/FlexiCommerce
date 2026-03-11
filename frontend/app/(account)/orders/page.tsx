@@ -7,7 +7,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { IMAGES } from '@/lib/constants';
 import { formatCOP } from '@/lib/format';
 
-// Unified display type used in the template
+// Tipo de visualización unificado
 interface DisplayOrder {
   id: string;
   date: string;
@@ -18,18 +18,18 @@ interface DisplayOrder {
 }
 
 const MOCK_ORDERS: DisplayOrder[] = [
-  { id: 'FCM-2024-001234', date: '17 Feb 2024', total: '$299.00', status: 'delivered', items: 1, image: IMAGES.userAvatar },
-  { id: 'FCM-2024-001233', date: '15 Feb 2024', total: '$189.50', status: 'shipping',  items: 1, image: IMAGES.userAvatar },
-  { id: 'FCM-2024-001232', date: '10 Feb 2024', total: '$120.00', status: 'pending',   items: 2, image: IMAGES.userAvatar },
+  { id: 'FCM-2024-001234', date: '17 feb 2024', total: '$299.00', status: 'delivered', items: 1, image: IMAGES.userAvatar },
+  { id: 'FCM-2024-001233', date: '15 feb 2024', total: '$189.50', status: 'shipping',  items: 1, image: IMAGES.userAvatar },
+  { id: 'FCM-2024-001232', date: '10 feb 2024', total: '$120.00', status: 'pending',   items: 2, image: IMAGES.userAvatar },
 ];
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Processing', color: 'bg-blue-100 text-blue-700' },
-  confirmed: { label: 'Confirmed',  color: 'bg-indigo-100 text-indigo-700' },
-  shipped:   { label: 'Shipped',    color: 'bg-yellow-100 text-yellow-700' },
-  shipping:  { label: 'Shipped',    color: 'bg-yellow-100 text-yellow-700' },
-  delivered: { label: 'Delivered',  color: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Cancelled',  color: 'bg-gray-100 text-gray-600' },
+  pending:   { label: 'En proceso',  color: 'bg-blue-100 text-blue-700' },
+  confirmed: { label: 'Confirmado',  color: 'bg-indigo-100 text-indigo-700' },
+  shipped:   { label: 'Enviado',     color: 'bg-yellow-100 text-yellow-700' },
+  shipping:  { label: 'Enviado',     color: 'bg-yellow-100 text-yellow-700' },
+  delivered: { label: 'Entregado',   color: 'bg-green-100 text-green-700' },
+  cancelled: { label: 'Cancelado',   color: 'bg-gray-100 text-gray-600' },
 };
 
 const ITEMS_PER_PAGE = 5;
@@ -43,14 +43,13 @@ export default function OrdersPage() {
   const { orders: apiOrders, loading, fetchAll } = useOrders();
 
   useEffect(() => {
-    fetchAll().catch(() => {/* use mock fallback */});
+    fetchAll().catch(() => {/* usar datos de muestra */});
   }, [fetchAll]);
 
-  // Map API orders to display format; fall back to mock when backend unavailable
   const displayOrders: DisplayOrder[] = apiOrders.length > 0
     ? apiOrders.map((o) => ({
         id: o.id,
-        date: new Date(o.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        date: new Date(o.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }),
         total: formatCOP(o.total),
         status: o.status,
         items: o.items.length,
@@ -75,7 +74,6 @@ export default function OrdersPage() {
         cutoff.setMonth(cutoff.getMonth() - 3);
         matchesDate = orderDate >= cutoff;
       } else {
-        // year filter e.g. '2024', '2023'
         matchesDate = orderDate.getFullYear().toString() === dateRange;
       }
     }
@@ -95,7 +93,7 @@ export default function OrdersPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ['Order ID', 'Date', 'Status', 'Items', 'Total'];
+    const headers = ['ID Pedido', 'Fecha', 'Estado', 'Artículos', 'Total'];
     const rows = filteredOrders.map((o) => [
       o.id,
       o.date,
@@ -112,18 +110,18 @@ export default function OrdersPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `pedidos-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="spacing-section">
-      {/* Page Header */}
+      {/* Encabezado */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-primary">Order History</h1>
-          <p className="text-primary/60 text-sm mt-1">{displayOrders.length} orders total</p>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-primary">Historial de Pedidos</h1>
+          <p className="text-primary/60 text-sm mt-1">{displayOrders.length} pedidos en total</p>
         </div>
         <button
           onClick={exportToCSV}
@@ -131,27 +129,27 @@ export default function OrdersPage() {
           className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <MaterialIcon name="download" className="text-base" />
-          Export CSV
+          Exportar CSV
         </button>
       </div>
 
-      {/* Filters Toolbar */}
+      {/* Barra de Filtros */}
       <div className="bg-white rounded-xl border border-primary/10 p-4 spacing-section">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
+            {/* Búsqueda */}
             <div className="relative flex-1">
               <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base" />
               <input
                 type="text"
-                placeholder="Search by Order ID..."
+                placeholder="Buscar por ID de pedido..."
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
                 className="w-full pl-9 pr-4 h-10 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
-            {/* Date Range */}
+            {/* Rango de Fecha */}
             <div className="relative">
               <MaterialIcon name="calendar_today" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base pointer-events-none" />
               <select
@@ -159,9 +157,9 @@ export default function OrdersPage() {
                 onChange={(e) => handleFilterChange(setDateRange)(e.target.value)}
                 className="appearance-none pl-9 pr-8 h-10 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white cursor-pointer"
               >
-                <option value="all">All Time</option>
-                <option value="30d">Last 30 days</option>
-                <option value="3m">Last 3 months</option>
+                <option value="all">Todo el tiempo</option>
+                <option value="30d">Últimos 30 días</option>
+                <option value="3m">Últimos 3 meses</option>
                 <option value="2024">2024</option>
                 <option value="2023">2023</option>
               </select>
@@ -169,14 +167,14 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          {/* Status Filters */}
+          {/* Filtros de Estado */}
           <div className="flex gap-2 flex-wrap">
             {[
-              { value: 'all',       label: 'All' },
-              { value: 'pending',   label: 'Processing' },
-              { value: 'shipped',   label: 'Shipped' },
-              { value: 'delivered', label: 'Delivered' },
-              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'all',       label: 'Todos' },
+              { value: 'pending',   label: 'En proceso' },
+              { value: 'shipped',   label: 'Enviado' },
+              { value: 'delivered', label: 'Entregado' },
+              { value: 'cancelled', label: 'Cancelado' },
             ].map((status) => (
               <button
                 key={status.value}
@@ -194,7 +192,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Skeleton Loading */}
+      {/* Skeleton de carga */}
       {loading && displayOrders === MOCK_ORDERS && (
         <div className="spacing-section">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -212,7 +210,7 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Orders List */}
+      {/* Lista de Pedidos */}
       {!loading && filteredOrders.length > 0 && (
         <div className="spacing-section">
           {paginatedOrders.map((order) => {
@@ -223,12 +221,12 @@ export default function OrdersPage() {
                 className="bg-white rounded-xl border border-primary/10 p-5 hover:shadow-md transition-shadow"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  {/* Image */}
+                  {/* Imagen */}
                   <div className="w-16 h-16 rounded-xl overflow-hidden border border-primary/10 flex-shrink-0 bg-primary/5 flex items-center justify-center">
-                    <img src={order.image} alt="Order" className="w-full h-full object-cover" />
+                    <img src={order.image} alt="Pedido" className="w-full h-full object-cover" />
                   </div>
 
-                  {/* Details */}
+                  {/* Detalles */}
                   <div className="flex-1">
                     <div className="flex flex-wrap items-start gap-2 mb-1">
                       <p className="font-extrabold text-primary text-sm">{order.id}</p>
@@ -238,18 +236,18 @@ export default function OrdersPage() {
                     </div>
                     <p className="text-xs text-primary/40">{order.date}</p>
                     <p className="text-xs text-primary/60 mt-1">
-                      {order.items} item{order.items !== 1 ? 's' : ''}
+                      {order.items} artículo{order.items !== 1 ? 's' : ''}
                     </p>
                   </div>
 
-                  {/* Total and Action */}
+                  {/* Total y Acción */}
                   <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3">
                     <p className="text-xl font-extrabold text-primary">{order.total}</p>
                     <Link
                       href={`/orders/${order.id}`}
                       className="flex items-center gap-2 px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors text-sm whitespace-nowrap"
                     >
-                      View Details
+                      Ver Detalles
                       <MaterialIcon name="arrow_forward" className="text-base" />
                     </Link>
                   </div>
@@ -260,27 +258,27 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Estado vacío */}
       {!loading && filteredOrders.length === 0 && (
         <div className="text-center py-16 bg-white rounded-xl border border-primary/10">
           <MaterialIcon name="shopping_bag" className="text-primary/20 text-6xl mb-4" />
-          <p className="text-primary font-bold mb-2">No orders found</p>
-          <p className="text-primary/40 text-sm mb-6">Try adjusting your filters</p>
+          <p className="text-primary font-bold mb-2">No se encontraron pedidos</p>
+          <p className="text-primary/40 text-sm mb-6">Intenta ajustar los filtros</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
           >
             <MaterialIcon name="storefront" className="text-base" />
-            Start Shopping
+            Ir a Comprar
           </Link>
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Paginación */}
       {!loading && filteredOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4">
           <p className="text-sm text-primary/40">
-            Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredOrders.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders
+            Mostrando {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredOrders.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} de {filteredOrders.length} pedidos
           </p>
           {totalPages > 1 && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -290,7 +288,7 @@ export default function OrdersPage() {
                 className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary/60 hover:border-primary/30 hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <MaterialIcon name="chevron_left" className="text-base" />
-                Previous
+                Anterior
               </button>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((page) => (
                 <button
@@ -308,7 +306,7 @@ export default function OrdersPage() {
                 disabled={currentPage === totalPages}
                 className="flex items-center gap-2 px-4 py-2 border border-primary/10 rounded-lg text-sm font-semibold text-primary hover:border-primary/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Next
+                Siguiente
                 <MaterialIcon name="chevron_right" className="text-base" />
               </button>
             </div>
@@ -316,15 +314,15 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Support Banner */}
+      {/* Banner de Soporte */}
       <div className="bg-primary/5 rounded-xl border border-primary/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center">
             <MaterialIcon name="support_agent" className="text-primary text-2xl" />
           </div>
           <div>
-            <p className="font-extrabold text-primary">Need help with an order?</p>
-            <p className="text-sm text-primary/60">Our support team is available 24/7</p>
+            <p className="font-extrabold text-primary">¿Necesitas ayuda con un pedido?</p>
+            <p className="text-sm text-primary/60">Nuestro equipo de soporte está disponible 24/7</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -332,13 +330,13 @@ export default function OrdersPage() {
             href="mailto:support@flexicommerce.com"
             className="px-4 py-2 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors text-sm"
           >
-            Visit Help Center
+            Centro de Ayuda
           </a>
           <a
             href="mailto:support@flexicommerce.com?subject=Order%20Support"
             className="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
           >
-            Chat with Support
+            Chatear con Soporte
           </a>
         </div>
       </div>

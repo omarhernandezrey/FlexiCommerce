@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { ordersAPI } from '@/lib/api.service';
+import apiClient from '@/lib/api-client';
 
 export interface OrderItem {
   productId: string;
@@ -14,8 +15,8 @@ export interface Order {
   userId: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
-  shippingAddress?: string;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  shippingAddress?: string | object;
   paymentMethod?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -41,10 +42,11 @@ export function useOrdersAdmin() {
   const fetchAll = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const response = await ordersAPI.getAll();
+      const response = await apiClient.get('/api/orders/admin/all');
+      const data = (response.data as any)?.data ?? response.data;
       setState((prev) => ({
         ...prev,
-        orders: response.data,
+        orders: Array.isArray(data) ? data : [],
         loading: false,
       }));
     } catch (error) {
@@ -60,9 +62,10 @@ export function useOrdersAdmin() {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const response = await ordersAPI.getById(id);
+      const data = (response.data as any)?.data ?? response.data;
       setState((prev) => ({
         ...prev,
-        currentOrder: response.data,
+        currentOrder: data,
         loading: false,
       }));
     } catch (error) {
@@ -84,7 +87,7 @@ export function useOrdersAdmin() {
         currentOrder: prev.currentOrder?.id === id ? { ...prev.currentOrder, status } : prev.currentOrder,
         loading: false,
       }));
-      return response.data;
+      return (response.data as any)?.data ?? response.data;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al actualizar orden';
       setState((prev) => ({

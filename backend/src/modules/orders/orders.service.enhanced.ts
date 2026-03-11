@@ -276,14 +276,16 @@ export class OrdersServiceEnhanced {
 
       // Restore stock
       await Promise.all(
-        order.items.map((item) =>
-          retryWithBackoff(() =>
-            prisma.product.update({
-              where: { id: item.productId },
-              data: { stock: { increment: item.quantity } },
-            })
+        order.items
+          .filter((item) => item.productId != null)
+          .map((item) =>
+            retryWithBackoff(() =>
+              prisma.product.update({
+                where: { id: item.productId! },
+                data: { stock: { increment: item.quantity } },
+              })
+            )
           )
-        )
       );
 
       // Invalidate cache

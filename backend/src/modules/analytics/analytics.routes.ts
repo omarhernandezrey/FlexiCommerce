@@ -6,7 +6,7 @@ const router = Router();
 
 // Middleware para verificar que es admin
 const requireAdmin = (req: any, res: any, next: any) => {
-  if (req.user?.role !== 'admin') {
+  if (req.user?.role !== 'ADMIN') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();

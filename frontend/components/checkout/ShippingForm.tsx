@@ -7,6 +7,7 @@ import { validationPatterns } from '@/lib/validation';
 interface ShippingFormProps {
   onNext: (data: ShippingData) => void;
   initialData?: ShippingData;
+  submitLabel?: string;
 }
 
 export interface ShippingData {
@@ -21,7 +22,7 @@ export interface ShippingData {
   country: string;
 }
 
-export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
+export function ShippingForm({ onNext, initialData, submitLabel = 'Continuar al Pago' }: ShippingFormProps) {
   const [values, setValues] = useState<ShippingData>({
     firstName: '',
     lastName: '',
@@ -192,7 +193,7 @@ export function ShippingForm({ onNext, initialData }: ShippingFormProps) {
         type="submit"
         className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
       >
-        Continuar al Pago
+        {submitLabel}
         <MaterialIcon name="arrow_forward" />
       </button>
     </form>

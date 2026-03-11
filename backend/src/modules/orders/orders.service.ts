@@ -9,10 +9,18 @@ interface CreateOrderOptions {
   shippingAddress?: object;
   shippingMethod?: string;
   shippingCost?: number;
+  discount?: number;
   currency?: string;
 }
 
 export class OrdersService {
+  async getAll() {
+    return prisma.order.findMany({
+      include: { items: { include: { product: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async getByUser(userId: string) {
     return prisma.order.findMany({
       where: { userId },
@@ -44,7 +52,11 @@ export class OrdersService {
     }, 0);
 
     const shippingCost = options.shippingCost ?? 0;
-    const total = itemsTotal + shippingCost;
+    // El descuento se aplica al subtotal antes de calcular el IVA
+    const discount = Math.min(options.discount ?? 0, itemsTotal);
+    const taxableAmount = itemsTotal - discount;
+    const tax = taxableAmount * 0.19;
+    const total = taxableAmount + shippingCost + tax;
 
     return prisma.order.create({
       data: {
@@ -65,7 +77,7 @@ export class OrdersService {
           }),
         },
       },
-      include: { items: true },
+      include: { items: { include: { product: true } } },
     });
   }
 

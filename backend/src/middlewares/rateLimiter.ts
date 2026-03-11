@@ -20,7 +20,11 @@ async function getRedisClient() {
       lazyConnect: true,
       maxRetriesPerRequest: 1,
       connectTimeout: 2000,
+      retryStrategy: () => null, // no reintentar si la conexión falla
     });
+
+    // Suprimir errores no manejados del cliente
+    client.on('error', () => {});
 
     await client.ping();
     redisClient = client;
@@ -64,10 +68,11 @@ let authLimiter: RateLimiterAbstract | null = null;
 
 async function getGeneralLimiter(): Promise<RateLimiterAbstract> {
   if (!generalLimiter) {
+    const isDevelopment = process.env.NODE_ENV !== 'production';
     generalLimiter = await createRateLimiter({
       keyPrefix: 'rl_general',
-      points: 100, // 100 peticiones
-      duration: 60, // por minuto
+      points: isDevelopment ? 2000 : 100, // 2000 en dev, 100 en producción
+      duration: 60,
     });
   }
   return generalLimiter;

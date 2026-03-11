@@ -17,7 +17,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'customer' | 'admin';
+  role: 'CUSTOMER' | 'ADMIN';
   createdAt?: string;
 }
 
@@ -34,6 +34,10 @@ export interface Order {
     email: string;
     phone: string;
     address: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
   };
   shippingMethod?: string;
   shippingCost?: number;
@@ -104,10 +108,10 @@ export const ordersAPI = {
 
   getById: (id: string) => apiClient.get(`/api/orders/${id}`),
 
-  create: (data: Partial<Order>) => apiClient.post('/api/orders', data),
+  create: (data: Partial<Order> & { discount?: number }) => apiClient.post('/api/orders', data),
 
   updateStatus: (id: string, status: Order['status']) =>
-    apiClient.patch(`/api/orders/${id}`, { status }),
+    apiClient.patch(`/api/orders/${id}/status`, { status }),
 };
 
 // Categories API

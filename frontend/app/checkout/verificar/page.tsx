@@ -7,7 +7,7 @@ import { useCart } from '@/hooks/useCart';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import apiClient from '@/lib/api-client';
 
-type PageStatus = 'loading' | 'approved' | 'declined' | 'error';
+type PageStatus = 'loading' | 'approved' | 'declined' | 'pending' | 'error';
 
 function VerificarPagoContent() {
   const router = useRouter();
@@ -18,7 +18,9 @@ function VerificarPagoContent() {
   const [status, setStatus] = useState<PageStatus>('loading');
   const [message, setMessage] = useState('Verificando tu pago con Wompi...');
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const attemptsRef = useRef(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const MAX_ATTEMPTS = 20; // 20 × 3s = 60 segundos máximo (PSE puede tardar)
 
   useEffect(() => {
@@ -39,7 +41,7 @@ function VerificarPagoContent() {
         const res = await apiClient.post(
           `/api/payments/wompi/verify/${transactionId}`,
         );
-        const { status: txStatus, orderId: oId } = res.data.data;
+        const { status: txStatus, orderId: oId, paymentMethodType } = res.data.data;
 
         if (txStatus === 'APPROVED') {
           clearCart();
@@ -60,13 +62,17 @@ function VerificarPagoContent() {
         }
 
         // PENDING — PSE y algunos métodos toman hasta 60s
+        // Corresponsal bancario: SIEMPRE queda PENDING (pago físico posterior)
         if (attemptsRef.current < MAX_ATTEMPTS) {
-          setTimeout(verify, 3000);
+          if (paymentMethodType) setPaymentMethod(paymentMethodType);
+          if (oId) setOrderId(oId);
+          timeoutRef.current = setTimeout(verify, 3000);
         } else {
-          setStatus('error');
-          setMessage(
-            'No pudimos confirmar tu pago. Si el dinero fue descontado, contáctanos.',
-          );
+          // Agotamos los intentos — mostrar pantalla de pago pendiente
+          if (paymentMethodType) setPaymentMethod(paymentMethodType);
+          if (oId) setOrderId(oId);
+          clearCart(); // La orden ya fue creada
+          setStatus('pending');
         }
       } catch {
         setStatus('error');
@@ -75,6 +81,10 @@ function VerificarPagoContent() {
     };
 
     verify();
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId]);
 
@@ -142,6 +152,66 @@ function VerificarPagoContent() {
               className="w-full border border-primary/20 text-primary font-semibold py-3 rounded-xl hover:bg-primary/5 transition-colors text-center"
             >
               Volver al carrito
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Pending (corresponsal / PSE no confirmado) ──────────────────
+  if (status === 'pending') {
+    const isCorresponsal = paymentMethod === 'BANCOLOMBIA_COLLECT';
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-white to-slate-50 px-4">
+        <div className="bg-white rounded-2xl border border-blue-100 shadow-xl p-10 max-w-md w-full text-center">
+          <div className="size-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <MaterialIcon name="schedule" className="text-blue-500 text-5xl" filled />
+          </div>
+          <h2 className="text-2xl font-extrabold text-primary mb-3">
+            Pago pendiente
+          </h2>
+          <p className="text-primary/70 text-sm mb-4">
+            {isCorresponsal
+              ? 'Tu orden fue creada. Para completar el pago, preséntate en cualquier corresponsal bancario con el recibo que Wompi te generó.'
+              : 'Tu orden fue creada. El pago está siendo procesado y recibirás una confirmación por correo cuando se complete.'}
+          </p>
+          {orderId && (
+            <p className="text-primary/40 text-xs mb-6">
+              Orden: <span className="font-mono font-semibold text-primary/60">{orderId}</span>
+            </p>
+          )}
+          <div className="bg-blue-50 rounded-xl p-4 text-left mb-8">
+            <p className="text-xs font-semibold text-blue-700 mb-2">Importante:</p>
+            <ul className="text-xs text-blue-600 space-y-1 list-disc list-inside">
+              {isCorresponsal ? (
+                <>
+                  <li>El recibo tiene un tiempo límite para pagar</li>
+                  <li>Una vez pagado, tu orden se actualizará automáticamente</li>
+                  <li>Recibirás confirmación por correo electrónico</li>
+                </>
+              ) : (
+                <>
+                  <li>La verificación puede tardar unos minutos</li>
+                  <li>Recibirás confirmación por correo electrónico</li>
+                  <li>Si tienes dudas, contáctanos con el número de transacción</li>
+                </>
+              )}
+            </ul>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/orders"
+              className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            >
+              <MaterialIcon name="receipt_long" className="text-base" />
+              Ver mis órdenes
+            </Link>
+            <Link
+              href="/"
+              className="w-full border border-primary/20 text-primary font-semibold py-3 rounded-xl hover:bg-primary/5 transition-colors text-center"
+            >
+              Ir al inicio
             </Link>
           </div>
         </div>

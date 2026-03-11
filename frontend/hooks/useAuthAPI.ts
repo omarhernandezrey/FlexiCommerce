@@ -112,7 +112,9 @@ export const useAuthAPI = () => {
       setError(null);
       const response = await authAPI.getCurrentUser();
       const payload = (response.data as any)?.data ?? response.data;
-      storeLogin(payload);
+      // Preservar el token existente — solo actualizar los datos del usuario
+      const currentToken = useAuthStore.getState().token;
+      storeLogin(payload, currentToken ?? undefined);
       return payload;
     } catch (err) {
       const message =

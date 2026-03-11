@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { useAuthAPI } from '@/hooks/useAuthAPI';
 import { useToast } from '@/hooks/useToast';
@@ -9,9 +9,11 @@ import { useAuthStore } from '@/store/auth';
 import { validationPatterns } from '@/lib/validation';
 import { IMAGES } from '@/lib/constants';
 
-export default function AuthPage() {
+function AuthForm() {
   const router = useRouter();
-  const [isLogin, setIsLogin] = useState(true);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
+  const [isLogin, setIsLogin] = useState(searchParams.get('register') !== '1');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -24,23 +26,36 @@ export default function AuthPage() {
 
   const { login, register, loading, error: authError } = useAuthAPI();
   const { toast } = useToast();
-  const { isAuthenticated, token } = useAuthStore();
+  const { logout: storeLogout } = useAuthStore();
 
   const handleSocialLogin = (provider: 'Google' | 'Apple') => {
     toast({ message: `Inicio de sesión con ${provider} próximamente. Por favor usa correo y contraseña.`, type: 'info' });
   };
 
-  // Si el usuario ya está autenticado, redirigir a home
+  // Si el usuario ya está autenticado (cookie + store válidos), redirigir
   useEffect(() => {
-    // Verificar tanto en Zustand como en localStorage (por si Zustand aún no restauró)
+    const hasCookie = typeof document !== 'undefined'
+      && document.cookie.split(';').some((c) => c.trim().startsWith('auth-token='));
+
     const storeAuth = useAuthStore.getState();
-    const hasToken = storeAuth.token || storeAuth.isAuthenticated;
-    
-    if (hasToken) {
-      console.debug('[Auth Page] Usuario ya autenticado, redirigiendo a inicio');
-      router.push('/');
+
+    if (!hasCookie) {
+      // Sin cookie → limpiar store por si quedó token huérfano
+      storeLogout();
+      return;
     }
-  }, [router, isAuthenticated, token]);
+
+    // Cookie + store válidos → redirigir
+    if (storeAuth.token && storeAuth.user) {
+      router.push(redirectTo);
+      return;
+    }
+
+    // Cookie vieja sin datos en el store → limpiar cookie para que el middleware no bloquee
+    document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
+    storeLogout();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -96,7 +111,7 @@ export default function AuthPage() {
           message: '¡Bienvenido!',
           type: 'success',
         });
-        router.push('/');
+        router.push(redirectTo);
       } else {
         await register({
           email: formData.email,
@@ -108,7 +123,7 @@ export default function AuthPage() {
           message: 'Cuenta creada exitosamente',
           type: 'success',
         });
-        router.push('/');
+        router.push(redirectTo);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en autenticación';
@@ -426,5 +441,13 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense>
+      <AuthForm />
+    </Suspense>
   );
 }

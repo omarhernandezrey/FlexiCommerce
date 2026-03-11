@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PaymentsService } from './payments.service.js';
 import { OrdersService } from '../orders/orders.service.js';
 import { WompiService } from '../../services/wompi.service.js';
+import prisma from '../../database/prisma.js';
 
 export class PaymentsController {
   private service = new PaymentsService();
@@ -66,8 +67,18 @@ export class PaymentsController {
       // Obtener acceptance_token (requerido por Wompi)
       const acceptanceToken = await this.wompi.getAcceptanceToken();
 
-      // Generar referencia única para esta sesión de pago
-      const reference = this.wompi.buildReference(orderId);
+      // Leer nombre de tienda desde la configuración guardada en BD
+      let storeName: string | undefined;
+      try {
+        const settingRow = await prisma.setting.findUnique({ where: { key: 'storeSettings' } });
+        if (settingRow) {
+          const storeData = JSON.parse(settingRow.value);
+          storeName = storeData.storeName || undefined;
+        }
+      } catch { /* si falla, continúa sin prefijo */ }
+
+      // Generar referencia única para esta sesión de pago (incluye nombre de tienda)
+      const reference = this.wompi.buildReference(orderId, storeName);
 
       // El total en centavos de COP (Wompi trabaja en centavos)
       const amountInCents = Math.round(Number(order.total) * 100);
@@ -88,6 +99,7 @@ export class PaymentsController {
           amount_in_cents: amountInCents,
           currency: 'COP',
           integrity_hash: integrityHash,
+          store_name: storeName || 'FlexiCommerce',
         },
       });
     } catch (error) {
@@ -125,6 +137,15 @@ export class PaymentsController {
       // Extraer orderId de la referencia (formato: {orderId}-{timestamp})
       const orderId = this.wompi.extractOrderId(reference);
 
+      // Mapear el tipo de método de pago de Wompi al enum de la BD
+      const VALID_PAYMENT_METHODS = [
+        'CREDIT_CARD', 'DEBIT_CARD', 'PAYPAL', 'STRIPE', 'WOMPI',
+        'PSE', 'NEQUI', 'DAVIPLATA', 'BANCOLOMBIA_TRANSFER', 'BANCOLOMBIA_COLLECT',
+      ];
+      const normalizedMethod = VALID_PAYMENT_METHODS.includes(payment_method_type)
+        ? payment_method_type
+        : 'WOMPI';
+
       if (status === 'APPROVED') {
         // Verificar que la orden no esté ya procesada (idempotencia)
         const existingPayment = await this.service.getByOrder(orderId);
@@ -134,7 +155,7 @@ export class PaymentsController {
           await this.service.create({
             orderId,
             amount: amount_in_cents / 100,
-            method: payment_method_type || 'WOMPI',
+            method: normalizedMethod,
             transactionId,
           });
 
@@ -152,7 +173,7 @@ export class PaymentsController {
       // DECLINED, VOIDED, ERROR, PENDING
       res.json({
         success: true,
-        data: { status, orderId },
+        data: { status, orderId, paymentMethodType: payment_method_type },
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al verificar transacción';
@@ -173,9 +194,9 @@ export class PaymentsController {
       const signature = req.headers['x-wompi-signature'] as string;
       const rawBody = JSON.stringify(req.body);
 
-      // Verificar que el evento viene realmente de Wompi
-      if (signature && !this.wompi.verifyWebhookSignature(rawBody, signature)) {
-        res.status(401).json({ error: 'Firma de webhook inválida' });
+      // Verificar que el evento viene realmente de Wompi — la firma siempre es requerida
+      if (!signature || !this.wompi.verifyWebhookSignature(rawBody, signature)) {
+        res.status(401).json({ error: 'Firma de webhook inválida o ausente' });
         return;
       }
 
@@ -188,6 +209,12 @@ export class PaymentsController {
         const tx = data.transaction;
         const orderId = this.wompi.extractOrderId(tx.reference);
 
+        const VALID_METHODS = [
+          'CREDIT_CARD', 'DEBIT_CARD', 'PAYPAL', 'STRIPE', 'WOMPI',
+          'PSE', 'NEQUI', 'DAVIPLATA', 'BANCOLOMBIA_TRANSFER', 'BANCOLOMBIA_COLLECT',
+        ];
+        const method = VALID_METHODS.includes(tx.payment_method_type) ? tx.payment_method_type : 'WOMPI';
+
         switch (tx.status) {
           case 'APPROVED': {
             const existing = await this.service.getByOrder(orderId);
@@ -195,7 +222,7 @@ export class PaymentsController {
               await this.service.create({
                 orderId,
                 amount: tx.amount_in_cents / 100,
-                method: tx.payment_method_type || 'WOMPI',
+                method,
                 transactionId: tx.id,
               });
             }

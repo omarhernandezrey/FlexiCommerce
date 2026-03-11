@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { IMAGES } from '@/lib/constants';
+import apiClient from '@/lib/api-client';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthAPI } from '@/hooks/useAuthAPI';
@@ -47,8 +48,8 @@ export function Header() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { getTotalItems } = useCart();
-  const { user } = useAuth();
-  const { logout } = useAuthAPI();
+  const { user, token } = useAuth();
+  const { logout, getCurrentUser } = useAuthAPI();
   const totalItems = getTotalItems();
 
   // Esperar hidratación del cliente antes de mostrar datos de localStorage
@@ -56,7 +57,31 @@ export function Header() {
     setMounted(true);
   }, []);
 
+  // Cargar logo y nombre de tienda desde la configuración del admin
+  useEffect(() => {
+    apiClient.get('/api/admin/store-info')
+      .then((res) => {
+        const data = (res.data as any)?.data ?? res.data;
+        if (data?.logoUrl) setStoreLogo(data.logoUrl);
+        if (data?.storeName) setStoreName(data.storeName);
+      })
+      .catch(() => {/* usa defaults */});
+  }, []);
+
+  // Si hay token en el store pero no hay user, intentar recuperar el usuario
+  useEffect(() => {
+    if (!token || user) return;
+    getCurrentUser().catch(() => {
+      // Token inválido — limpiar sesión completamente
+      logout();
+      document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, user]);
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [storeLogo, setStoreLogo] = useState('');
+  const [storeName, setStoreName] = useState('FlexiCommerce');
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -69,7 +94,7 @@ export function Header() {
     try {
       await logout();
       setProfileMenuOpen(false);
-      router.push('/auth');
+      router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -101,12 +126,17 @@ export function Header() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-              <MaterialIcon name="shopping_bag" className="text-2xl" />
-            </div>
-            <span className="text-sm sm:text-xl font-extrabold tracking-tight text-primary uppercase">
-              Flexi<span className="font-normal">Commerce</span>
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0 min-w-0">
+            {storeLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={storeLogo} alt={storeName} className="h-8 sm:h-10 w-auto max-w-[80px] sm:max-w-[120px] object-contain shrink-0" />
+            ) : (
+              <div className="size-8 sm:size-10 bg-primary rounded-xl flex items-center justify-center text-white shrink-0">
+                <MaterialIcon name="shopping_bag" className="text-lg sm:text-2xl" />
+              </div>
+            )}
+            <span className="text-sm sm:text-xl font-extrabold tracking-tight text-primary uppercase truncate max-w-[90px] sm:max-w-none">
+              {storeName}
             </span>
           </Link>
 
@@ -161,7 +191,13 @@ export function Header() {
                 aria-label="Abrir menú de cuenta"
               >
                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                  {mounted && user?.firstName ? (
+                  {mounted && user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.firstName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : mounted && user?.firstName ? (
                     <span className="text-sm font-bold text-primary">
                       {user.firstName.charAt(0).toUpperCase()}
                     </span>
@@ -181,47 +217,64 @@ export function Header() {
               {/* Dropdown Menu */}
               {profileMenuOpen && mounted && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg border border-slate-200 shadow-lg z-50">
-                  {user && (
+                  {user ? (
                     <>
                       <div className="px-4 py-3 border-b border-slate-200">
                         <p className="text-sm font-semibold text-primary">{user.firstName} {user.lastName}</p>
                         <p className="text-xs text-slate-600">{user.email}</p>
                       </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                      >
+                        <MaterialIcon name="person" className="text-base" />
+                        Mi Perfil
+                      </Link>
+                      <Link
+                        href="/orders"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                      >
+                        <MaterialIcon name="history" className="text-base" />
+                        Mis Órdenes
+                      </Link>
+                      {user.role === 'ADMIN' && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setProfileMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 border-t border-slate-200"
+                        >
+                          <MaterialIcon name="admin_panel_settings" className="text-base" />
+                          Panel Admin
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-slate-200"
+                      >
+                        <MaterialIcon name="logout" className="text-base" />
+                        Cerrar Sesión
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <a
+                        href="/auth"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                      >
+                        <MaterialIcon name="login" className="text-base" />
+                        Iniciar Sesión
+                      </a>
+                      <a
+                        href="/auth?register=1"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 border-t border-slate-200"
+                      >
+                        <MaterialIcon name="person_add" className="text-base" />
+                        Registrarse
+                      </a>
                     </>
                   )}
-                  <Link
-                    href="/profile"
-                    onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <MaterialIcon name="person" className="text-base" />
-                    Mi Perfil
-                  </Link>
-                  <Link
-                    href="/orders"
-                    onClick={() => setProfileMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <MaterialIcon name="history" className="text-base" />
-                    Mis Órdenes
-                  </Link>
-                  {user?.role === 'admin' && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 border-t border-slate-200"
-                    >
-                      <MaterialIcon name="admin_panel_settings" className="text-base" />
-                      Panel Admin
-                    </Link>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-slate-200"
-                  >
-                    <MaterialIcon name="logout" className="text-base" />
-                    Cerrar Sesión
-                  </button>
                 </div>
               )}
             </div>
@@ -323,7 +376,13 @@ export function Header() {
           {/* Header Section: Profile */}
           <div className="flex items-center gap-4 border-b border-primary/5 p-6">
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-primary/10">
-              {mounted && user?.firstName ? (
+              {mounted && user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.firstName}
+                  className="w-full h-full object-cover"
+                />
+              ) : mounted && user?.firstName ? (
                 <div className="w-full h-full bg-primary/10 flex items-center justify-center">
                   <span className="text-lg font-bold text-primary">
                     {user.firstName.charAt(0).toUpperCase()}
@@ -341,7 +400,9 @@ export function Header() {
               <h2 className="truncate text-lg font-bold text-primary">
                 {mounted && user?.firstName ? `${user.firstName} ${user.lastName}` : 'Invitado'}
               </h2>
-              <p className="text-xs font-medium text-primary/60">Miembro Premium</p>
+              <p className="text-xs font-medium text-primary/60">
+                {mounted && user ? 'Miembro Premium' : 'Inicia sesión para continuar'}
+              </p>
             </div>
             <button 
               onClick={() => setMobileMenuOpen(false)}
@@ -454,12 +515,22 @@ export function Header() {
             </div>
             <div className="mt-4 flex items-center justify-between px-2">
               <p className="text-[10px] text-primary/30">© 2024 FlexiCommerce</p>
-              <button
-                onClick={handleLogout}
-                className="text-[10px] font-bold text-primary/40 hover:text-primary transition-colors"
-              >
-                Cerrar sesión
-              </button>
+              {mounted && user ? (
+                <button
+                  onClick={handleLogout}
+                  className="text-[10px] font-bold text-red-500 hover:text-red-700 transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              ) : (
+                <Link
+                  href="/auth"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-[10px] font-bold text-primary hover:text-primary/70 transition-colors"
+                >
+                  Iniciar sesión
+                </Link>
+              )}
             </div>
           </div>
         </div>

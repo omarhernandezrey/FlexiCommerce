@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 /* Base Reset */
 * {
   margin: 0;
@@ -188,5 +189,16 @@ img {
 @media (max-width: 640px) {
   html {
     font-size: 16px;
+  }
+}
+
+/* ====== Wompi Widget — Fix móvil ====== */
+/* En desktop Wompi muestra una ventana emergente; en móvil el contenedor queda
+   cortado porque su altura supera el viewport. Hacemos el overlay desplazable. */
+@media (max-width: 768px) {
+  /* Overlay que inyecta Wompi (div de posición fija padre del iframe) */
+  body > div:has(iframe[src*="wompi.co"]) {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 }

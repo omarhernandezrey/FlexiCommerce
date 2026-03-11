@@ -92,7 +92,7 @@ export default function AdminCategoriesPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.slug) {
-      toast({ message: 'Name and slug are required', type: 'error' });
+      toast({ message: 'Nombre y slug son requeridos', type: 'error' });
       return;
     }
 
@@ -109,29 +109,29 @@ export default function AdminCategoriesPage() {
 
       if (editingId) {
         await apiClient.put(`/categories/${editingId}`, payload);
-        toast({ message: 'Category updated successfully', type: 'success' });
+        toast({ message: 'Categoría actualizada exitosamente', type: 'success' });
       } else {
         await apiClient.post('/categories', payload);
-        toast({ message: 'Category created successfully', type: 'success' });
+        toast({ message: 'Categoría creada exitosamente', type: 'success' });
       }
       await fetchCategories();
       handleCancel();
     } catch {
-      toast({ message: 'Error saving category. Please try again.', type: 'error' });
+      toast({ message: 'Error al guardar la categoría. Inténtalo de nuevo.', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Delete category "${name}"? This may affect associated products.`)) return;
+    if (!confirm(`¿Eliminar la categoría "${name}"? Esto puede afectar los productos asociados.`)) return;
     setDeletingId(id);
     try {
       await apiClient.delete(`/categories/${id}`);
       setCategories((prev) => prev.filter((c) => c.id !== id));
-      toast({ message: 'Category deleted', type: 'success' });
+      toast({ message: 'Categoría eliminada', type: 'success' });
     } catch {
-      toast({ message: 'Error deleting category', type: 'error' });
+      toast({ message: 'Error al eliminar la categoría', type: 'error' });
     } finally {
       setDeletingId(null);
     }
@@ -143,9 +143,9 @@ export default function AdminCategoriesPage() {
       setCategories((prev) =>
         prev.map((c) => (c.id === cat.id ? { ...c, isActive: !c.isActive } : c))
       );
-      toast({ message: `Category ${!cat.isActive ? 'activated' : 'deactivated'}`, type: 'success' });
+      toast({ message: `Categoría ${!cat.isActive ? 'activada' : 'desactivada'}`, type: 'success' });
     } catch {
-      toast({ message: 'Error updating category status', type: 'error' });
+      toast({ message: 'Error al actualizar el estado de la categoría', type: 'error' });
     }
   };
 
@@ -163,8 +163,8 @@ export default function AdminCategoriesPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-primary">Categories</h1>
-            <p className="text-primary/50 text-sm mt-0.5">{categories.length} categories total</p>
+            <h1 className="text-2xl font-extrabold text-primary">Categorías</h1>
+            <p className="text-primary/50 text-sm mt-0.5">{categories.length} categorías en total</p>
           </div>
           {!showForm && (
             <button
@@ -172,7 +172,7 @@ export default function AdminCategoriesPage() {
               className="flex items-center gap-2 bg-primary text-white font-bold px-4 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
             >
               <MaterialIcon name="add" className="text-base" />
-              New Category
+              Nueva Categoría
             </button>
           )}
         </div>
@@ -182,7 +182,7 @@ export default function AdminCategoriesPage() {
           <div className="bg-white rounded-xl border border-primary/10 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-extrabold text-primary text-lg">
-                {editingId ? 'Edit Category' : 'New Category'}
+                {editingId ? 'Editar Categoría' : 'Nueva Categoría'}
               </h2>
               <button onClick={handleCancel} className="text-primary/40 hover:text-primary transition-colors">
                 <MaterialIcon name="close" className="text-xl" />
@@ -193,14 +193,14 @@ export default function AdminCategoriesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-primary mb-1.5">
-                    Name <span className="text-red-500">*</span>
+                    Nombre <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={(e) => handleNameChange(e.target.value)}
                     required
-                    placeholder="e.g. Electronics"
+                    placeholder="Ej. Electrónica"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
@@ -213,26 +213,26 @@ export default function AdminCategoriesPage() {
                     value={form.slug}
                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
                     required
-                    placeholder="e.g. electronics"
+                    placeholder="ej. electronica"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-primary mb-1.5">Description</label>
+                <label className="block text-xs font-bold text-primary mb-1.5">Descripción</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   rows={3}
-                  placeholder="Brief description of this category..."
+                  placeholder="Breve descripción de esta categoría..."
                   className="w-full px-3 py-2 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Image URL</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">URL de Imagen</label>
                   <input
                     type="url"
                     value={form.image}
@@ -242,13 +242,13 @@ export default function AdminCategoriesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Parent Category</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Categoría Padre</label>
                   <select
                     value={form.parentId}
                     onChange={(e) => setForm({ ...form, parentId: e.target.value })}
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
-                    <option value="">None (root category)</option>
+                    <option value="">Ninguna (categoría raíz)</option>
                     {parentOptions.filter((p) => p.id !== editingId).map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
@@ -263,16 +263,16 @@ export default function AdminCategoriesPage() {
                   onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
                   className="size-4 accent-primary"
                 />
-                <span className="text-sm font-semibold text-primary">Active (visible in storefront)</span>
+                <span className="text-sm font-semibold text-primary">Activa (visible en la tienda)</span>
               </label>
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={handleCancel} className="flex-1 py-2.5 border-2 border-primary text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors">
-                  Cancel
+                  Cancelar
                 </button>
                 <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
                   {saving && <MaterialIcon name="hourglass_bottom" className="text-base" />}
-                  {saving ? 'Saving...' : editingId ? 'Update Category' : 'Create Category'}
+                  {saving ? 'Guardando...' : editingId ? 'Actualizar Categoría' : 'Crear Categoría'}
                 </button>
               </div>
             </form>
@@ -284,7 +284,7 @@ export default function AdminCategoriesPage() {
           <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base" />
           <input
             type="text"
-            placeholder="Search categories..."
+            placeholder="Buscar categorías..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full h-10 pl-9 pr-4 border border-primary/10 rounded-xl text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -302,12 +302,12 @@ export default function AdminCategoriesPage() {
           <div className="bg-white rounded-xl border border-primary/10 p-16 text-center">
             <MaterialIcon name="category" className="text-5xl text-primary/20 mb-4" />
             <h3 className="font-extrabold text-primary text-lg mb-2">
-              {searchTerm ? 'No categories match your search' : 'No categories yet'}
+              {searchTerm ? 'No hay categorías que coincidan con tu búsqueda' : 'Sin categorías aún'}
             </h3>
             {!searchTerm && (
               <button onClick={openAddForm} className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors">
                 <MaterialIcon name="add" className="text-base" />
-                Create First Category
+                Crear Primera Categoría
               </button>
             )}
           </div>
@@ -316,11 +316,11 @@ export default function AdminCategoriesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-primary/10">
-                  <th className="text-left px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider">Category</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider">Categoría</th>
                   <th className="text-left px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider hidden sm:table-cell">Slug</th>
-                  <th className="text-center px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider hidden md:table-cell">Products</th>
-                  <th className="text-center px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider">Status</th>
-                  <th className="text-right px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider">Actions</th>
+                  <th className="text-center px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider hidden md:table-cell">Productos</th>
+                  <th className="text-center px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider">Estado</th>
+                  <th className="text-right px-5 py-3 text-xs font-bold text-primary/40 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-primary/5">
@@ -366,7 +366,7 @@ export default function AdminCategoriesPage() {
                             }`}
                           >
                             <span className={`size-1.5 rounded-full ${cat.isActive ? 'bg-green-500' : 'bg-primary/30'}`} />
-                            {cat.isActive ? 'Active' : 'Inactive'}
+                            {cat.isActive ? 'Activo' : 'Inactivo'}
                           </button>
                         </td>
                         <td className="px-5 py-4">
@@ -374,7 +374,7 @@ export default function AdminCategoriesPage() {
                             <button
                               onClick={() => openEditForm(cat)}
                               className="size-8 flex items-center justify-center rounded-lg hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
-                              title="Edit"
+                              title="Editar"
                             >
                               <MaterialIcon name="edit" className="text-base" />
                             </button>
@@ -382,7 +382,7 @@ export default function AdminCategoriesPage() {
                               onClick={() => handleDelete(cat.id, cat.name)}
                               disabled={deletingId === cat.id}
                               className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors disabled:opacity-40"
-                              title="Delete"
+                              title="Eliminar"
                             >
                               <MaterialIcon name="delete" className="text-base" />
                             </button>
@@ -406,7 +406,7 @@ export default function AdminCategoriesPage() {
                           </td>
                           <td className="px-5 py-3 text-center">
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${sub.isActive ? 'bg-green-50 text-green-700' : 'bg-primary/5 text-primary/40'}`}>
-                              {sub.isActive ? 'Active' : 'Inactive'}
+                              {sub.isActive ? 'Activo' : 'Inactivo'}
                             </span>
                           </td>
                           <td className="px-5 py-3">

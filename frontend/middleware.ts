@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server';
 // Routes that require authentication
 const PROTECTED_ROUTES = [
   '/account',
-  '/cart',
   '/checkout',
   // Rutas del route group (account) — no llevan el prefijo "account" en la URL
   '/profile',
@@ -19,7 +18,14 @@ const ADMIN_ROUTES = ['/admin'];
 // Routes that should redirect to home if already authenticated
 const AUTH_ROUTES = ['/auth'];
 
-function decodeJwtPayload(token: string): { id?: string; email?: string; role?: string } | null {
+interface JwtPayload {
+  id?: string;
+  email?: string;
+  role?: string;
+  exp?: number;
+}
+
+function decodeJwtPayload(token: string): JwtPayload | null {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
@@ -33,6 +39,11 @@ function decodeJwtPayload(token: string): { id?: string; email?: string; role?: 
   }
 }
 
+function isTokenExpired(payload: JwtPayload | null): boolean {
+  if (!payload?.exp) return false;
+  return Date.now() / 1000 > payload.exp;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('auth-token')?.value;
@@ -41,26 +52,34 @@ export function middleware(request: NextRequest) {
   const isAdminRoute = ADMIN_ROUTES.some((r) => pathname.startsWith(r));
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));
 
-  // No token → redirigir a /auth si intenta acceder a ruta protegida
-  if ((isProtectedRoute || isAdminRoute) && !token) {
+  const tokenPayload = token ? decodeJwtPayload(token) : null;
+  const tokenValid = token && tokenPayload && !isTokenExpired(tokenPayload);
+
+  // No token válido → redirigir a /auth si intenta acceder a ruta protegida
+  if ((isProtectedRoute || isAdminRoute) && !tokenValid) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth';
     url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    if (token) response.cookies.set('auth-token', '', { maxAge: 0, path: '/' });
+    return response;
   }
 
-  // Tiene token → verificar rol para rutas admin
-  if (isAdminRoute && token) {
-    const payload = decodeJwtPayload(token);
-    const role = payload?.role?.toUpperCase();
+  // Tiene token válido → verificar rol para rutas admin
+  if (isAdminRoute && tokenValid) {
+    const role = tokenPayload?.role?.toUpperCase();
     if (role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
-  // Ya autenticado → redirigir fuera de /auth
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL('/', request.url));
+  // En /auth: limpiar cookie inválida y dejar pasar.
+  // El redirect de "ya autenticado" se maneja en el cliente (useEffect del auth page)
+  // para evitar loops con cookies viejas que el middleware considera válidas.
+  if (isAuthRoute && token && !tokenValid) {
+    const response = NextResponse.next();
+    response.cookies.set('auth-token', '', { maxAge: 0, path: '/' });
+    return response;
   }
 
   return NextResponse.next();
@@ -69,7 +88,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/account/:path*',
-    '/cart',
     '/checkout/:path*',
     '/admin/:path*',
     '/auth',

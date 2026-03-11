@@ -2,38 +2,41 @@
 
 import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
+import { LogoCropModal } from '@/components/ui/LogoCropModal';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/hooks/useToast';
+import { useProducts } from '@/hooks/useProducts';
+import { useOrdersAdmin } from '@/hooks/useOrdersAdmin';
 
 const CMS_SECTIONS = [
   {
     id: 'hero',
-    title: 'Hero Slider Section',
-    subtitle: '3 Slides • Auto-play active',
+    title: 'Sección Hero con Slider',
+    subtitle: '3 Diapositivas • Reproducción automática activa',
     icon: 'imagesmode',
     color: 'bg-indigo-50 text-indigo-600',
     visible: true,
   },
   {
     id: 'grid',
-    title: 'Featured Collections Grid',
-    subtitle: '8 Items • Desktop only',
+    title: 'Cuadrícula de Colecciones Destacadas',
+    subtitle: '8 Elementos • Solo escritorio',
     icon: 'grid_view',
     color: 'bg-emerald-50 text-emerald-600',
     visible: true,
   },
   {
     id: 'banner',
-    title: 'Promo Banner Bar',
-    subtitle: 'Flash Sale Countdown • Top Position',
+    title: 'Barra de Banner Promocional',
+    subtitle: 'Cuenta regresiva de oferta • Posición superior',
     icon: 'ads_click',
     color: 'bg-orange-50 text-orange-600',
     visible: false,
   },
   {
     id: 'newsletter',
-    title: 'Newsletter Subscription',
-    subtitle: 'Popup + Footer Block',
+    title: 'Suscripción al Boletín',
+    subtitle: 'Popup + Bloque de pie de página',
     icon: 'mail',
     color: 'bg-blue-50 text-blue-600',
     visible: true,
@@ -57,19 +60,32 @@ export default function CMSDashboardPage() {
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [showLogoCrop, setShowLogoCrop] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSubtitle, setEditSubtitle] = useState('');
   const [addingSection, setAddingSection] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState('');
   const { toasts, toast } = useToast();
+  const { products, fetchAll: fetchProducts } = useProducts();
+  const { orders, fetchAll: fetchOrders } = useOrdersAdmin();
+
+  useEffect(() => {
+    fetchProducts();
+    fetchOrders();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const totalRevenue = orders.reduce((acc, o) => acc + Number(o.total), 0);
+  const pendingOrders = orders.filter((o) => o.status === 'pending').length;
 
   // Load CMS settings from backend on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await apiClient.get('/admin/cms/settings');
-        const data = res.data;
+        const res = await apiClient.get('/api/admin/cms/settings');
+        const data = (res.data as any)?.data ?? res.data;
         if (data.sections) {
           setSections((prev) =>
             prev.map((s) => {
@@ -80,6 +96,11 @@ export default function CMSDashboardPage() {
         }
         if (data.font) setSelectedFont(data.font);
         if (typeof data.maintenanceMode === 'boolean') setMaintenanceMode(data.maintenanceMode);
+      } catch { /* ignore */ }
+      try {
+        const storeRes = await apiClient.get('/api/admin/settings');
+        const storeData = (storeRes.data as any)?.data ?? storeRes.data;
+        if (storeData?.logoUrl) setLogoUrl(storeData.logoUrl);
       } catch {
         // Backend endpoint may not exist yet — use defaults silently
       }
@@ -117,7 +138,7 @@ export default function CMSDashboardPage() {
       {
         id,
         title: newSectionTitle.trim(),
-        subtitle: 'New section • Not configured',
+        subtitle: 'Nueva sección • Sin configurar',
         icon: SECTION_ICONS[iconIndex],
         color: SECTION_COLORS[colorIndex],
         visible: true,
@@ -125,7 +146,7 @@ export default function CMSDashboardPage() {
     ]);
     setNewSectionTitle('');
     setAddingSection(false);
-    toast({ message: 'Section added. Save to persist changes.', type: 'success' });
+    toast({ message: 'Sección agregada. Guarda para conservar los cambios.', type: 'success' });
   };
 
   const handlePreview = () => {
@@ -135,14 +156,17 @@ export default function CMSDashboardPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await apiClient.post('/admin/cms/settings', {
-        sections: sections.map((s) => ({ id: s.id, visible: s.visible })),
-        font: selectedFont,
-        maintenanceMode,
-      });
-      toast({ message: 'CMS settings saved successfully', type: 'success' });
+      await Promise.all([
+        apiClient.post('/api/admin/cms/settings', {
+          sections: sections.map((s) => ({ id: s.id, visible: s.visible })),
+          font: selectedFont,
+          maintenanceMode,
+        }),
+        logoUrl !== null && apiClient.put('/api/admin/settings', { logoUrl }),
+      ]);
+      toast({ message: 'Configuración del CMS guardada exitosamente', type: 'success' });
     } catch {
-      toast({ message: 'Failed to save. Changes saved locally.', type: 'error' });
+      toast({ message: 'Error al guardar. Cambios guardados localmente.', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -154,27 +178,27 @@ export default function CMSDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
           {
-            label: 'Total Sales',
-            value: '$128,430.00',
-            sub: '+12.5% from last month',
+            label: 'Ventas Totales',
+            value: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(totalRevenue),
+            sub: `${orders.length} órdenes en total`,
             subColor: 'text-emerald-600',
             subIcon: 'trending_up',
             icon: 'payments',
           },
           {
-            label: 'Active Stores',
-            value: '42',
-            sub: 'Healthy status',
+            label: 'Productos en Catálogo',
+            value: String(products.length),
+            sub: `${products.filter((p) => (p.stock ?? 0) === 0).length} sin stock`,
             subColor: 'text-emerald-600',
             subIcon: 'check_circle',
             icon: 'storefront',
           },
           {
-            label: 'Pending Orders',
-            value: '156',
-            sub: '12 urgent requests',
-            subColor: 'text-amber-600',
-            subIcon: 'schedule',
+            label: 'Órdenes Pendientes',
+            value: String(pendingOrders),
+            sub: pendingOrders > 0 ? `${pendingOrders} requieren atención` : 'Sin pendientes',
+            subColor: pendingOrders > 0 ? 'text-amber-600' : 'text-emerald-600',
+            subIcon: pendingOrders > 0 ? 'schedule' : 'check_circle',
             icon: 'pending_actions',
           },
         ].map((stat) => (
@@ -202,8 +226,8 @@ export default function CMSDashboardPage() {
         <div className="flex-1 space-y-4">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Page Builder: Homepage</h2>
-              <p className="text-sm text-slate-500">Manage sections and layout of your store landing page.</p>
+              <h2 className="text-xl font-bold text-slate-900">Constructor de Páginas: Inicio</h2>
+              <p className="text-sm text-slate-500">Administra las secciones y el diseño de la página principal de tu tienda.</p>
             </div>
             <div className="flex gap-2">
               <button
@@ -211,7 +235,7 @@ export default function CMSDashboardPage() {
                 className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2"
               >
                 <MaterialIcon name="open_in_new" className="text-base" />
-                Preview
+                Vista Previa
               </button>
               <button
                 onClick={handleSave}
@@ -219,7 +243,7 @@ export default function CMSDashboardPage() {
                 className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center gap-2"
               >
                 {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
             </div>
           </div>
@@ -249,14 +273,14 @@ export default function CMSDashboardPage() {
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         className="w-full px-2 py-1 border border-primary/30 rounded text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="Section title"
+                        placeholder="Título de la sección"
                         autoFocus
                       />
                       <input
                         value={editSubtitle}
                         onChange={(e) => setEditSubtitle(e.target.value)}
                         className="w-full px-2 py-1 border border-slate-200 rounded text-xs text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="Subtitle / description"
+                        placeholder="Subtítulo / descripción"
                       />
                     </div>
                   ) : (
@@ -275,13 +299,13 @@ export default function CMSDashboardPage() {
                         onClick={handleSaveEdit}
                         className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors"
                       >
-                        Save
+                        Guardar
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
                         className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors"
                       >
-                        Cancel
+                        Cancelar
                       </button>
                     </>
                   ) : (
@@ -289,7 +313,7 @@ export default function CMSDashboardPage() {
                       <button
                         onClick={() => toggleVisibility(section.id)}
                         className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                        title={section.visible ? 'Hide Section' : 'Show Section'}
+                        title={section.visible ? 'Ocultar Sección' : 'Mostrar Sección'}
                       >
                         <MaterialIcon
                           name={section.visible ? 'visibility' : 'visibility_off'}
@@ -300,7 +324,7 @@ export default function CMSDashboardPage() {
                         onClick={() => handleEditSection(section)}
                         className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors"
                       >
-                        Edit
+                        Editar
                       </button>
                     </>
                   )}
@@ -317,7 +341,7 @@ export default function CMSDashboardPage() {
                   onChange={(e) => setNewSectionTitle(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') setAddingSection(false); }}
                   className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="New section name..."
+                  placeholder="Nombre de la nueva sección..."
                   autoFocus
                 />
                 <button
@@ -325,13 +349,13 @@ export default function CMSDashboardPage() {
                   disabled={!newSectionTitle.trim()}
                   className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-40"
                 >
-                  Add
+                  Agregar
                 </button>
                 <button
                   onClick={() => { setAddingSection(false); setNewSectionTitle(''); }}
                   className="px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors"
                 >
-                  Cancel
+                  Cancelar
                 </button>
               </div>
             ) : (
@@ -340,7 +364,7 @@ export default function CMSDashboardPage() {
                 className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-sm font-medium text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
               >
                 <MaterialIcon name="add_circle" className="text-xl" />
-                Add New Section
+                Agregar Nueva Sección
               </button>
             )}
           </div>
@@ -351,30 +375,57 @@ export default function CMSDashboardPage() {
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 sticky top-6">
             <h3 className="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
               <MaterialIcon name="style" className="text-primary text-xl" />
-              Store Branding
+              Marca de la Tienda
             </h3>
 
             <div className="space-y-6">
-              {/* Logo Upload */}
+              {/* Logo Upload con Crop */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Store Logo</label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 transition-colors">
-                  <div className="size-10 bg-slate-100 rounded-full flex items-center justify-center mb-2">
-                    <MaterialIcon name="upload_file" className="text-slate-400 text-xl" />
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Logo de la Tienda</label>
+                {logoUrl ? (
+                  <div className="rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-50">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoUrl} alt="Logo" className="w-full h-16 object-contain p-2" />
+                    <div className="flex border-t border-slate-200">
+                      <button onClick={() => setShowLogoCrop(true)} className="flex-1 py-1.5 flex items-center justify-center gap-1 text-[11px] font-bold text-primary hover:bg-slate-50 transition-colors">
+                        <MaterialIcon name="edit" className="text-xs" />
+                        Editar
+                      </button>
+                      <div className="w-px bg-slate-200" />
+                      <button onClick={() => setLogoUrl(null)} className="flex-1 py-1.5 flex items-center justify-center gap-1 text-[11px] font-bold text-red-500 hover:bg-red-50 transition-colors">
+                        <MaterialIcon name="delete" className="text-xs" />
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-tight">Click to upload or drag logo file</p>
-                  <p className="text-[8px] text-slate-400 mt-1">SVG, PNG or JPG (max 2MB)</p>
-                </div>
+                ) : (
+                  <button
+                    onClick={() => setShowLogoCrop(true)}
+                    className="w-full border-2 border-dashed border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 hover:border-primary/30 transition-all"
+                  >
+                    <div className="size-10 bg-slate-100 rounded-full flex items-center justify-center mb-2">
+                      <MaterialIcon name="add_photo_alternate" className="text-slate-400 text-xl" />
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-tight">Subir y ajustar logo</p>
+                    <p className="text-[9px] text-slate-400 mt-1">SVG, PNG, JPG · Máx. 3MB</p>
+                  </button>
+                )}
               </div>
+              {showLogoCrop && (
+                <LogoCropModal
+                  onClose={() => setShowLogoCrop(false)}
+                  onSave={(dataUrl) => { setLogoUrl(dataUrl); setShowLogoCrop(false); }}
+                />
+              )}
 
               {/* Brand Colors */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-3">Brand Colors</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-3">Colores de Marca</label>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="size-6 rounded bg-primary border border-white shadow-sm"></div>
-                      <span className="text-xs font-medium">Primary</span>
+                      <span className="text-xs font-medium">Primario</span>
                     </div>
                     <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">
                       #0F1729
@@ -383,21 +434,21 @@ export default function CMSDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="size-6 rounded bg-indigo-500 border border-white shadow-sm"></div>
-                      <span className="text-xs font-medium">Accent</span>
+                      <span className="text-xs font-medium">Acento</span>
                     </div>
                     <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">
                       #6366F1
                     </span>
                   </div>
                   <button className="w-full py-2 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
-                    Edit Palette
+                    Editar Paleta
                   </button>
                 </div>
               </div>
 
               {/* Typography */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Global Font</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Fuente Global</label>
                 <select
                   value={selectedFont}
                   onChange={(e) => setSelectedFont(e.target.value)}
@@ -413,8 +464,8 @@ export default function CMSDashboardPage() {
               <div className="pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-slate-900">Maintenance Mode</p>
-                    <p className="text-[10px] text-slate-500">Hide store from public</p>
+                    <p className="text-xs font-bold text-slate-900">Modo Mantenimiento</p>
+                    <p className="text-[10px] text-slate-500">Ocultar tienda al público</p>
                   </div>
                   <button
                     onClick={() => setMaintenanceMode(!maintenanceMode)}
@@ -437,7 +488,7 @@ export default function CMSDashboardPage() {
                 className="w-full py-3 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
-                {saving ? 'Saving...' : 'Apply Globally'}
+                {saving ? 'Guardando...' : 'Aplicar Globalmente'}
               </button>
             </div>
           </div>

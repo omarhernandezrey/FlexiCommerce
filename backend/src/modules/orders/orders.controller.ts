@@ -15,11 +15,26 @@ export class OrdersController {
     }
   };
 
+  getAllAdmin = async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const orders = await this.service.getAll();
+      res.json({ success: true, data: orders });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error';
+      res.status(500).json({ success: false, error: message });
+    }
+  };
+
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
       const order = await this.service.getById(req.params.id);
       if (!order) {
         res.status(404).json({ success: false, error: 'Orden no encontrada' });
+        return;
+      }
+      // Solo el dueño de la orden o un ADMIN puede verla
+      if (order.userId !== req.user.id && req.user.role !== 'ADMIN') {
+        res.status(403).json({ success: false, error: 'No autorizado' });
         return;
       }
       res.json({ success: true, data: order });
@@ -46,7 +61,7 @@ export class OrdersController {
           customerEmail: req.user.email,
           total: Number(order.total),
           items: order.items.map((item: any) => ({
-            name: `Producto ${item.productId}`,
+            name: item.product?.name ?? `Producto ${item.productId}`,
             quantity: item.quantity,
             price: Number(item.price),
           })),
@@ -59,7 +74,11 @@ export class OrdersController {
 
       res.status(201).json({ success: true, data: order });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al crear orden';
+      const raw = error instanceof Error ? error.message : 'Error al crear orden';
+      // Prisma foreign key error → sesión desactualizada (re-seed de BD)
+      const message = raw.includes('Foreign key') || raw.includes('foreign key')
+        ? 'Tu sesión está desactualizada. Por favor cierra sesión e inicia sesión de nuevo.'
+        : raw;
       res.status(400).json({ success: false, error: message });
     }
   };

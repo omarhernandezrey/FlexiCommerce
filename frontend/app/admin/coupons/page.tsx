@@ -90,7 +90,7 @@ export default function AdminCouponsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.code || !form.value) {
-      toast({ message: 'Code and value are required', type: 'error' });
+      toast({ message: 'El código y el valor son requeridos', type: 'error' });
       return;
     }
 
@@ -109,29 +109,29 @@ export default function AdminCouponsPage() {
 
       if (editingId) {
         await apiClient.put(`/coupons/${editingId}`, payload);
-        toast({ message: 'Coupon updated successfully', type: 'success' });
+        toast({ message: 'Cupón actualizado exitosamente', type: 'success' });
       } else {
         await apiClient.post('/coupons', payload);
-        toast({ message: 'Coupon created successfully', type: 'success' });
+        toast({ message: 'Cupón creado exitosamente', type: 'success' });
       }
       await fetchCoupons();
       handleCancel();
     } catch {
-      toast({ message: 'Error saving coupon', type: 'error' });
+      toast({ message: 'Error al guardar el cupón', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string, code: string) => {
-    if (!confirm(`Delete coupon "${code}"?`)) return;
+    if (!confirm(`¿Eliminar el cupón "${code}"?`)) return;
     setDeletingId(id);
     try {
       await apiClient.delete(`/coupons/${id}`);
       setCoupons((prev) => prev.filter((c) => c.id !== id));
-      toast({ message: 'Coupon deleted', type: 'success' });
+      toast({ message: 'Cupón eliminado', type: 'success' });
     } catch {
-      toast({ message: 'Error deleting coupon', type: 'error' });
+      toast({ message: 'Error al eliminar el cupón', type: 'error' });
     } finally {
       setDeletingId(null);
     }
@@ -143,8 +143,9 @@ export default function AdminCouponsPage() {
       setCoupons((prev) =>
         prev.map((c) => (c.id === coupon.id ? { ...c, isActive: !c.isActive } : c))
       );
+      toast({ message: `Cupón ${!coupon.isActive ? 'activado' : 'desactivado'}`, type: 'success' });
     } catch {
-      toast({ message: 'Error updating coupon status', type: 'error' });
+      toast({ message: 'Error al actualizar el estado del cupón', type: 'error' });
     }
   };
 
@@ -172,8 +173,8 @@ export default function AdminCouponsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-primary">Coupons & Discounts</h1>
-            <p className="text-primary/50 text-sm mt-0.5">Manage promotional codes and discounts</p>
+            <h1 className="text-2xl font-extrabold text-primary">Cupones y Descuentos</h1>
+            <p className="text-primary/50 text-sm mt-0.5">Administra códigos promocionales y descuentos</p>
           </div>
           {!showForm && (
             <button
@@ -181,7 +182,7 @@ export default function AdminCouponsPage() {
               className="flex items-center gap-2 bg-primary text-white font-bold px-4 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
             >
               <MaterialIcon name="add" className="text-base" />
-              Create Coupon
+              Crear Cupón
             </button>
           )}
         </div>
@@ -189,10 +190,10 @@ export default function AdminCouponsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Coupons', value: stats.total, icon: 'local_offer', color: 'text-primary' },
-            { label: 'Active', value: stats.active, icon: 'check_circle', color: 'text-green-600' },
-            { label: 'Expired', value: stats.expired, icon: 'schedule', color: 'text-orange-500' },
-            { label: 'Total Uses', value: stats.totalUses, icon: 'shopping_bag', color: 'text-blue-600' },
+            { label: 'Total Cupones', value: stats.total, icon: 'local_offer', color: 'text-primary' },
+            { label: 'Activos', value: stats.active, icon: 'check_circle', color: 'text-green-600' },
+            { label: 'Vencidos', value: stats.expired, icon: 'schedule', color: 'text-orange-500' },
+            { label: 'Usos Totales', value: stats.totalUses, icon: 'shopping_bag', color: 'text-blue-600' },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-xl border border-primary/10 p-4">
               <div className="flex items-center gap-3 mb-2">
@@ -209,7 +210,7 @@ export default function AdminCouponsPage() {
           <div className="bg-white rounded-xl border border-primary/10 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-extrabold text-primary text-lg">
-                {editingId ? 'Edit Coupon' : 'New Coupon'}
+                {editingId ? 'Editar Cupón' : 'Nuevo Cupón'}
               </h2>
               <button onClick={handleCancel} className="text-primary/40 hover:text-primary transition-colors">
                 <MaterialIcon name="close" className="text-xl" />
@@ -220,7 +221,7 @@ export default function AdminCouponsPage() {
               {/* Code */}
               <div>
                 <label className="block text-xs font-bold text-primary mb-1.5">
-                  Coupon Code <span className="text-red-500">*</span>
+                  Código de Cupón <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -237,7 +238,7 @@ export default function AdminCouponsPage() {
                     className="px-3 h-10 border border-primary/10 rounded-lg text-xs font-bold text-primary/60 hover:bg-primary/5 transition-colors flex items-center gap-1.5 shrink-0"
                   >
                     <MaterialIcon name="refresh" className="text-sm" />
-                    Generate
+                    Generar
                   </button>
                 </div>
               </div>
@@ -245,19 +246,19 @@ export default function AdminCouponsPage() {
               {/* Type + Value */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Discount Type</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Tipo de Descuento</label>
                   <select
                     value={form.type}
                     onChange={(e) => setForm({ ...form, type: e.target.value as 'percentage' | 'fixed' })}
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount ($)</option>
+                    <option value="percentage">Porcentaje (%)</option>
+                    <option value="fixed">Monto Fijo</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-primary mb-1.5">
-                    Value <span className="text-red-500">*</span>
+                    Valor <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary/40">
@@ -281,25 +282,25 @@ export default function AdminCouponsPage() {
               {/* Min Order + Max Uses */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Min Order Amount ($)</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Monto Mínimo de Orden</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={form.minOrderAmount}
                     onChange={(e) => setForm({ ...form, minOrderAmount: e.target.value })}
-                    placeholder="0 = no minimum"
+                    placeholder="0 = sin mínimo"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Max Uses</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Usos Máximos</label>
                   <input
                     type="number"
                     min="0"
                     value={form.maxUses}
                     onChange={(e) => setForm({ ...form, maxUses: e.target.value })}
-                    placeholder="Unlimited"
+                    placeholder="Ilimitado"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
@@ -308,7 +309,7 @@ export default function AdminCouponsPage() {
               {/* Expiry + Description */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Expiry Date</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Fecha de Vencimiento</label>
                   <input
                     type="date"
                     value={form.expiresAt}
@@ -317,12 +318,12 @@ export default function AdminCouponsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Description</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Descripción</label>
                   <input
                     type="text"
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="e.g. Summer sale 2026"
+                    placeholder="Ej. Oferta de verano 2026"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
@@ -335,16 +336,16 @@ export default function AdminCouponsPage() {
                   onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
                   className="size-4 accent-primary"
                 />
-                <span className="text-sm font-semibold text-primary">Active (can be used by customers)</span>
+                <span className="text-sm font-semibold text-primary">Activo (puede ser usado por clientes)</span>
               </label>
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={handleCancel} className="flex-1 py-2.5 border-2 border-primary text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors">
-                  Cancel
+                  Cancelar
                 </button>
                 <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
                   {saving && <MaterialIcon name="hourglass_bottom" className="text-base" />}
-                  {saving ? 'Saving...' : editingId ? 'Update Coupon' : 'Create Coupon'}
+                  {saving ? 'Guardando...' : editingId ? 'Actualizar Cupón' : 'Crear Cupón'}
                 </button>
               </div>
             </form>
@@ -356,7 +357,7 @@ export default function AdminCouponsPage() {
           <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base" />
           <input
             type="text"
-            placeholder="Search by code or description..."
+            placeholder="Buscar por código o descripción..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full h-10 pl-9 pr-4 border border-primary/10 rounded-xl text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -374,12 +375,12 @@ export default function AdminCouponsPage() {
           <div className="bg-white rounded-xl border border-primary/10 p-16 text-center">
             <MaterialIcon name="local_offer" className="text-5xl text-primary/20 mb-4" />
             <h3 className="font-extrabold text-primary text-lg mb-2">
-              {searchTerm ? 'No coupons match your search' : 'No coupons yet'}
+              {searchTerm ? 'No hay cupones que coincidan con tu búsqueda' : 'Sin cupones aún'}
             </h3>
             {!searchTerm && (
               <button onClick={openAddForm} className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors">
                 <MaterialIcon name="add" className="text-base" />
-                Create First Coupon
+                Crear Primer Cupón
               </button>
             )}
           </div>
@@ -411,10 +412,10 @@ export default function AdminCouponsPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-extrabold text-primary text-base">
-                            {coupon.type === 'percentage' ? `${coupon.value}% off` : `$${coupon.value} off`}
+                            {coupon.type === 'percentage' ? `${coupon.value}% de descuento` : `$${coupon.value} de descuento`}
                           </span>
                           {coupon.minOrderAmount && (
-                            <span className="text-xs text-primary/40">min ${coupon.minOrderAmount}</span>
+                            <span className="text-xs text-primary/40">mín ${coupon.minOrderAmount}</span>
                           )}
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                             expired
@@ -423,7 +424,7 @@ export default function AdminCouponsPage() {
                               ? 'bg-green-50 text-green-700'
                               : 'bg-primary/5 text-primary/40'
                           }`}>
-                            {expired ? 'Expired' : coupon.isActive ? 'Active' : 'Inactive'}
+                            {expired ? 'Vencido' : coupon.isActive ? 'Activo' : 'Inactivo'}
                           </span>
                         </div>
                         {coupon.description && (
@@ -431,11 +432,11 @@ export default function AdminCouponsPage() {
                         )}
                         <div className="flex items-center gap-4 mt-1">
                           <span className="text-xs text-primary/40">
-                            {coupon.usedCount} uses{coupon.maxUses ? ` / ${coupon.maxUses}` : ''}
+                            {coupon.usedCount} usos{coupon.maxUses ? ` / ${coupon.maxUses}` : ''}
                           </span>
                           {coupon.expiresAt && (
                             <span className="text-xs text-primary/40">
-                              Expires: {new Date(coupon.expiresAt).toLocaleDateString()}
+                              Vence: {new Date(coupon.expiresAt).toLocaleDateString()}
                             </span>
                           )}
                         </div>

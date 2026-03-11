@@ -8,6 +8,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useProducts } from '@/hooks/useProducts';
 import { MOCK_PRODUCTS } from '@/lib/constants';
 import { ProductsLoader } from '@/components/products/ProductsLoader';
+import { formatCOP } from '@/lib/format';
 
 const CATEGORY_FILTERS = [
   { name: 'Electronics', icon: 'devices', count: 1200 },
@@ -35,7 +36,8 @@ const SCREEN_SIZES = ['13-inch', '14-inch', '15-inch', '16-inch'];
 
 export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('popular');
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  const MAX_PRICE = 10000000;
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minRating, setMinRating] = useState(0);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -100,7 +102,7 @@ export default function ProductsPage() {
   }, [searchResults, priceRange, selectedCategories, minRating, selectedColors, selectedScreenSize, sortBy]);
 
   const hasActiveFilters =
-    priceRange[1] < 500 ||
+    priceRange[1] < MAX_PRICE ||
     selectedCategories.length > 0 ||
     minRating > 0 ||
     searchTerm !== '' ||
@@ -109,7 +111,7 @@ export default function ProductsPage() {
 
   const resetFilters = () => {
     setSearchTerm('');
-    setPriceRange([0, 500]);
+    setPriceRange([0, MAX_PRICE]);
     setSelectedCategories([]);
     setMinRating(0);
     setSelectedColors([]);
@@ -191,14 +193,15 @@ export default function ProductsPage() {
         <input
           type="range"
           min="0"
-          max="500"
+          max={MAX_PRICE}
+          step="50000"
           value={priceRange[1]}
           onChange={(e) => { setPriceRange([priceRange[0], parseInt(e.target.value)]); setCurrentPage(1); }}
           className="w-full accent-primary"
         />
         <div className="flex justify-between text-xs font-bold text-primary mt-2">
-          <span>${priceRange[0]}</span>
-          <span>${priceRange[1]}</span>
+          <span>{formatCOP(priceRange[0])}</span>
+          <span>{priceRange[1] >= MAX_PRICE ? 'Sin límite' : formatCOP(priceRange[1])}</span>
         </div>
       </div>
 
@@ -288,7 +291,7 @@ export default function ProductsPage() {
           Filtros
           {hasActiveFilters && (
             <span className="size-4 bg-primary text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-              {selectedCategories.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < 500 ? 1 : 0) + selectedColors.length + (selectedScreenSize ? 1 : 0)}
+              {selectedCategories.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < MAX_PRICE ? 1 : 0) + selectedColors.length + (selectedScreenSize ? 1 : 0)}
             </span>
           )}
         </button>

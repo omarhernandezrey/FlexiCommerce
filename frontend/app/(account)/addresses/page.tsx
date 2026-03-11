@@ -45,10 +45,9 @@ export default function AddressesPage() {
   const fetchAddresses = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/users/addresses');
-      setAddresses(res.data.addresses || res.data || []);
+      const res = await apiClient.get('/api/users/me/addresses');
+      setAddresses(res.data?.data || res.data.addresses || res.data || []);
     } catch {
-      // Backend not connected — show empty state gracefully
       setAddresses([]);
     } finally {
       setLoading(false);
@@ -91,37 +90,37 @@ export default function AddressesPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.firstName || !form.street || !form.city || !form.zipCode) {
-      toast({ message: 'Please fill in all required fields', type: 'error' });
+      toast({ message: 'Por favor completa todos los campos requeridos', type: 'error' });
       return;
     }
 
     setSaving(true);
     try {
       if (editingId) {
-        await apiClient.put(`/users/addresses/${editingId}`, form);
-        toast({ message: 'Address updated successfully', type: 'success' });
+        await apiClient.put(`/api/users/me/addresses/${editingId}`, form);
+        toast({ message: 'Dirección actualizada exitosamente', type: 'success' });
       } else {
-        await apiClient.post('/users/addresses', form);
-        toast({ message: 'Address added successfully', type: 'success' });
+        await apiClient.post('/api/users/me/addresses', form);
+        toast({ message: 'Dirección agregada exitosamente', type: 'success' });
       }
       await fetchAddresses();
       handleCancel();
     } catch {
-      toast({ message: 'Error saving address. Please try again.', type: 'error' });
+      toast({ message: 'Error al guardar la dirección. Por favor intenta de nuevo.', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this address?')) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?')) return;
     setDeletingId(id);
     try {
-      await apiClient.delete(`/users/addresses/${id}`);
+      await apiClient.delete(`/api/users/me/addresses/${id}`);
       setAddresses((prev) => prev.filter((a) => a.id !== id));
-      toast({ message: 'Address deleted', type: 'success' });
+      toast({ message: 'Dirección eliminada', type: 'success' });
     } catch {
-      toast({ message: 'Error deleting address', type: 'error' });
+      toast({ message: 'Error al eliminar la dirección', type: 'error' });
     } finally {
       setDeletingId(null);
     }
@@ -129,13 +128,13 @@ export default function AddressesPage() {
 
   const handleSetDefault = async (id: string) => {
     try {
-      await apiClient.put(`/users/addresses/${id}/default`, {});
+      await apiClient.put(`/api/users/me/addresses/${id}/default`, {});
       setAddresses((prev) =>
         prev.map((a) => ({ ...a, isDefault: a.id === id }))
       );
-      toast({ message: 'Default address updated', type: 'success' });
+      toast({ message: 'Dirección predeterminada actualizada', type: 'success' });
     } catch {
-      toast({ message: 'Error updating default address', type: 'error' });
+      toast({ message: 'Error al actualizar la dirección predeterminada', type: 'error' });
     }
   };
 
@@ -161,11 +160,11 @@ export default function AddressesPage() {
 
   return (
     <div className="spacing-section">
-      {/* Header */}
+      {/* Encabezado */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-primary">My Addresses</h1>
-          <p className="text-primary/60 text-sm mt-1">Manage your shipping addresses</p>
+          <h1 className="text-2xl font-extrabold text-primary">Mis Direcciones</h1>
+          <p className="text-primary/60 text-sm mt-1">Administra tus direcciones de envío</p>
         </div>
         {!showForm && (
           <button
@@ -173,17 +172,17 @@ export default function AddressesPage() {
             className="flex items-center gap-2 bg-primary text-white font-bold px-4 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
           >
             <MaterialIcon name="add" className="text-base" />
-            Add Address
+            Agregar Dirección
           </button>
         )}
       </div>
 
-      {/* Add / Edit Form */}
+      {/* Formulario de Agregar / Editar */}
       {showForm && (
         <div className="bg-white rounded-xl border border-primary/10 p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-extrabold text-primary text-lg">
-              {editingId ? 'Edit Address' : 'New Address'}
+              {editingId ? 'Editar Dirección' : 'Nueva Dirección'}
             </h2>
             <button onClick={handleCancel} className="text-primary/40 hover:text-primary transition-colors">
               <MaterialIcon name="close" className="text-xl" />
@@ -191,34 +190,27 @@ export default function AddressesPage() {
           </div>
 
           <form onSubmit={handleSave} className="space-y-4">
-            {/* Label */}
-            {field('Label (e.g. Home, Office)', 'label')}
+            {field('Etiqueta (ej. Casa, Oficina)', 'label')}
 
-            {/* Name */}
             <div className="grid grid-cols-2 gap-4">
-              {field('First Name', 'firstName', 'text', true)}
-              {field('Last Name', 'lastName')}
+              {field('Nombre', 'firstName', 'text', true)}
+              {field('Apellido', 'lastName')}
             </div>
 
-            {/* Street */}
-            {field('Street Address', 'street', 'text', true)}
+            {field('Dirección', 'street', 'text', true)}
 
-            {/* City / State */}
             <div className="grid grid-cols-2 gap-4">
-              {field('City', 'city', 'text', true)}
-              {field('State / Province', 'state')}
+              {field('Ciudad', 'city', 'text', true)}
+              {field('Departamento / Provincia', 'state')}
             </div>
 
-            {/* ZIP / Country */}
             <div className="grid grid-cols-2 gap-4">
-              {field('ZIP Code', 'zipCode', 'text', true)}
-              {field('Country', 'country')}
+              {field('Código Postal', 'zipCode', 'text', true)}
+              {field('País', 'country')}
             </div>
 
-            {/* Phone */}
-            {field('Phone', 'phone', 'tel')}
+            {field('Teléfono', 'phone', 'tel')}
 
-            {/* Default checkbox */}
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -226,7 +218,7 @@ export default function AddressesPage() {
                 onChange={(e) => setForm({ ...form, isDefault: e.target.checked })}
                 className="size-4 accent-primary"
               />
-              <span className="text-sm font-semibold text-primary">Set as default address</span>
+              <span className="text-sm font-semibold text-primary">Establecer como dirección predeterminada</span>
             </label>
 
             <div className="flex gap-3 pt-2">
@@ -235,7 +227,7 @@ export default function AddressesPage() {
                 onClick={handleCancel}
                 className="flex-1 py-2.5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary/5 transition-colors text-sm"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 type="submit"
@@ -243,14 +235,14 @@ export default function AddressesPage() {
                 className="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving && <MaterialIcon name="hourglass_bottom" className="text-base" />}
-                {saving ? 'Saving...' : editingId ? 'Update Address' : 'Save Address'}
+                {saving ? 'Guardando...' : editingId ? 'Actualizar Dirección' : 'Guardar Dirección'}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Address List */}
+      {/* Lista de Direcciones */}
       {loading ? (
         <div className="space-y-4">
           {[1, 2].map((i) => (
@@ -269,14 +261,14 @@ export default function AddressesPage() {
       ) : addresses.length === 0 && !showForm ? (
         <div className="bg-white rounded-xl border border-primary/10 p-12 text-center">
           <MaterialIcon name="location_off" className="text-5xl text-primary/20 mb-4" />
-          <h3 className="font-extrabold text-primary text-lg mb-2">No addresses yet</h3>
-          <p className="text-sm text-primary/50 mb-6">Add a shipping address to speed up checkout</p>
+          <h3 className="font-extrabold text-primary text-lg mb-2">Sin direcciones aún</h3>
+          <p className="text-sm text-primary/50 mb-6">Agrega una dirección de envío para agilizar el proceso de pago</p>
           <button
             onClick={openAddForm}
             className="inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
           >
             <MaterialIcon name="add" className="text-base" />
-            Add Your First Address
+            Agregar tu Primera Dirección
           </button>
         </div>
       ) : (
@@ -289,23 +281,21 @@ export default function AddressesPage() {
               }`}
             >
               <div className="flex items-start gap-4">
-                {/* Icon */}
                 <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                   <MaterialIcon
-                    name={address.label?.toLowerCase().includes('office') ? 'business' : 'home'}
+                    name={address.label?.toLowerCase().includes('office') || address.label?.toLowerCase().includes('oficina') ? 'business' : 'home'}
                     className="text-primary text-xl"
                   />
                 </div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-extrabold text-primary text-sm">
-                      {address.label || 'Address'}
+                      {address.label || 'Dirección'}
                     </span>
                     {address.isDefault && (
                       <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        Default
+                        Predeterminada
                       </span>
                     )}
                   </div>
@@ -320,14 +310,13 @@ export default function AddressesPage() {
                   {address.phone && <p className="text-sm text-primary/50">{address.phone}</p>}
                 </div>
 
-                {/* Actions */}
                 <div className="flex flex-col gap-2 shrink-0">
                   <button
                     onClick={() => openEditForm(address)}
                     className="flex items-center gap-1.5 text-xs font-bold text-primary/60 hover:text-primary transition-colors"
                   >
                     <MaterialIcon name="edit" className="text-sm" />
-                    Edit
+                    Editar
                   </button>
                   {!address.isDefault && (
                     <button
@@ -335,7 +324,7 @@ export default function AddressesPage() {
                       className="flex items-center gap-1.5 text-xs font-bold text-primary/60 hover:text-primary transition-colors"
                     >
                       <MaterialIcon name="check_circle" className="text-sm" />
-                      Set Default
+                      Predeterminar
                     </button>
                   )}
                   <button
@@ -344,7 +333,7 @@ export default function AddressesPage() {
                     className="flex items-center gap-1.5 text-xs font-bold text-red-400 hover:text-red-600 transition-colors disabled:opacity-40"
                   >
                     <MaterialIcon name="delete" className="text-sm" />
-                    {deletingId === address.id ? 'Deleting...' : 'Delete'}
+                    {deletingId === address.id ? 'Eliminando...' : 'Eliminar'}
                   </button>
                 </div>
               </div>

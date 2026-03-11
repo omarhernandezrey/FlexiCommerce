@@ -1,30 +1,41 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
   onImagePreview?: (preview: string) => void;
+  onClear?: () => void;
   maxSize?: number; // in bytes
   acceptedFormats?: string[];
   label?: string;
   placeholder?: string;
+  initialPreview?: string | null;
 }
 
 export function ImageUpload({
   onImageSelect,
   onImagePreview,
+  onClear,
   maxSize = 5242880, // 5MB
   acceptedFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'],
-  label = 'Upload Image',
-  placeholder = 'Drag & drop or click to upload',
+  label = 'Subir Imagen',
+  placeholder = 'Arrastra y suelta o haz clic para subir',
+  initialPreview = null,
 }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(initialPreview);
   const [fileName, setFileName] = useState<string | null>(null);
+
+  // Sync when initialPreview loads asynchronously from the backend
+  useEffect(() => {
+    if (initialPreview && !preview) {
+      setPreview(initialPreview);
+    }
+  }, [initialPreview]); // eslint-disable-line react-hooks/exhaustive-deps
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -32,13 +43,13 @@ export function ImageUpload({
 
     // Validate format
     if (!acceptedFormats.includes(file.type)) {
-      setError('Invalid file format. Please upload an image.');
+      setError('Formato de archivo inválido. Por favor sube una imagen.');
       return;
     }
 
     // Validate size
     if (file.size > maxSize) {
-      setError(`File size must be less than ${(maxSize / 1024 / 1024).toFixed(1)}MB`);
+      setError(`El archivo debe pesar menos de ${(maxSize / 1024 / 1024).toFixed(1)}MB`);
       return;
     }
 
@@ -97,6 +108,7 @@ export function ImageUpload({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    onClear?.();
   };
 
   return (
@@ -118,14 +130,14 @@ export function ImageUpload({
             <button
               onClick={handleClick}
               className="size-10 rounded-full bg-white text-primary flex items-center justify-center hover:bg-slate-100 transition-colors"
-              title="Change image"
+              title="Cambiar imagen"
             >
               <MaterialIcon name="edit" className="text-lg" />
             </button>
             <button
               onClick={handleRemoveImage}
               className="size-10 rounded-full bg-error text-white flex items-center justify-center hover:bg-error/80 transition-colors"
-              title="Remove image"
+              title="Eliminar imagen"
             >
               <MaterialIcon name="delete" className="text-lg" />
             </button>
@@ -152,7 +164,7 @@ export function ImageUpload({
           {isLoading ? (
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary mx-auto animate-spin"></div>
-              <p className="text-sm text-primary/60 font-medium">Processing image...</p>
+              <p className="text-sm text-primary/60 font-medium">Procesando imagen...</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -165,7 +177,7 @@ export function ImageUpload({
               <div>
                 <p className="text-sm text-primary/70 font-medium">{placeholder}</p>
                 <p className="text-xs text-primary/40 mt-1">
-                  {acceptedFormats.includes('image/jpeg') ? 'JPG, PNG, WebP' : 'Image formats'} • Max{' '}
+                  {acceptedFormats.includes('image/jpeg') ? 'JPG, PNG, WebP' : 'Formatos de imagen'} • Máx.{' '}
                   {(maxSize / 1024 / 1024).toFixed(1)}MB
                 </p>
               </div>

@@ -1,17 +1,24 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { formatCOP } from '@/lib/format';
 
 export default function CartPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
+  const { user } = useAuth();
+
+  useEffect(() => { setMounted(true); }, []);
   const subtotal = getTotalPrice();
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const shipping = 0; // Envío gratis
+  const total = subtotal + shipping;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50/50">
@@ -92,7 +99,7 @@ export default function CartPage() {
                               )}
                             </div>
                             <p className="text-lg sm:text-xl font-bold text-primary">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              {formatCOP(item.price * item.quantity)}
                             </p>
                           </div>
 
@@ -154,15 +161,11 @@ export default function CartPage() {
                 <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-slate-200">
                   <div className="flex justify-between text-slate-600 text-sm sm:text-base">
                     <span className="text-sm">Subtotal</span>
-                    <span className="font-semibold text-primary">${subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-primary">{formatCOP(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span className="text-sm">Envío</span>
                     <span className="font-semibold text-success">Gratis</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span className="text-sm">Impuestos (8%)</span>
-                    <span className="font-semibold text-primary">${tax.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -170,18 +173,37 @@ export default function CartPage() {
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-700">Total</span>
                     <span className="text-2xl font-bold text-primary">
-                      ${total.toFixed(2)}
+                      {formatCOP(total)}
                     </span>
                   </div>
                 </div>
 
-                <Link
-                  href="/checkout"
-                  className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mb-3"
-                >
-                  <MaterialIcon name="payment" className="fill-1" />
-                  Proceder al Pago
-                </Link>
+                {/* Botón checkout — condicional según auth */}
+                {mounted && !user ? (
+                  <>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 flex items-start gap-2">
+                      <MaterialIcon name="info" className="text-amber-500 text-base shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        Necesitas iniciar sesión para completar tu compra. ¡Tu carrito se guardará!
+                      </p>
+                    </div>
+                    <Link
+                      href="/auth?redirect=/checkout"
+                      className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mb-3"
+                    >
+                      <MaterialIcon name="login" />
+                      Iniciar Sesión para Pagar
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href="/checkout"
+                    className="w-full bg-gradient-to-r from-primary to-primary/80 text-white font-bold py-3 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mb-3"
+                  >
+                    <MaterialIcon name="payment" className="fill-1" />
+                    Proceder al Pago
+                  </Link>
+                )}
 
                 <button
                   onClick={() => {

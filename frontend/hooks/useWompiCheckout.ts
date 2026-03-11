@@ -16,6 +16,9 @@ interface WompiWidgetConfig {
   reference: string;
   publicKey: string;
   redirectUrl: string;
+  signature?: {
+    integrity: string;
+  };
   customerData?: {
     email?: string;
     fullName?: string;
@@ -58,23 +61,36 @@ export const useWompiCheckout = () => {
       customerEmail: string;
       customerName: string;
     }) => {
-      // 1. Solicitar sesión al backend (obtiene acceptance_token, reference, hash)
+      // 1. Solicitar sesión al backend (obtiene public_key, reference, hash de integridad)
       const res = await apiClient.post('/api/payments/wompi/session', { orderId });
-      const { acceptance_token, public_key, reference, amount_in_cents } =
+      const { public_key, reference, amount_in_cents, integrity_hash } =
         res.data.data;
 
-      // 2. Verificar que el widget esté disponible
+      // 2. Verificar que el widget esté disponible (tiene un timeout de espera)
       if (!window.WidgetCheckout) {
-        throw new Error('El widget de Wompi no está disponible. Recarga la página.');
+        // Esperar hasta 5 segundos a que el script cargue
+        await new Promise<void>((resolve, reject) => {
+          let elapsed = 0;
+          const interval = setInterval(() => {
+            if (window.WidgetCheckout) { clearInterval(interval); resolve(); return; }
+            elapsed += 250;
+            if (elapsed >= 5000) { clearInterval(interval); reject(new Error('El widget de Wompi no cargó. Recarga la página.')); }
+          }, 250);
+        });
       }
 
-      // 3. Abrir el widget — maneja internamente tarjeta, PSE, Nequi, etc.
+      // 3. Abrir el widget con signature (integrity_hash) — requerido por Wompi para evitar 403
+      // checkout.open() es síncrono: abre el modal y retorna inmediatamente.
+      // La cuenta de Wompi debe estar activa para que el modal cargue correctamente.
       const checkout = new window.WidgetCheckout({
         currency: 'COP',
         amountInCents: amount_in_cents,
         reference,
         publicKey: public_key,
-        redirectUrl: `${window.location.origin}/checkout/verificar`,
+        redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/checkout/verificar`,
+        signature: {
+          integrity: integrity_hash,
+        },
         customerData: {
           email: customerEmail,
           fullName: customerName,
@@ -82,7 +98,6 @@ export const useWompiCheckout = () => {
       });
 
       checkout.open((result) => {
-        // Redirigir a la página de verificación con el ID de transacción
         window.location.href = `/checkout/verificar?id=${result.transaction.id}`;
       });
     },

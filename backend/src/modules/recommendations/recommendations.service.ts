@@ -30,6 +30,7 @@ export class RecommendationService {
 
       userOrders.forEach((order) => {
         order.items.forEach((item) => {
+          if (!item.product) return;
           purchasedProductIds.add(item.product.id);
           if (item.product.categoryId) {
             purchasedCategoryIds.add(item.product.categoryId);

@@ -2,474 +2,260 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
-import { useToast } from '@/hooks/useToast';
+import { formatCOP } from '@/lib/format';
 import apiClient from '@/lib/api-client';
+import Link from 'next/link';
 
-interface PaymentMethod {
-  id: string;
-  type: 'card' | 'paypal' | 'bank';
-  label: string;
-  last4?: string;
-  brand?: string;
-  expiryMonth?: number;
-  expiryYear?: number;
-  email?: string;
-  isDefault: boolean;
+interface PaymentRecord {
+  orderId: string;
+  method: string;
+  amount: number;
+  status: string;
+  date: string;
 }
 
-const BRAND_ICONS: Record<string, string> = {
-  visa: 'credit_card',
-  mastercard: 'credit_card',
-  amex: 'credit_card',
-  paypal: 'account_balance_wallet',
-  bank: 'account_balance',
+const METHOD_INFO: Record<string, { label: string; icon: string; color: string }> = {
+  WOMPI:                { label: 'Wompi',               icon: 'payments',                color: 'bg-indigo-50 text-indigo-600' },
+  CREDIT_CARD:          { label: 'Tarjeta de Crédito',  icon: 'credit_card',             color: 'bg-blue-50 text-blue-600' },
+  DEBIT_CARD:           { label: 'Tarjeta Débito',      icon: 'credit_card',             color: 'bg-teal-50 text-teal-600' },
+  PSE:                  { label: 'PSE',                  icon: 'account_balance',         color: 'bg-green-50 text-green-600' },
+  NEQUI:                { label: 'Nequi',                icon: 'phone_android',           color: 'bg-purple-50 text-purple-600' },
+  DAVIPLATA:            { label: 'Daviplata',            icon: 'phone_android',           color: 'bg-red-50 text-red-600' },
+  BANCOLOMBIA_TRANSFER: { label: 'Bancolombia Transfer', icon: 'account_balance',         color: 'bg-yellow-50 text-yellow-700' },
+  BANCOLOMBIA_COLLECT:  { label: 'Bancolombia Collect',  icon: 'account_balance',         color: 'bg-yellow-50 text-yellow-700' },
+  PAYPAL:               { label: 'PayPal',               icon: 'account_balance_wallet',  color: 'bg-sky-50 text-sky-600' },
+  STRIPE:               { label: 'Stripe',               icon: 'credit_card',             color: 'bg-violet-50 text-violet-600' },
 };
 
-const CARD_BRAND_COLORS: Record<string, string> = {
-  visa: 'bg-blue-600',
-  mastercard: 'bg-red-500',
-  amex: 'bg-green-600',
+const STATUS_BADGE: Record<string, { label: string; color: string }> = {
+  COMPLETED: { label: 'Completado', color: 'bg-green-100 text-green-700' },
+  PENDING:   { label: 'Pendiente',  color: 'bg-yellow-100 text-yellow-700' },
+  FAILED:    { label: 'Fallido',    color: 'bg-red-100 text-red-700' },
+  REFUNDED:  { label: 'Reembolsado',color: 'bg-slate-100 text-slate-700' },
 };
+
+const AVAILABLE_METHODS = [
+  { key: 'CREDIT_CARD',          label: 'Tarjeta de Crédito',   icon: 'credit_card',           desc: 'Visa, Mastercard, Amex' },
+  { key: 'DEBIT_CARD',           label: 'Tarjeta Débito',       icon: 'credit_card',           desc: 'Débito bancario nacional' },
+  { key: 'PSE',                  label: 'PSE',                  icon: 'account_balance',       desc: 'Pago desde tu banco en línea' },
+  { key: 'NEQUI',                label: 'Nequi',                icon: 'phone_android',         desc: 'Pago con billetera Nequi' },
+  { key: 'DAVIPLATA',            label: 'Daviplata',            icon: 'phone_android',         desc: 'Pago con billetera Daviplata' },
+  { key: 'BANCOLOMBIA_TRANSFER', label: 'Bancolombia Transferencia', icon: 'account_balance', desc: 'Transferencia desde Bancolombia' },
+  { key: 'BANCOLOMBIA_COLLECT',  label: 'Corresponsal Bancolombia', icon: 'store',            desc: 'Pago en puntos corresponsales' },
+];
 
 export default function PaymentMethodsPage() {
-  const { toast } = useToast();
-  const [methods, setMethods] = useState<PaymentMethod[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [formType, setFormType] = useState<'card' | 'paypal'>('card');
-  const [cardForm, setCardForm] = useState({
-    cardNumber: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvv: '',
-    cardholderName: '',
-    isDefault: false,
-  });
-  const [paypalForm, setPaypalForm] = useState({
-    email: '',
-    isDefault: false,
-  });
+  const [totalPaid, setTotalPaid] = useState(0);
 
-  const fetchMethods = useCallback(async () => {
+  const fetchPaymentHistory = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/users/payment-methods');
-      setMethods(res.data.paymentMethods || res.data || []);
+      const res = await apiClient.get('/api/orders');
+      const orders: { id: string; total: number; createdAt: string; payment?: { method: string; status: string; amount: number } }[] =
+        res.data?.data || res.data || [];
+
+      const records: PaymentRecord[] = orders
+        .filter((o) => o.payment)
+        .map((o) => ({
+          orderId: o.id,
+          method: o.payment!.method,
+          amount: Number(o.payment!.amount ?? o.total),
+          status: o.payment!.status,
+          date: new Date(o.createdAt).toLocaleDateString('es-CO', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          }),
+        }));
+
+      setPaymentHistory(records);
+      setTotalPaid(records.filter((r) => r.status === 'COMPLETED').reduce((s, r) => s + r.amount, 0));
     } catch {
-      setMethods([]);
+      setPaymentHistory([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchMethods();
-  }, [fetchMethods]);
+    fetchPaymentHistory();
+  }, [fetchPaymentHistory]);
 
-  const handleCancel = () => {
-    setShowForm(false);
-    setCardForm({ cardNumber: '', expiryMonth: '', expiryYear: '', cvv: '', cardholderName: '', isDefault: false });
-    setPaypalForm({ email: '', isDefault: false });
-  };
-
-  const handleSaveCard = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cardForm.cardNumber || !cardForm.expiryMonth || !cardForm.expiryYear || !cardForm.cardholderName) {
-      toast({ message: 'Please fill in all required fields', type: 'error' });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await apiClient.post('/users/payment-methods', {
-        type: 'card',
-        cardNumber: cardForm.cardNumber.replace(/\s/g, ''),
-        expiryMonth: parseInt(cardForm.expiryMonth),
-        expiryYear: parseInt(cardForm.expiryYear),
-        cvv: cardForm.cvv,
-        cardholderName: cardForm.cardholderName,
-        isDefault: cardForm.isDefault,
-      });
-      toast({ message: 'Card added successfully', type: 'success' });
-      await fetchMethods();
-      handleCancel();
-    } catch {
-      toast({ message: 'Error adding card. Please try again.', type: 'error' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSavePaypal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!paypalForm.email) {
-      toast({ message: 'Please enter your PayPal email', type: 'error' });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await apiClient.post('/users/payment-methods', {
-        type: 'paypal',
-        email: paypalForm.email,
-        isDefault: paypalForm.isDefault,
-      });
-      toast({ message: 'PayPal account added successfully', type: 'success' });
-      await fetchMethods();
-      handleCancel();
-    } catch {
-      toast({ message: 'Error adding PayPal account', type: 'error' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to remove this payment method?')) return;
-    setDeletingId(id);
-    try {
-      await apiClient.delete(`/users/payment-methods/${id}`);
-      setMethods((prev) => prev.filter((m) => m.id !== id));
-      toast({ message: 'Payment method removed', type: 'success' });
-    } catch {
-      toast({ message: 'Error removing payment method', type: 'error' });
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const handleSetDefault = async (id: string) => {
-    try {
-      await apiClient.put(`/users/payment-methods/${id}/default`, {});
-      setMethods((prev) => prev.map((m) => ({ ...m, isDefault: m.id === id })));
-      toast({ message: 'Default payment method updated', type: 'success' });
-    } catch {
-      toast({ message: 'Error updating default payment method', type: 'error' });
-    }
-  };
-
-  const formatCardNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 16);
-    return cleaned.replace(/(\d{4})(?=\d)/g, '$1 ');
-  };
-
-  const getMethodIcon = (method: PaymentMethod) => {
-    if (method.type === 'paypal') return 'account_balance_wallet';
-    if (method.type === 'bank') return 'account_balance';
-    return 'credit_card';
-  };
-
-  const getMethodLabel = (method: PaymentMethod) => {
-    if (method.type === 'paypal') return `PayPal — ${method.email}`;
-    if (method.type === 'bank') return method.label;
-    const brand = method.brand ? method.brand.charAt(0).toUpperCase() + method.brand.slice(1) : 'Card';
-    return `${brand} ending in ${method.last4}`;
-  };
-
-  const getMethodSub = (method: PaymentMethod) => {
-    if (method.type === 'card' && method.expiryMonth && method.expiryYear) {
-      return `Expires ${String(method.expiryMonth).padStart(2, '0')}/${method.expiryYear}`;
-    }
-    return method.label;
-  };
+  // Métodos únicos usados
+  const usedMethods = [...new Set(paymentHistory.map((r) => r.method))];
 
   return (
     <div className="spacing-section">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-primary">Payment Methods</h1>
-          <p className="text-primary/60 text-sm mt-1">Manage your saved payment methods</p>
-        </div>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-primary text-white font-bold px-4 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
-          >
-            <MaterialIcon name="add" className="text-base" />
-            Add Method
-          </button>
-        )}
+      {/* Encabezado */}
+      <div>
+        <h1 className="text-2xl font-extrabold text-primary">Métodos de Pago</h1>
+        <p className="text-primary/60 text-sm mt-1">Historial de pagos y métodos disponibles en FlexiCommerce</p>
       </div>
 
-      {/* Add Form */}
-      {showForm && (
-        <div className="bg-white rounded-xl border border-primary/10 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-extrabold text-primary text-lg">Add Payment Method</h2>
-            <button onClick={handleCancel} className="text-primary/40 hover:text-primary transition-colors">
-              <MaterialIcon name="close" className="text-xl" />
-            </button>
+      {/* Aviso Wompi */}
+      <div className="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+        <MaterialIcon name="security" className="text-indigo-600 text-xl shrink-0 mt-0.5" />
+        <div>
+          <p className="font-bold text-indigo-800 text-sm">Pagos procesados de forma segura por Wompi</p>
+          <p className="text-xs text-indigo-600 mt-0.5 leading-relaxed">
+            FlexiCommerce usa Wompi como pasarela de pagos certificada. No almacenamos datos de tarjetas ni credenciales bancarias.
+            Cada pago es procesado directamente en los servidores seguros de Wompi con encriptación TLS.
+          </p>
+        </div>
+      </div>
+
+      {/* Estadísticas rápidas */}
+      {!loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl border border-primary/10 p-5">
+            <p className="text-xs text-primary/40 font-medium uppercase tracking-wider mb-1">Total Pagado</p>
+            <p className="text-2xl font-extrabold text-primary">{formatCOP(totalPaid)}</p>
           </div>
-
-          {/* Type Selector */}
-          <div className="flex gap-3 mb-6">
-            {(['card', 'paypal'] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setFormType(type)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
-                  formType === type
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-primary/10 text-primary/50 hover:border-primary/30'
-                }`}
-              >
-                <MaterialIcon
-                  name={type === 'card' ? 'credit_card' : 'account_balance_wallet'}
-                  className="text-lg"
-                />
-                {type === 'card' ? 'Credit / Debit Card' : 'PayPal'}
-              </button>
-            ))}
+          <div className="bg-white rounded-xl border border-primary/10 p-5">
+            <p className="text-xs text-primary/40 font-medium uppercase tracking-wider mb-1">Transacciones</p>
+            <p className="text-2xl font-extrabold text-primary">{paymentHistory.length}</p>
           </div>
-
-          {formType === 'card' ? (
-            <form onSubmit={handleSaveCard} className="space-y-4">
-              {/* Card Number */}
-              <div>
-                <label className="block text-xs font-bold text-primary mb-1.5">
-                  Card Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={cardForm.cardNumber}
-                  onChange={(e) => setCardForm({ ...cardForm, cardNumber: formatCardNumber(e.target.value) })}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  required
-                  className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-primary/30 tracking-widest"
-                />
-              </div>
-
-              {/* Cardholder Name */}
-              <div>
-                <label className="block text-xs font-bold text-primary mb-1.5">
-                  Cardholder Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={cardForm.cardholderName}
-                  onChange={(e) => setCardForm({ ...cardForm, cardholderName: e.target.value })}
-                  placeholder="Full name as on card"
-                  required
-                  className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-primary/30"
-                />
-              </div>
-
-              {/* Expiry + CVV */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Month *</label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={cardForm.expiryMonth}
-                    onChange={(e) => setCardForm({ ...cardForm, expiryMonth: e.target.value.slice(0, 2) })}
-                    placeholder="MM"
-                    maxLength={2}
-                    required
-                    className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-primary/30"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Year *</label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={cardForm.expiryYear}
-                    onChange={(e) => setCardForm({ ...cardForm, expiryYear: e.target.value.slice(0, 4) })}
-                    placeholder="YYYY"
-                    maxLength={4}
-                    required
-                    className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-primary/30"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">CVV</label>
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    value={cardForm.cvv}
-                    onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value.slice(0, 4) })}
-                    placeholder="•••"
-                    maxLength={4}
-                    className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-primary/30"
-                  />
-                </div>
-              </div>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={cardForm.isDefault}
-                  onChange={(e) => setCardForm({ ...cardForm, isDefault: e.target.checked })}
-                  className="size-4 accent-primary"
-                />
-                <span className="text-sm font-semibold text-primary">Set as default payment method</span>
-              </label>
-
-              {/* SSL Notice */}
-              <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
-                <MaterialIcon name="lock" className="text-green-600 text-base" />
-                <p className="text-xs text-green-700 font-medium">Your card information is encrypted and secure</p>
-              </div>
-
-              <div className="flex gap-3">
-                <button type="button" onClick={handleCancel} className="flex-1 py-2.5 border-2 border-primary text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-                  {saving && <MaterialIcon name="hourglass_bottom" className="text-base" />}
-                  {saving ? 'Saving...' : 'Save Card'}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleSavePaypal} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-primary mb-1.5">
-                  PayPal Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={paypalForm.email}
-                  onChange={(e) => setPaypalForm({ ...paypalForm, email: e.target.value })}
-                  placeholder="your@paypal.com"
-                  required
-                  className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-primary/30"
-                />
-              </div>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={paypalForm.isDefault}
-                  onChange={(e) => setPaypalForm({ ...paypalForm, isDefault: e.target.checked })}
-                  className="size-4 accent-primary"
-                />
-                <span className="text-sm font-semibold text-primary">Set as default payment method</span>
-              </label>
-
-              <div className="flex gap-3">
-                <button type="button" onClick={handleCancel} className="flex-1 py-2.5 border-2 border-primary text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-                  {saving && <MaterialIcon name="hourglass_bottom" className="text-base" />}
-                  {saving ? 'Linking...' : 'Link PayPal'}
-                </button>
-              </div>
-            </form>
-          )}
+          <div className="bg-white rounded-xl border border-primary/10 p-5">
+            <p className="text-xs text-primary/40 font-medium uppercase tracking-wider mb-1">Métodos Usados</p>
+            <p className="text-2xl font-extrabold text-primary">{usedMethods.length}</p>
+          </div>
         </div>
       )}
 
-      {/* Methods List */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-primary/10 p-5 animate-pulse">
-              <div className="flex gap-4">
-                <div className="size-12 bg-primary/10 rounded-xl" />
-                <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-primary/10 rounded w-40" />
-                  <div className="h-3 bg-primary/10 rounded w-24" />
-                </div>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Historial de Pagos */}
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
+            <div className="px-5 py-4 border-b border-primary/10 flex items-center justify-between">
+              <h2 className="font-extrabold text-primary">Historial de Transacciones</h2>
+              {paymentHistory.length > 0 && (
+                <span className="text-xs text-primary/40 font-medium">{paymentHistory.length} registros</span>
+              )}
             </div>
-          ))}
-        </div>
-      ) : methods.length === 0 && !showForm ? (
-        <div className="bg-white rounded-xl border border-primary/10 p-12 text-center">
-          <MaterialIcon name="credit_card_off" className="text-5xl text-primary/20 mb-4" />
-          <h3 className="font-extrabold text-primary text-lg mb-2">No payment methods saved</h3>
-          <p className="text-sm text-primary/50 mb-6">Save a card or PayPal account for faster checkout</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
-          >
-            <MaterialIcon name="add" className="text-base" />
-            Add Payment Method
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {methods.map((method) => (
-            <div
-              key={method.id}
-              className={`bg-white rounded-xl border p-5 transition-all ${
-                method.isDefault ? 'border-primary/30 ring-1 ring-primary/20' : 'border-primary/10'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                {/* Card visual / icon */}
-                <div
-                  className={`size-12 rounded-xl flex items-center justify-center shrink-0 ${
-                    method.type === 'card' && method.brand
-                      ? (CARD_BRAND_COLORS[method.brand] || 'bg-primary')
-                      : method.type === 'paypal'
-                      ? 'bg-blue-500'
-                      : 'bg-primary/10'
-                  }`}
-                >
-                  <MaterialIcon
-                    name={getMethodIcon(method)}
-                    className="text-white text-xl"
-                  />
-                </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-extrabold text-primary text-sm">{getMethodLabel(method)}</span>
-                    {method.isDefault && (
-                      <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                        Default
+            {loading ? (
+              <div className="p-6 space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-4 animate-pulse">
+                    <div className="size-10 rounded-lg bg-primary/10 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-primary/10 rounded w-40" />
+                      <div className="h-2 bg-primary/5 rounded w-24" />
+                    </div>
+                    <div className="h-5 bg-primary/10 rounded w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : paymentHistory.length === 0 ? (
+              <div className="p-12 text-center">
+                <MaterialIcon name="receipt_long" className="text-primary/20 text-5xl mb-3" />
+                <h3 className="font-bold text-primary mb-1">Sin transacciones</h3>
+                <p className="text-sm text-primary/50 mb-5">Aún no has realizado ningún pago</p>
+                <Link
+                  href="/products"
+                  className="inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
+                >
+                  <MaterialIcon name="storefront" className="text-base" />
+                  Explorar Productos
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-primary/5">
+                {paymentHistory.map((record) => {
+                  const methodInfo = METHOD_INFO[record.method] || { label: record.method, icon: 'payments', color: 'bg-primary/10 text-primary' };
+                  const statusInfo = STATUS_BADGE[record.status] || { label: record.status, color: 'bg-slate-100 text-slate-600' };
+                  return (
+                    <div key={record.orderId} className="flex items-center gap-4 px-5 py-4 hover:bg-primary/[0.02]">
+                      <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${methodInfo.color}`}>
+                        <MaterialIcon name={methodInfo.icon} className="text-base" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-primary text-sm">{methodInfo.label}</p>
+                        <p className="text-xs text-primary/40">
+                          Pedido #{record.orderId.slice(0, 8)} · {record.date}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-extrabold text-primary text-sm">{formatCOP(record.amount)}</p>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusInfo.color}`}>
+                          {statusInfo.label}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/orders/${record.orderId}`}
+                        className="shrink-0 p-1.5 rounded-lg hover:bg-primary/5 text-primary/30 hover:text-primary transition-colors"
+                        title="Ver pedido"
+                      >
+                        <MaterialIcon name="open_in_new" className="text-sm" />
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Métodos Disponibles */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
+            <div className="px-5 py-4 border-b border-primary/10">
+              <h2 className="font-extrabold text-primary">Métodos Aceptados</h2>
+              <p className="text-xs text-primary/40 mt-0.5">Todos disponibles al hacer tu pedido</p>
+            </div>
+            <div className="p-4 space-y-2">
+              {AVAILABLE_METHODS.map((method) => {
+                const used = usedMethods.includes(method.key);
+                return (
+                  <div
+                    key={method.key}
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                      used
+                        ? 'border-primary/20 bg-primary/5'
+                        : 'border-primary/5 hover:bg-primary/[0.02]'
+                    }`}
+                  >
+                    <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      (METHOD_INFO[method.key]?.color) || 'bg-primary/10 text-primary'
+                    }`}>
+                      <MaterialIcon name={method.icon} className="text-sm" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-primary text-xs">{method.label}</p>
+                      <p className="text-[10px] text-primary/40">{method.desc}</p>
+                    </div>
+                    {used && (
+                      <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                        Usado
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-primary/50">{getMethodSub(method)}</p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-3 shrink-0">
-                  {!method.isDefault && (
-                    <button
-                      onClick={() => handleSetDefault(method.id)}
-                      className="text-xs font-bold text-primary/60 hover:text-primary transition-colors"
-                    >
-                      Set Default
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(method.id)}
-                    disabled={deletingId === method.id}
-                    className="flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-600 transition-colors disabled:opacity-40"
-                  >
-                    <MaterialIcon name="delete" className="text-sm" />
-                    {deletingId === method.id ? 'Removing...' : 'Remove'}
-                  </button>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
 
-      {/* Security note */}
-      {methods.length > 0 && (
-        <div className="flex items-start gap-3 bg-primary/5 rounded-xl p-4 border border-primary/10">
-          <MaterialIcon name="security" className="text-primary text-lg shrink-0 mt-0.5" />
-          <p className="text-xs text-primary/60 leading-relaxed">
-            Your payment information is stored securely with bank-level encryption.
-            We never store your full card number or CVV.
-          </p>
+          {/* CTA */}
+          <div className="mt-4 bg-primary rounded-xl p-5 text-white">
+            <div className="flex items-center gap-3 mb-3">
+              <MaterialIcon name="lock" className="text-yellow-300 text-xl" />
+              <p className="font-bold">Pagos 100% Seguros</p>
+            </div>
+            <p className="text-sm text-white/70 mb-4">
+              Todos los pagos están protegidos por cifrado SSL y procesados por Wompi, certificado PCI DSS Nivel 1.
+            </p>
+            <Link
+              href="/products"
+              className="w-full flex items-center justify-center gap-2 bg-white text-primary font-bold py-2.5 rounded-lg hover:bg-white/90 transition-colors text-sm"
+            >
+              <MaterialIcon name="shopping_cart" className="text-base" />
+              Ir a Comprar
+            </Link>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

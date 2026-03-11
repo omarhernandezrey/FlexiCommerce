@@ -34,7 +34,7 @@ export default function AdminOrdersPage() {
     return matchesStatus && matchesSearch;
   });
 
-  const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
+  const totalRevenue = orders.reduce((acc, o) => acc + Number(o.total), 0);
   const deliveredCount = orders.filter((o) => o.status === 'delivered').length;
   const pendingCount = orders.filter((o) => o.status === 'pending').length;
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { IMAGES } from '@/lib/constants';
 import Link from 'next/link';
+import { useAuthStore } from '@/store/auth';
 
 interface Notification {
   id: string;
@@ -19,41 +20,41 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: '1',
     type: 'order',
-    title: 'New Order #1042',
-    message: 'Jordan D. placed an order for $299.00',
-    time: '2m ago',
+    title: 'Nueva Orden #1042',
+    message: 'Jordan D. realizó un pedido por $299.00',
+    time: 'hace 2m',
     read: false,
   },
   {
     id: '2',
     type: 'review',
-    title: 'New Review',
-    message: 'Maria S. left a 5-star review on Acoustic Pro-X',
-    time: '15m ago',
+    title: 'Nueva Reseña',
+    message: 'Maria S. dejó una reseña de 5 estrellas en Acoustic Pro-X',
+    time: 'hace 15m',
     read: false,
   },
   {
     id: '3',
     type: 'stock',
-    title: 'Low Stock Alert',
-    message: 'Acoustic Pro-X Wireless has only 3 units left',
-    time: '1h ago',
+    title: 'Alerta de Bajo Stock',
+    message: 'Acoustic Pro-X Wireless solo tiene 3 unidades disponibles',
+    time: 'hace 1h',
     read: false,
   },
   {
     id: '4',
     type: 'order',
-    title: 'Order #1041 Shipped',
-    message: 'Order for Carlos M. has been dispatched',
-    time: '3h ago',
+    title: 'Orden #1041 Enviada',
+    message: 'El pedido de Carlos M. ha sido despachado',
+    time: 'hace 3h',
     read: true,
   },
   {
     id: '5',
     type: 'system',
-    title: 'System Update',
-    message: 'FlexiCommerce platform updated to v2.4.1',
-    time: '1d ago',
+    title: 'Actualización del Sistema',
+    message: 'Plataforma FlexiCommerce actualizada a v2.4.1',
+    time: 'hace 1d',
     read: true,
   },
 ];
@@ -76,6 +77,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const user = useAuthStore((s) => s.user);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -115,8 +117,8 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
         <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-200 transition-colors">
           <MaterialIcon name="store" className="text-slate-500 text-[18px]" />
-          <span className="text-sm font-semibold hidden sm:inline">Main Boutique Store</span>
-          <span className="text-sm font-semibold sm:hidden">Store</span>
+          <span className="text-sm font-semibold hidden sm:inline">Tienda Principal</span>
+          <span className="text-sm font-semibold sm:hidden">Tienda</span>
           <MaterialIcon name="expand_more" className="text-slate-400 text-[18px]" />
         </div>
       </div>
@@ -142,7 +144,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-primary/10">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-extrabold text-primary text-sm">Notifications</h3>
+                  <h3 className="font-extrabold text-primary text-sm">Notificaciones</h3>
                   {unreadCount > 0 && (
                     <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                       {unreadCount}
@@ -154,7 +156,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
                     onClick={markAllRead}
                     className="text-xs font-bold text-primary/50 hover:text-primary transition-colors"
                   >
-                    Mark all read
+                    Marcar todas como leídas
                   </button>
                 )}
               </div>
@@ -164,7 +166,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
                 {notifications.length === 0 ? (
                   <div className="px-5 py-10 text-center">
                     <MaterialIcon name="notifications_none" className="text-4xl text-primary/20 mb-2" />
-                    <p className="text-sm text-primary/40">No notifications</p>
+                    <p className="text-sm text-primary/40">Sin notificaciones</p>
                   </div>
                 ) : (
                   notifications.map((notif) => (
@@ -203,7 +205,7 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
               {/* Footer */}
               <div className="px-5 py-3 border-t border-primary/10 text-center">
                 <Link href="/admin/orders" className="text-xs font-bold text-primary hover:text-primary/70 transition-colors">
-                  View All Notifications
+                  Ver Todas las Notificaciones
                 </Link>
               </div>
             </div>
@@ -212,12 +214,20 @@ export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
         <div className="h-8 w-px bg-slate-200 mx-1" />
         <div className="flex items-center gap-3 pl-2">
-          <div className="size-8 rounded-full overflow-hidden">
-            <img src={IMAGES.userAvatar} alt="Admin" className="w-full h-full object-cover" />
+          <div className="size-8 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.firstName} className="w-full h-full object-cover" />
+            ) : user?.firstName ? (
+              <span className="text-sm font-bold text-primary">{user.firstName.charAt(0).toUpperCase()}</span>
+            ) : (
+              <img src={IMAGES.userAvatar} alt="Admin" className="w-full h-full object-cover" />
+            )}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-semibold leading-tight">Admin User</p>
-            <p className="text-xs text-slate-400">Store Owner</p>
+            <p className="text-sm font-semibold leading-tight">
+              {user ? `${user.firstName} ${user.lastName}` : 'Administrador'}
+            </p>
+            <p className="text-xs text-slate-400">Administrador · FlexiCommerce</p>
           </div>
         </div>
       </div>

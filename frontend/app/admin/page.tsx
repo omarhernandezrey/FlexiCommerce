@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useOrdersAdmin } from '@/hooks/useOrdersAdmin';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
-import { ImageUpload } from '@/components/ui/ImageUpload';
+import { LogoCropModal } from '@/components/ui/LogoCropModal';
 import { useToast } from '@/hooks/useToast';
 import apiClient from '@/lib/api-client';
 import Link from 'next/link';
@@ -21,41 +21,43 @@ export default function AdminDashboard() {
   const { products, fetchAll: fetchProducts } = useProducts();
   const { orders, fetchAll: fetchOrders } = useOrdersAdmin();
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [savedLogoUrl, setSavedLogoUrl] = useState<string | null>(null);
+  const [showLogoCrop, setShowLogoCrop] = useState(false);
+  const [storeName, setStoreName] = useState('FlexiCommerce');
   const [primaryColor, setPrimaryColor] = useState('#0F1729');
   const [accentColor, setAccentColor] = useState('#6366F1');
   const [pageSections, setPageSections] = useState<PageSection[]>([
     {
       id: '1',
-      title: 'Hero Slider Section',
+      title: 'Sección Slider Principal',
       icon: 'view_carousel',
-      meta: '3 slides · Auto-play',
+      meta: '3 diapositivas · Reproducción automática',
       enabled: true,
     },
     {
       id: '2',
-      title: 'Featured Collections Grid',
+      title: 'Cuadrícula de Colecciones Destacadas',
       icon: 'grid_view',
-      meta: '8 items · Desktop only',
+      meta: '8 artículos · Solo escritorio',
       enabled: true,
     },
     {
       id: '3',
-      title: 'Promo Banner Bar',
+      title: 'Banner Promocional',
       icon: 'campaign',
-      meta: 'Flash Sale · Visibility off',
+      meta: 'Oferta Flash · Oculto',
       enabled: false,
     },
     {
       id: '4',
-      title: 'Newsletter Subscription',
+      title: 'Suscripción al Boletín',
       icon: 'email',
-      meta: 'Popup + Footer block',
+      meta: 'Popup + Bloque de pie de página',
       enabled: true,
     },
   ]);
-  
+
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
@@ -70,9 +72,21 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchProducts();
     fetchOrders();
+    // Cargar logo y configuración de branding guardada
+    apiClient.get('/api/admin/settings')
+      .then((res) => {
+        const data = (res.data as any)?.data ?? res.data;
+        if (data?.logoUrl) setSavedLogoUrl(data.logoUrl);
+        if (data?.storeName) setStoreName(data.storeName);
+        if (data?.primaryColor) setPrimaryColor(data.primaryColor);
+        if (data?.accentColor) setAccentColor(data.accentColor);
+        if (data?.font) setSelectedFont(data.font);
+        if (typeof data?.maintenanceMode === 'boolean') setMaintenanceMode(data.maintenanceMode);
+      })
+      .catch(() => {});
   }, [fetchProducts, fetchOrders]);
 
-  const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
+  const totalRevenue = orders.reduce((acc, o) => acc + Number(o.total), 0);
   const pendingOrders = orders.filter((o) => o.status === 'pending').length;
   const todayOrders = orders.filter((o) => {
     const today = new Date();
@@ -131,27 +145,31 @@ export default function AdminDashboard() {
       id: `section-${Date.now()}`,
       title: newSectionTitle.trim(),
       icon: icons[pageSections.length % icons.length],
-      meta: 'New section · Not configured',
+      meta: 'Nueva sección · Sin configurar',
       enabled: true,
     };
     setPageSections((prev) => [...prev, newSection]);
     setNewSectionTitle('');
     setAddingSection(false);
-    toast({ message: 'Section added. Click "Full Editor" to configure it.', type: 'success' });
+    toast({ message: 'Sección agregada. Haz clic en "Editor Completo" para configurarla.', type: 'success' });
   };
 
   const handleApplyGlobally = async () => {
     setApplyingGlobally(true);
     try {
-      await apiClient.put('/admin/settings', {
+      const logoToSave = logoPreview || savedLogoUrl || '';
+      await apiClient.put('/api/admin/settings', {
+        storeName,
         primaryColor,
         accentColor,
         font: selectedFont,
         maintenanceMode,
+        logoUrl: logoToSave,
       });
-      toast({ message: 'Branding applied globally', type: 'success' });
+      if (logoPreview) setSavedLogoUrl(logoPreview);
+      toast({ message: 'Marca aplicada globalmente', type: 'success' });
     } catch {
-      toast({ message: 'Failed to apply. Settings saved locally.', type: 'error' });
+      toast({ message: 'Error al aplicar. Configuración guardada localmente.', type: 'error' });
     } finally {
       setApplyingGlobally(false);
     }
@@ -159,28 +177,28 @@ export default function AdminDashboard() {
 
   const stats = [
     {
-      label: 'Total Sales',
-      value: `$${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+      label: 'Ventas Totales',
+      value: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(totalRevenue),
       icon: 'trending_up',
-      change: '+12.5%',
+      change: `${orders.length} órdenes`,
       changePositive: true,
       bg: 'bg-green-50',
       iconColor: 'text-green-600',
     },
     {
-      label: 'Active Stores',
-      value: '42',
-      icon: 'store',
-      change: '+2 this month',
-      changePositive: true,
+      label: 'Productos en Catálogo',
+      value: products.length,
+      icon: 'inventory_2',
+      change: `${products.filter((p: any) => (p.stock ?? 0) === 0).length} sin stock`,
+      changePositive: products.filter((p: any) => (p.stock ?? 0) === 0).length === 0,
       bg: 'bg-blue-50',
       iconColor: 'text-blue-600',
     },
     {
-      label: 'Pending Orders',
-      value: pendingOrders || 156,
+      label: 'Órdenes Pendientes',
+      value: pendingOrders,
       icon: 'pending_actions',
-      change: `${todayOrders} today`,
+      change: `${todayOrders} hoy`,
       changePositive: false,
       bg: 'bg-yellow-50',
       iconColor: 'text-yellow-600',
@@ -192,12 +210,12 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-primary">CMS Dashboard</h1>
-          <p className="text-primary/60 text-sm mt-1">FlexiCommerce control center</p>
+          <h1 className="text-2xl font-extrabold text-primary">Panel de Control CMS</h1>
+          <p className="text-primary/60 text-sm mt-1">Centro de control FlexiCommerce</p>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <div className="size-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-primary/60 font-medium">All systems operational</span>
+          <span className="text-primary/60 font-medium">Todos los sistemas operativos</span>
         </div>
       </div>
 
@@ -236,15 +254,15 @@ export default function AdminDashboard() {
             <div>
               <h2 className="font-extrabold text-primary text-lg flex items-center gap-2">
                 <MaterialIcon name="dashboard_customize" className="text-primary" />
-                Page Builder: Homepage
+                Constructor de Página: Inicio
               </h2>
-              <p className="text-xs text-primary/40 mt-1">Drag sections to reorder • Click to edit</p>
+              <p className="text-xs text-primary/40 mt-1">Arrastra secciones para reordenar • Clic para editar</p>
             </div>
             <Link
               href="/admin/cms"
               className="text-sm font-bold text-primary border border-primary rounded-lg px-4 py-2 hover:bg-primary hover:text-white transition-all duration-200"
             >
-              Full Editor
+              Editor Completo
             </Link>
           </div>
 
@@ -266,11 +284,11 @@ export default function AdminDashboard() {
                     : 'border-primary/5 bg-gray-50 opacity-60'
                 }`}
               >
-                <MaterialIcon 
-                  name="drag_handle" 
+                <MaterialIcon
+                  name="drag_handle"
                   className={`text-2xl flex-shrink-0 transition-colors ${
                     draggedIndex === idx ? 'text-primary/60' : 'text-primary/30 group-hover:text-primary/50'
-                  }`} 
+                  }`}
                 />
                 <div className={`size-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                   section.enabled ? 'bg-primary text-white' : 'bg-primary/20 text-primary/40'
@@ -284,14 +302,14 @@ export default function AdminDashboard() {
                         value={editSectionTitle}
                         onChange={(e) => setEditSectionTitle(e.target.value)}
                         className="w-full px-2 py-1 border border-primary/30 rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="Section title"
+                        placeholder="Título de sección"
                         autoFocus
                       />
                       <input
                         value={editSectionMeta}
                         onChange={(e) => setEditSectionMeta(e.target.value)}
                         className="w-full px-2 py-1 border border-slate-200 rounded text-xs text-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="Meta / description"
+                        placeholder="Meta / descripción"
                       />
                     </div>
                   ) : (
@@ -308,13 +326,13 @@ export default function AdminDashboard() {
                         onClick={handleSaveSection}
                         className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors"
                       >
-                        Save
+                        Guardar
                       </button>
                       <button
                         onClick={() => setEditingSectionId(null)}
                         className="px-3 py-1.5 border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary/5 transition-colors"
                       >
-                        Cancel
+                        Cancelar
                       </button>
                     </>
                   ) : (
@@ -349,11 +367,11 @@ export default function AdminDashboard() {
                   onChange={(e) => setNewSectionTitle(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') setAddingSection(false); }}
                   className="flex-1 px-3 py-1.5 border border-primary/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Section name..."
+                  placeholder="Nombre de sección..."
                   autoFocus
                 />
-                <button onClick={handleAddSection} disabled={!newSectionTitle.trim()} className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors disabled:opacity-40">Add</button>
-                <button onClick={() => { setAddingSection(false); setNewSectionTitle(''); }} className="px-3 py-1.5 border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary/5 transition-colors">Cancel</button>
+                <button onClick={handleAddSection} disabled={!newSectionTitle.trim()} className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors disabled:opacity-40">Agregar</button>
+                <button onClick={() => { setAddingSection(false); setNewSectionTitle(''); }} className="px-3 py-1.5 border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary/5 transition-colors">Cancelar</button>
               </div>
             ) : (
               <button
@@ -361,7 +379,7 @@ export default function AdminDashboard() {
                 className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-primary/20 text-primary/60 rounded-xl hover:border-primary/40 hover:text-primary transition-all text-sm font-bold mt-2 group"
               >
                 <MaterialIcon name="add_circle" className="text-lg group-hover:scale-110 transition-transform" />
-                Add New Section
+                Agregar Nueva Sección
               </button>
             )}
           </div>
@@ -372,24 +390,74 @@ export default function AdminDashboard() {
           <div className="p-6 border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
             <h2 className="font-extrabold text-primary text-lg flex items-center gap-2">
               <MaterialIcon name="palette" className="text-primary" />
-              Store Branding
+              Marca de la Tienda
             </h2>
-            <p className="text-xs text-primary/40 mt-1">Customize your store appearance</p>
+            <p className="text-xs text-primary/40 mt-1">Personaliza la apariencia de tu tienda</p>
           </div>
 
           <div className="p-5 space-y-5">
-            {/* Logo Upload */}
-            <ImageUpload
-              label="Store Logo"
-              placeholder="Drag logo here or click to upload"
-              maxSize={2097152} // 2MB
-              onImageSelect={(file) => setLogoFile(file)}
-              onImagePreview={(preview) => setLogoPreview(preview)}
-            />
+            {/* Nombre de la Tienda */}
+            <div>
+              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-2">Nombre de la Tienda</p>
+              <input
+                type="text"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="Ej: Mi Tienda Online"
+                className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+              />
+              <p className="text-[10px] text-primary/30 mt-1">Se muestra en el navbar del ecommerce</p>
+            </div>
+
+            {/* Logo Upload con Crop */}
+            <div>
+              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Logo de la Tienda</p>
+              {(logoPreview || savedLogoUrl) ? (
+                <div className="rounded-xl border-2 border-primary/20 overflow-hidden bg-slate-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoPreview || savedLogoUrl!}
+                    alt="Logo"
+                    className="w-full h-20 object-contain p-2"
+                  />
+                  <div className="flex border-t border-primary/10">
+                    <button
+                      onClick={() => setShowLogoCrop(true)}
+                      className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <MaterialIcon name="edit" className="text-sm" />
+                      Editar
+                    </button>
+                    <div className="w-px bg-primary/10" />
+                    <button
+                      onClick={() => { setLogoPreview(null); setSavedLogoUrl(null); }}
+                      className="flex-1 py-2 flex items-center justify-center gap-1.5 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <MaterialIcon name="delete" className="text-sm" />
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLogoCrop(true)}
+                  className="w-full border-2 border-dashed border-primary/20 rounded-xl p-5 flex flex-col items-center gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer"
+                >
+                  <MaterialIcon name="add_photo_alternate" className="text-primary/30 text-3xl" />
+                  <p className="text-xs font-bold text-primary/50">Subir y ajustar logo</p>
+                  <p className="text-[10px] text-primary/30">SVG, PNG, JPG · Máx. 3MB</p>
+                </button>
+              )}</div>
+            {showLogoCrop && (
+              <LogoCropModal
+                onClose={() => setShowLogoCrop(false)}
+                onSave={(dataUrl) => { setLogoPreview(dataUrl); setSavedLogoUrl(dataUrl); setShowLogoCrop(false); }}
+              />
+            )}
 
             {/* Primary Color Picker */}
             <div>
-              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Primary Color</p>
+              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Color Primario</p>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -408,7 +476,7 @@ export default function AdminDashboard() {
 
             {/* Accent Color Picker */}
             <div>
-              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Accent Color</p>
+              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Color de Acento</p>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -427,7 +495,7 @@ export default function AdminDashboard() {
 
             {/* Font */}
             <div>
-              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Global Font</p>
+              <p className="text-xs font-bold text-primary/60 uppercase tracking-wider mb-3">Fuente Global</p>
               <select
                 value={selectedFont}
                 onChange={(e) => setSelectedFont(e.target.value)}
@@ -443,8 +511,8 @@ export default function AdminDashboard() {
             {/* Maintenance Mode */}
             <div className="flex items-center justify-between p-3 bg-primary/5 rounded-xl border border-primary/10">
               <div>
-                <p className="text-sm font-bold text-primary">Maintenance Mode</p>
-                <p className="text-xs text-primary/40">Hide store from visitors</p>
+                <p className="text-sm font-bold text-primary">Modo Mantenimiento</p>
+                <p className="text-xs text-primary/40">Ocultar tienda a los visitantes</p>
               </div>
               <button
                 onClick={() => setMaintenanceMode(!maintenanceMode)}
@@ -466,7 +534,7 @@ export default function AdminDashboard() {
               className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {applyingGlobally && <MaterialIcon name="sync" className="text-base animate-spin" />}
-              {applyingGlobally ? 'Applying...' : 'Apply Globally'}
+              {applyingGlobally ? 'Aplicando...' : 'Aplicar Globalmente'}
             </button>
           </div>
         </div>
@@ -482,8 +550,8 @@ export default function AdminDashboard() {
             <MaterialIcon name="inventory_2" className="text-2xl text-orange-600" />
           </div>
           <div>
-            <h2 className="font-extrabold text-primary">Manage Products</h2>
-            <p className="text-sm text-primary/60">{products.length} products in catalog</p>
+            <h2 className="font-extrabold text-primary">Administrar Productos</h2>
+            <p className="text-sm text-primary/60">{products.length} productos en catálogo</p>
           </div>
           <MaterialIcon name="arrow_forward" className="text-primary/30 ml-auto" />
         </Link>
@@ -496,8 +564,8 @@ export default function AdminDashboard() {
             <MaterialIcon name="shopping_cart" className="text-2xl text-blue-600" />
           </div>
           <div>
-            <h2 className="font-extrabold text-primary">View Orders</h2>
-            <p className="text-sm text-primary/60">{orders.length} orders total</p>
+            <h2 className="font-extrabold text-primary">Ver Órdenes</h2>
+            <p className="text-sm text-primary/60">{orders.length} órdenes en total</p>
           </div>
           <MaterialIcon name="arrow_forward" className="text-primary/30 ml-auto" />
         </Link>
@@ -507,15 +575,15 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-primary/10 p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-extrabold text-primary">Recent Orders</h2>
+            <h2 className="font-extrabold text-primary">Órdenes Recientes</h2>
             <Link href="/admin/orders" className="text-sm font-bold text-primary hover:text-primary/70 flex items-center gap-1">
-              View all <MaterialIcon name="arrow_forward" className="text-sm" />
+              Ver todas <MaterialIcon name="arrow_forward" className="text-sm" />
             </Link>
           </div>
           {orders.slice(0, 5).length === 0 ? (
             <div className="text-center py-8">
               <MaterialIcon name="receipt_long" className="text-primary/20 text-4xl mb-3" />
-              <p className="text-primary/40 text-sm">No orders yet</p>
+              <p className="text-primary/40 text-sm">Sin órdenes aún</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -527,7 +595,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="font-bold text-primary text-sm">#{order.id.slice(0, 8)}</p>
                     <p className="text-xs text-primary/40">
-                      {new Date(order.createdAt || '').toLocaleDateString('en-US')}
+                      {new Date(order.createdAt || '').toLocaleDateString('es-CO')}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -536,9 +604,9 @@ export default function AdminDashboard() {
                       order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                       'bg-blue-100 text-blue-700'
                     }`}>
-                      {order.status}
+                      {({'pending': 'Pendiente', 'processing': 'Procesando', 'delivered': 'Entregado', 'cancelled': 'Cancelado', 'shipped': 'Enviado'} as Record<string,string>)[order.status] ?? order.status}
                     </span>
-                    <p className="font-extrabold text-primary text-sm">${Number(order.total).toFixed(2)}</p>
+                    <p className="font-extrabold text-primary text-sm">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(order.total))}</p>
                   </div>
                 </div>
               ))}
@@ -548,15 +616,15 @@ export default function AdminDashboard() {
 
         <div className="bg-white rounded-xl border border-primary/10 p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-extrabold text-primary">Top Products</h2>
+            <h2 className="font-extrabold text-primary">Mejores Productos</h2>
             <Link href="/admin/products" className="text-sm font-bold text-primary hover:text-primary/70 flex items-center gap-1">
-              View all <MaterialIcon name="arrow_forward" className="text-sm" />
+              Ver todos <MaterialIcon name="arrow_forward" className="text-sm" />
             </Link>
           </div>
           {products.slice(0, 5).length === 0 ? (
             <div className="text-center py-8">
               <MaterialIcon name="inventory_2" className="text-primary/20 text-4xl mb-3" />
-              <p className="text-primary/40 text-sm">No products yet</p>
+              <p className="text-primary/40 text-sm">Sin productos aún</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -570,7 +638,7 @@ export default function AdminDashboard() {
                     <p className="font-bold text-primary text-sm">{product.name}</p>
                     <p className="text-xs text-primary/40">Stock: {product.stock}</p>
                   </div>
-                  <p className="font-extrabold text-primary text-sm">${Number(product.price).toFixed(2)}</p>
+                  <p className="font-extrabold text-primary text-sm">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(product.price))}</p>
                 </div>
               ))}
             </div>

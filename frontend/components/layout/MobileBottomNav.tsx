@@ -7,11 +7,11 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { cn } from '@/lib/cn';
 
 const navItems = [
-  { href: '/', icon: 'home', label: 'Home' },
-  { href: '/products', icon: 'grid_view', label: 'Shop' },
-  { href: '/wishlist', icon: 'favorite', label: 'Wishlist' },
-  { href: '/checkout', icon: 'shopping_cart', label: 'Cart' },
-  { href: '/profile', icon: 'person', label: 'Profile' },
+  { href: '/', icon: 'home', label: 'Inicio' },
+  { href: '/products', icon: 'grid_view', label: 'Tienda' },
+  { href: '/wishlist', icon: 'favorite', label: 'Favoritos' },
+  { href: '/checkout', icon: 'shopping_cart', label: 'Carrito' },
+  { href: '/profile', icon: 'person', label: 'Perfil' },
 ];
 
 export function MobileBottomNav() {

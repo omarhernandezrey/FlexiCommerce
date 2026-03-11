@@ -6,6 +6,7 @@ const router = Router();
 const controller = new OrdersController();
 
 router.get('/', authenticate, controller.getAll);
+router.get('/admin/all', authenticate, authorize('ADMIN'), controller.getAllAdmin);
 router.get('/:id', authenticate, controller.getById);
 router.post('/', authenticate, controller.create);
 router.patch('/:id/status', authenticate, authorize('ADMIN'), controller.updateStatus);

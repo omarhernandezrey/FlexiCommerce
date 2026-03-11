@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProductCard } from '@/components/products/ProductCard';
 import { MOCK_PRODUCTS, IMAGES, CATEGORIES } from '@/lib/constants';
+import { useProducts } from '@/hooks/useProducts';
 
 const HERO_SLIDES = [
   {
@@ -27,6 +28,14 @@ const HERO_SLIDES = [
 export default function StorefrontHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
+  const { products: apiProducts, fetchAll } = useProducts();
+
+  useEffect(() => {
+    fetchAll().catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const featuredProducts = apiProducts.length > 0 ? apiProducts.slice(0, 8) : MOCK_PRODUCTS.slice(0, 8);
 
   useEffect(() => {
     if (!autoPlay) return;
@@ -178,8 +187,8 @@ export default function StorefrontHome() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
-          {MOCK_PRODUCTS.slice(0, 8).map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product as any} />
           ))}
         </div>
       </section>

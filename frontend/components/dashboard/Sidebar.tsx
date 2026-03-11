@@ -86,7 +86,7 @@ export function DashboardSidebar() {
           <Link href="/dashboard" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             FlexiCommerce
           </Link>
-          <p className="text-sm text-gray-400 mt-2">Admin Dashboard</p>
+          <p className="text-sm text-gray-400 mt-2">Panel de Administración</p>
         </div>
 
         {/* Navigation */}
@@ -140,7 +140,7 @@ export function DashboardSidebar() {
 export function DashboardHeader() {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-      <h1 className="text-2xl font-bold text-gray-900 hidden lg:block">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900 hidden lg:block">Panel</h1>
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white font-bold">
           A

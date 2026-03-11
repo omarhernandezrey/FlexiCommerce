@@ -70,19 +70,35 @@ export class WompiService {
 
   /**
    * Genera una referencia única para una orden.
-   * Formato: {orderId}-{timestamp_base36}
-   * Permite extraer el orderId del webhook sin almacenamiento extra.
+   * Formato nuevo:  {storeSlug}_{orderId}-{timestamp_base36}
+   * Formato legado: {orderId}-{timestamp_base36}
+   * El storeName se sanitiza a slug alfanumérico (máx 20 chars).
    */
-  buildReference(orderId: string): string {
-    return `${orderId}-${Date.now().toString(36)}`;
+  buildReference(orderId: string, storeName?: string): string {
+    const timestamp = Date.now().toString(36);
+    if (storeName) {
+      const slug = storeName
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // quitar tildes
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')       // solo alfanumérico
+        .slice(0, 20) || 'store';
+      return `${slug}_${orderId}-${timestamp}`;
+    }
+    return `${orderId}-${timestamp}`;
   }
 
   /**
    * Extrae el orderId de una referencia generada por buildReference().
-   * El orderId es un UUID de 36 chars (8-4-4-4-12 + 4 guiones = 32 hex + 4 guiones).
+   * Soporta ambos formatos: con y sin prefijo de tienda.
+   * UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (5 segmentos separados por guión)
    */
   extractOrderId(reference: string): string {
-    // UUID tiene formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (36 chars, 5 partes)
-    return reference.split('-').slice(0, 5).join('-');
+    // Si tiene prefijo de tienda (contiene '_'), quitarlo
+    const withoutPrefix = reference.includes('_')
+      ? reference.substring(reference.indexOf('_') + 1)
+      : reference;
+    // El UUID ocupa los primeros 5 segmentos separados por '-'
+    return withoutPrefix.split('-').slice(0, 5).join('-');
   }
 }

@@ -8,17 +8,17 @@ import { formatCOP } from '@/lib/format';
 
 const SPEC_GROUPS = [
   {
-    label: 'General Info',
+    label: 'Info General',
     rows: [
-      { label: 'Price', key: 'price', format: (v: unknown) => v != null ? formatCOP(Number(v)) : '—' },
-      { label: 'Category', key: 'category', format: (v: unknown) => String(v ?? '—') },
-      { label: 'Rating', key: 'rating', format: (v: unknown) => typeof v === 'number' ? `${v} / 5` : '—' },
+      { label: 'Precio', key: 'price', format: (v: unknown) => v != null ? formatCOP(Number(v)) : '—' },
+      { label: 'Categoría', key: 'category', format: (v: unknown) => String(v ?? '—') },
+      { label: 'Calificación', key: 'rating', format: (v: unknown) => typeof v === 'number' ? `${v} / 5` : '—' },
     ],
   },
   {
-    label: 'Availability',
+    label: 'Disponibilidad',
     rows: [
-      { label: 'In Stock', key: 'stock', format: (v: unknown) => typeof v === 'number' && v > 0 ? 'Yes' : 'No' },
+      { label: 'En Stock', key: 'stock', format: (v: unknown) => typeof v === 'number' && v > 0 ? 'Sí' : 'No' },
     ],
   },
 ];
@@ -33,16 +33,16 @@ export default function ComparePage() {
         <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
           <MaterialIcon name="compare_arrows" className="text-primary text-4xl" />
         </div>
-        <h2 className="text-xl font-extrabold text-primary mb-2">Nothing to Compare</h2>
+        <h2 className="text-xl font-extrabold text-primary mb-2">Nada que Comparar</h2>
         <p className="text-primary/60 text-sm mb-8 text-center max-w-xs">
-          Add products to comparison from the wishlist or product pages
+          Agrega productos a la comparación desde la lista de deseos o las páginas de productos
         </p>
         <Link
           href="/products"
           className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary/90 transition-colors"
         >
           <MaterialIcon name="storefront" className="text-base" />
-          Explore Products
+          Explorar Productos
         </Link>
       </div>
     );
@@ -50,11 +50,11 @@ export default function ComparePage() {
 
   return (
     <div className="spacing-section">
-      {/* Header */}
+      {/* Encabezado */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-primary">Product Comparison</h1>
-          <p className="text-primary/60 text-sm mt-1">{products.length} of 4 products selected</p>
+          <h1 className="text-2xl font-extrabold text-primary">Comparar Productos</h1>
+          <p className="text-primary/60 text-sm mt-1">{products.length} de 4 productos seleccionados</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -66,27 +66,26 @@ export default function ComparePage() {
             }`}
           >
             <MaterialIcon name="compare" className="text-base" />
-            {showOnlyDiff ? 'Show All Specs' : 'Only Differences'}
+            {showOnlyDiff ? 'Mostrar Todo' : 'Solo Diferencias'}
           </button>
           <button
             onClick={() => clearCompare()}
             className="flex items-center gap-2 px-4 py-2 border-2 border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors text-sm"
           >
             <MaterialIcon name="delete_sweep" className="text-base" />
-            Clear All
+            Limpiar Todo
           </button>
         </div>
       </div>
 
-      {/* Comparison Table */}
+      {/* Tabla de Comparación */}
       <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            {/* Header: Product Cards */}
             <thead>
               <tr className="border-b border-primary/10">
                 <th className="text-left p-4 bg-primary/5 w-40 shrink-0">
-                  <span className="text-xs font-bold text-primary/40 uppercase tracking-wider">Specifications</span>
+                  <span className="text-xs font-bold text-primary/40 uppercase tracking-wider">Especificaciones</span>
                 </th>
                 {products.map((product) => (
                   <th key={product.compareId} className="p-4 text-center min-w-[200px] bg-primary/5">
@@ -124,7 +123,6 @@ export default function ComparePage() {
                     </div>
                   </th>
                 ))}
-                {/* Empty slots */}
                 {products.length < 4 &&
                   Array.from({ length: 4 - products.length }).map((_, i) => (
                     <th key={`empty-${i}`} className="p-4 text-center min-w-[200px] bg-primary/5">
@@ -135,18 +133,16 @@ export default function ComparePage() {
                         <div className="size-20 rounded-xl border-2 border-dashed border-primary/20 flex items-center justify-center">
                           <MaterialIcon name="add" className="text-2xl" />
                         </div>
-                        <span className="text-xs font-bold">Add Product</span>
+                        <span className="text-xs font-bold">Agregar Producto</span>
                       </Link>
                     </th>
                   ))}
               </tr>
             </thead>
 
-            {/* Specification Rows */}
             <tbody>
               {SPEC_GROUPS.map((group) => (
                 <>
-                  {/* Group Header */}
                   <tr key={`group-${group.label}`} className="bg-primary/5">
                     <td
                       colSpan={5}
@@ -155,7 +151,6 @@ export default function ComparePage() {
                       {group.label}
                     </td>
                   </tr>
-                  {/* Group Rows */}
                   {group.rows.map((row) => {
                     const values = products.map((p) => row.format(p[row.key as keyof typeof p]));
                     const allSame = values.every((v) => v === values[0]);
@@ -184,7 +179,7 @@ export default function ComparePage() {
                 </>
               ))}
 
-              {/* Buy Now Row */}
+              {/* Fila de Comprar Ahora */}
               <tr>
                 <td className="p-4 bg-primary/[0.02]"></td>
                 {products.map((product) => (
@@ -193,7 +188,7 @@ export default function ComparePage() {
                       href={`/products/${product.id}`}
                       className="inline-block w-full bg-primary text-white font-bold py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors text-sm"
                     >
-                      Buy Now
+                      Comprar Ahora
                     </Link>
                   </td>
                 ))}

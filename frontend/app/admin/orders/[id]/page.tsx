@@ -184,13 +184,18 @@ export default function AdminOrderDetailPage() {
             <div className="bg-white rounded-lg border border-slate-200 p-6">
               <h2 className="text-lg font-semibold text-primary mb-4">Productos de la Orden</h2>
               <div className="space-y-4">
-                {currentOrder.items.map((item, idx) => (
+                {currentOrder.items.map((item: any, idx: number) => (
                   <div key={idx} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
-                    <div>
-                      <p className="font-semibold text-primary">Producto: {item.productId}</p>
-                      <p className="text-sm text-slate-600">Cantidad: {item.quantity}</p>
+                    <div className="flex items-center gap-3">
+                      {item.product?.image && (
+                        <img src={item.product.image} alt={item.product?.name || ''} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                      )}
+                      <div>
+                        <p className="font-semibold text-primary">{item.product?.name || `Producto #${item.productId.slice(0, 8)}`}</p>
+                        <p className="text-sm text-slate-600">Cantidad: {item.quantity} × {formatCOP(Number(item.price))}</p>
+                      </div>
                     </div>
-                    <p className="font-bold text-primary">{formatCOP(item.price * item.quantity)}</p>
+                    <p className="font-bold text-primary">{formatCOP(Number(item.price) * item.quantity)}</p>
                   </div>
                 ))}
               </div>
@@ -205,15 +210,29 @@ export default function AdminOrderDetailPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <p className="text-slate-600">Subtotal</p>
-                  <p className="font-semibold text-primary">{formatCOP(currentOrder.total)}</p>
+                  <p className="font-semibold text-primary">
+                    {formatCOP((currentOrder as any).items?.reduce((acc: number, i: any) => acc + Number(i.price) * i.quantity, 0) ?? 0)}
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <p className="text-slate-600">Envío</p>
-                  <p className="font-semibold text-primary">Gratis</p>
+                {Number((currentOrder as any).shippingCost) > 0 && (
+                  <div className="flex justify-between">
+                    <p className="text-slate-600">Envío</p>
+                    <p className="font-semibold text-primary">{formatCOP(Number((currentOrder as any).shippingCost))}</p>
+                  </div>
+                )}
+                {Number((currentOrder as any).shippingCost) === 0 && (
+                  <div className="flex justify-between">
+                    <p className="text-slate-600">Envío</p>
+                    <p className="font-semibold text-green-600">Gratis</p>
+                  </div>
+                )}
+                <div className="flex justify-between text-xs text-slate-400">
+                  <p>IVA (19%)</p>
+                  <p>Incluido en total</p>
                 </div>
                 <div className="border-t border-slate-200 pt-3 flex justify-between">
                   <p className="font-semibold text-slate-700">Total</p>
-                  <p className="text-2xl font-bold text-primary">{formatCOP(currentOrder.total)}</p>
+                  <p className="text-2xl font-bold text-primary">{formatCOP(Number(currentOrder.total))}</p>
                 </div>
               </div>
             </div>
@@ -222,14 +241,28 @@ export default function AdminOrderDetailPage() {
             <div className="bg-white rounded-lg border border-slate-200 p-6">
               <h2 className="text-lg font-semibold text-primary mb-4">Detalles</h2>
               <div className="space-y-3 text-sm">
-                <div>
-                  <p className="text-slate-600">Usuario</p>
-                  <p className="font-semibold text-primary">{currentOrder.userId}</p>
-                </div>
+                {(currentOrder as any).shippingAddress && (
+                  <div>
+                    <p className="text-slate-600">Dirección de Envío</p>
+                    <p className="font-semibold text-primary text-xs leading-relaxed">
+                      {(() => {
+                        const addr = (currentOrder as any).shippingAddress;
+                        if (typeof addr === 'string') return addr;
+                        return `${addr.firstName || ''} ${addr.lastName || ''}, ${addr.address || ''}, ${addr.city || ''}`.trim().replace(/^,\s*|,\s*$/g, '');
+                      })()}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <p className="text-slate-600">Método de Pago</p>
                   <p className="font-semibold text-primary">
-                    {currentOrder.paymentMethod || 'No especificado'}
+                    {(currentOrder as any).paymentMethod || 'No especificado'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-600">Método de Envío</p>
+                  <p className="font-semibold text-primary capitalize">
+                    {(currentOrder as any).shippingMethod || 'Estándar'}
                   </p>
                 </div>
                 <div>

@@ -48,7 +48,7 @@ export const useOrders = () => {
     }
   }, []);
 
-  const create = useCallback(async (orderData: Partial<Order>) => {
+  const create = useCallback(async (orderData: Partial<Order> & { discount?: number }) => {
     try {
       setLoading(true);
       setError(null);

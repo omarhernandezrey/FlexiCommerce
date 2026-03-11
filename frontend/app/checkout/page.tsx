@@ -13,6 +13,7 @@ import { useWompiCheckout } from '@/hooks/useWompiCheckout';
 import apiClient from '@/lib/api-client';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import { formatCOP } from '@/lib/format';
+import { useAuthStore } from '@/store/auth';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function CheckoutPage() {
   const { create } = useOrders();
   const { toast } = useToast();
   const { openCheckout } = useWompiCheckout();
+  const logout = useAuthStore((s) => s.logout);
 
   // If no items, redirect to cart
   useEffect(() => {
@@ -72,10 +74,15 @@ export default function CheckoutPage() {
           lastName: shippingData.lastName,
           email: shippingData.email,
           phone: shippingData.phone,
-          address: `${shippingData.street}, ${shippingData.city}`,
+          address: shippingData.street,
+          city: shippingData.city,
+          state: shippingData.state,
+          zipCode: shippingData.zipCode,
+          country: shippingData.country || 'Colombia',
         },
         shippingMethod,
         shippingCost,
+        discount: promoDiscount,
       });
 
       // 2. Abrir el widget de Wompi con el orderId y los datos del cliente
@@ -85,6 +92,9 @@ export default function CheckoutPage() {
         customerName: `${shippingData.firstName} ${shippingData.lastName}`,
       });
 
+      // El widget abrió correctamente — desbloquear el botón
+      setIsCreatingOrder(false);
+
     } catch (error) {
       const axiosError = error as { response?: { data?: { error?: string; message?: string } }; message?: string };
       const backendMsg =
@@ -92,6 +102,18 @@ export default function CheckoutPage() {
         axiosError?.response?.data?.message ||
         axiosError?.message ||
         'Error al iniciar el pago';
+
+      // Sesión desactualizada (re-seed de BD) → cerrar sesión automáticamente
+      if (backendMsg.includes('sesión está desactualizada')) {
+        toast({ message: 'Tu sesión expiró. Cerrando sesión...', type: 'error' });
+        setTimeout(() => {
+          logout();
+          document.cookie = 'auth-token=; path=/; max-age=0; samesite=lax';
+          localStorage.removeItem('auth-store');
+          router.push('/');
+        }, 1500);
+        return;
+      }
 
       // Si el producto no existe en la BD, el carrito está desactualizado
       const message = backendMsg.includes('no encontrado')
@@ -101,7 +123,6 @@ export default function CheckoutPage() {
       toast({ message, type: 'error' });
       setIsCreatingOrder(false);
     }
-    // No hacer setIsCreatingOrder(false) en el finally — el widget toma control
   };
 
   const handleApplyPromo = async () => {
@@ -148,7 +169,7 @@ export default function CheckoutPage() {
 
   const subtotal = getTotalPrice();
   const shippingCost = shippingMethod === 'express' ? 15000 : 0;
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.19;
   const total = subtotal + shippingCost + tax - promoDiscount;
 
   return (
@@ -212,9 +233,8 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form */}
             <div className="lg:col-span-2 spacing-section">
-              {currentStep === 0 && (
+              {currentStep === 0 && !showShippingMethod && (
                 <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
-                  {/* Section Number */}
                   <div className="flex items-center gap-4 spacing-header">
                     <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
                       1
@@ -224,83 +244,105 @@ export default function CheckoutPage() {
                   <ShippingForm
                     onNext={handleShippingNext}
                     initialData={shippingData || undefined}
+                    submitLabel="Confirmar dirección"
                   />
+                </div>
+              )}
 
-                  {/* Shipping Method — appears after address is filled */}
-                  {showShippingMethod && (
-                    <div className="mt-8 pt-6 border-t border-primary/10">
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
-                          2
+              {currentStep === 0 && showShippingMethod && (
+                <div className="space-y-4">
+                  {/* Address summary */}
+                  <div className="bg-white rounded-xl border border-primary/10 p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="size-8 bg-green-500 text-white rounded-full flex items-center justify-center shrink-0">
+                          <MaterialIcon name="check" className="text-base" />
                         </div>
-                        <h2 className="text-xl font-extrabold text-primary">Método de Envío</h2>
+                        <div>
+                          <p className="text-sm font-extrabold text-primary">Dirección confirmada</p>
+                          {shippingData && (
+                            <p className="text-xs text-primary/50 mt-0.5">
+                              {shippingData.firstName} {shippingData.lastName} · {shippingData.street}, {shippingData.city}
+                            </p>
+                          )}
+                        </div>
                       </div>
-
-                      <div className="space-y-3 mb-6">
-                        {/* Standard */}
-                        <button
-                          type="button"
-                          onClick={() => setShippingMethod('standard')}
-                          className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                            shippingMethod === 'standard'
-                              ? 'border-primary bg-primary/5'
-                              : 'border-primary/10 hover:border-primary/30'
-                          }`}
-                        >
-                          <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            shippingMethod === 'standard' ? 'border-primary' : 'border-primary/20'
-                          }`}>
-                            {shippingMethod === 'standard' && (
-                              <div className="size-2.5 rounded-full bg-primary" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <p className="font-bold text-primary text-sm">Envío Estándar</p>
-                              <span className="text-sm font-extrabold text-green-600">GRATIS</span>
-                            </div>
-                            <p className="text-xs text-primary/50 mt-0.5">5–7 días hábiles</p>
-                          </div>
-                          <MaterialIcon name="local_shipping" className="text-primary/40 text-xl" />
-                        </button>
-
-                        {/* Express */}
-                        <button
-                          type="button"
-                          onClick={() => setShippingMethod('express')}
-                          className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                            shippingMethod === 'express'
-                              ? 'border-primary bg-primary/5'
-                              : 'border-primary/10 hover:border-primary/30'
-                          }`}
-                        >
-                          <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            shippingMethod === 'express' ? 'border-primary' : 'border-primary/20'
-                          }`}>
-                            {shippingMethod === 'express' && (
-                              <div className="size-2.5 rounded-full bg-primary" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <p className="font-bold text-primary text-sm">Envío Express</p>
-                              <span className="text-sm font-extrabold text-primary">$ 15.000</span>
-                            </div>
-                            <p className="text-xs text-primary/50 mt-0.5">2–3 días hábiles</p>
-                          </div>
-                          <MaterialIcon name="bolt" className="text-primary/40 text-xl" />
-                        </button>
-                      </div>
-
                       <button
-                        onClick={handleContinueToPayment}
-                        className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        onClick={() => setShowShippingMethod(false)}
+                        className="text-xs text-primary/60 hover:text-primary font-semibold transition-colors"
                       >
-                        Continuar al Pago
-                        <MaterialIcon name="arrow_forward" />
+                        Editar
                       </button>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Shipping method */}
+                  <div className="bg-white rounded-xl border border-primary/10 p-6 md:p-8">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="size-10 bg-primary text-white rounded-full flex items-center justify-center font-extrabold text-sm shrink-0">
+                        2
+                      </div>
+                      <h2 className="text-xl font-extrabold text-primary">Método de Envío</h2>
+                    </div>
+
+                    <div className="space-y-3 mb-8">
+                      <button
+                        type="button"
+                        onClick={() => setShippingMethod('standard')}
+                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                          shippingMethod === 'standard'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-primary/10 hover:border-primary/30'
+                        }`}
+                      >
+                        <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          shippingMethod === 'standard' ? 'border-primary' : 'border-primary/20'
+                        }`}>
+                          {shippingMethod === 'standard' && <div className="size-2.5 rounded-full bg-primary" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-primary text-sm">Envío Estándar</p>
+                            <span className="text-sm font-extrabold text-green-600">GRATIS</span>
+                          </div>
+                          <p className="text-xs text-primary/50 mt-0.5">5–7 días hábiles</p>
+                        </div>
+                        <MaterialIcon name="local_shipping" className="text-primary/40 text-xl" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShippingMethod('express')}
+                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                          shippingMethod === 'express'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-primary/10 hover:border-primary/30'
+                        }`}
+                      >
+                        <div className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          shippingMethod === 'express' ? 'border-primary' : 'border-primary/20'
+                        }`}>
+                          {shippingMethod === 'express' && <div className="size-2.5 rounded-full bg-primary" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-primary text-sm">Envío Express</p>
+                            <span className="text-sm font-extrabold text-primary">$ 15.000</span>
+                          </div>
+                          <p className="text-xs text-primary/50 mt-0.5">2–3 días hábiles</p>
+                        </div>
+                        <MaterialIcon name="bolt" className="text-primary/40 text-xl" />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleContinueToPayment}
+                      className="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-base"
+                    >
+                      Continuar al Pago
+                      <MaterialIcon name="arrow_forward" />
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -408,6 +450,10 @@ export default function CheckoutPage() {
                   <p className="text-center text-xs text-primary/40 mt-4">
                     Tarjeta · PSE · Nequi · Daviplata · Bancolombia — procesado por Wompi
                   </p>
+                  {/* Aviso si el modal no abre (cuenta en revisión) */}
+                  <p className="text-center text-xs text-primary/30 mt-2">
+                    Si la ventana de pago no aparece, es posible que la cuenta de Wompi aún esté en proceso de activación.
+                  </p>
                 </div>
               )}
 
@@ -512,7 +558,7 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <div className="flex justify-between text-primary/60">
-                    <span>Impuesto (8%)</span>
+                    <span>IVA (19%)</span>
                     <span>{formatCOP(tax)}</span>
                   </div>
                   {promoDiscount > 0 && (

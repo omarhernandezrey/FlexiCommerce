@@ -17,7 +17,6 @@ export default function WishlistPage() {
   const [alertsEnabled, setAlertsEnabled] = useState<Record<string, boolean>>({});
   const [alertTargets, setAlertTargets] = useState<Record<string, number>>({});
 
-  // Load alerts from localStorage on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem('priceAlerts');
@@ -27,7 +26,7 @@ export default function WishlistPage() {
         setAlertTargets(targets || {});
       }
     } catch {
-      // ignore
+      // ignorar
     }
   }, []);
 
@@ -64,12 +63,12 @@ export default function WishlistPage() {
   const [shareToast, setShareToast] = useState('');
   const handleShareList = async () => {
     const url = window.location.href;
-    const text = `Check out my wishlist on FlexiCommerce! ${url}`;
+    const text = `¡Mira mi lista de deseos en FlexiCommerce! ${url}`;
     if (navigator.share) {
-      await navigator.share({ title: 'My Wishlist', text, url }).catch(() => {});
+      await navigator.share({ title: 'Mi Lista de Deseos', text, url }).catch(() => {});
     } else {
       await navigator.clipboard.writeText(url).catch(() => {});
-      setShareToast('Link copied to clipboard!');
+      setShareToast('¡Enlace copiado al portapapeles!');
       setTimeout(() => setShareToast(''), 2500);
     }
   };
@@ -109,16 +108,16 @@ export default function WishlistPage() {
         <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
           <MaterialIcon name="heart_broken" className="text-primary text-4xl" />
         </div>
-        <h2 className="text-xl font-extrabold text-primary mb-2">Your wishlist is empty</h2>
+        <h2 className="text-xl font-extrabold text-primary mb-2">Tu lista de deseos está vacía</h2>
         <p className="text-primary/60 text-sm mb-8 text-center max-w-xs">
-          Save your favorite products to access them easily later
+          Guarda tus productos favoritos para acceder a ellos fácilmente
         </p>
         <Link
           href="/products"
           className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary/90 transition-colors"
         >
           <MaterialIcon name="storefront" className="text-base" />
-          Explore Products
+          Explorar Productos
         </Link>
       </div>
     );
@@ -133,11 +132,11 @@ export default function WishlistPage() {
 
   return (
     <div className="spacing-section">
-      {/* Page Header */}
+      {/* Encabezado */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-primary">My Collections</h1>
-          <p className="text-primary/60 text-sm mt-1">{items.length} items saved</p>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-primary">Mis Colecciones</h1>
+          <p className="text-primary/60 text-sm mt-1">{items.length} artículos guardados</p>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <button
@@ -145,7 +144,7 @@ export default function WishlistPage() {
             className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-primary/10 rounded-lg text-sm font-bold text-primary hover:bg-primary/5 transition-colors"
           >
             <MaterialIcon name={shareToast ? 'check' : 'share'} className="text-base" />
-            {shareToast || 'Share List'}
+            {shareToast || 'Compartir Lista'}
           </button>
           {compareItems.length > 0 && (
             <button
@@ -153,19 +152,19 @@ export default function WishlistPage() {
               className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors text-sm"
             >
               <MaterialIcon name="compare_arrows" className="text-base" />
-              Compare ({compareItems.length})
+              Comparar ({compareItems.length})
             </button>
           )}
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Tarjetas de Estadísticas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 spacing-header">
         {[
-          { label: 'Total Items', value: stats.total, icon: 'favorite' },
-          { label: 'Min Price', value: formatCOP(stats.minPrice), icon: 'arrow_downward' },
-          { label: 'Max Price', value: formatCOP(stats.maxPrice), icon: 'arrow_upward' },
-          { label: 'Total Value', value: formatCOP(stats.totalValue), icon: 'account_balance_wallet' },
+          { label: 'Total de Artículos', value: stats.total, icon: 'favorite' },
+          { label: 'Precio Mínimo', value: formatCOP(stats.minPrice), icon: 'arrow_downward' },
+          { label: 'Precio Máximo', value: formatCOP(stats.maxPrice), icon: 'arrow_upward' },
+          { label: 'Valor Total', value: formatCOP(stats.totalValue), icon: 'account_balance_wallet' },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-primary/10 p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -177,7 +176,7 @@ export default function WishlistPage() {
         ))}
       </div>
 
-      {/* Tabs */}
+      {/* Pestañas */}
       <div className="flex border-b border-primary/10 overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('wishlist')}
@@ -188,7 +187,7 @@ export default function WishlistPage() {
           }`}
         >
           <MaterialIcon name="favorite" className="text-base" />
-          Wishlist ({items.length})
+          Lista de Deseos ({items.length})
         </button>
         <button
           onClick={() => setActiveTab('compare')}
@@ -214,7 +213,7 @@ export default function WishlistPage() {
         </button>
       </div>
 
-      {/* Wishlist Grid */}
+      {/* Cuadrícula de Lista de Deseos */}
       {activeTab === 'wishlist' && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -223,7 +222,7 @@ export default function WishlistPage() {
                 key={item.id}
                 className="group bg-white rounded-xl border border-primary/5 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col"
               >
-                {/* Image */}
+                {/* Imagen */}
                 <div className="relative aspect-square overflow-hidden bg-gray-50">
                   {item.image ? (
                     <img
@@ -236,22 +235,20 @@ export default function WishlistPage() {
                       <MaterialIcon name="image_not_supported" className="text-primary/20 text-4xl" />
                     </div>
                   )}
-                  {/* Remove/Favorite Button */}
                   <button
                     onClick={() => removeFromWishlist(item.id, item.productName)}
                     className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-red-500 hover:bg-white transition-all shadow-sm"
                   >
                     <MaterialIcon name="favorite" filled className="text-base" />
                   </button>
-                  {/* In Stock Badge */}
                   <div className="absolute bottom-3 left-3 flex gap-2">
                     <span className="px-2 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded">
-                      In Stock
+                      En Stock
                     </span>
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Contenido */}
                 <div className="p-5 flex flex-col flex-1">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-primary/40 mb-1">
                     {item.category}
@@ -269,7 +266,7 @@ export default function WishlistPage() {
                       className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all"
                     >
                       <MaterialIcon name="shopping_cart" className="text-sm" />
-                      Quick Add
+                      Agregar rápido
                     </Link>
                     <label className="flex items-center justify-center gap-2 w-full py-2 border border-primary/10 rounded-lg text-xs font-semibold text-primary/60 cursor-pointer hover:bg-gray-50 transition-all">
                       <input
@@ -278,7 +275,7 @@ export default function WishlistPage() {
                         onChange={() => toggleCompare(item.id)}
                         className="rounded border-primary/20 text-primary focus:ring-primary/20 size-4"
                       />
-                      Add to Compare
+                      Agregar a Comparar
                     </label>
                   </div>
                 </div>
@@ -286,34 +283,34 @@ export default function WishlistPage() {
             ))}
           </div>
 
-          {/* Clear All */}
+          {/* Limpiar Todo */}
           <div className="flex justify-center pt-4">
             <button
               onClick={() => clearWishlist()}
               className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors text-sm"
             >
               <MaterialIcon name="delete_sweep" className="text-base" />
-              Clear Wishlist
+              Limpiar Lista
             </button>
           </div>
         </>
       )}
 
-      {/* Specification Matrix Tab */}
+      {/* Pestaña de Comparación */}
       {activeTab === 'compare' && (
         <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
           {compareItems.length === 0 ? (
             <div className="py-16 text-center">
               <MaterialIcon name="grid_view" className="text-primary/20 text-5xl mb-4" />
-              <p className="font-bold text-primary mb-2">No items selected for comparison</p>
+              <p className="font-bold text-primary mb-2">Ningún artículo seleccionado para comparar</p>
               <p className="text-primary/60 text-sm mb-6">
-                Select items from your wishlist to compare specifications
+                Selecciona artículos de tu lista de deseos para comparar especificaciones
               </p>
               <button
                 onClick={() => setActiveTab('wishlist')}
                 className="bg-primary text-white font-bold px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors text-sm"
               >
-                Go to Wishlist
+                Ir a Lista de Deseos
               </button>
             </div>
           ) : (
@@ -322,7 +319,7 @@ export default function WishlistPage() {
                 <thead>
                   <tr className="border-b border-primary/10">
                     <th className="text-left p-4 bg-primary/5 w-40">
-                      <span className="text-xs font-bold text-primary/40 uppercase tracking-wider">Feature</span>
+                      <span className="text-xs font-bold text-primary/40 uppercase tracking-wider">Característica</span>
                     </th>
                     {items
                       .filter((item) => compareItems.includes(item.id))
@@ -345,15 +342,14 @@ export default function WishlistPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Core Performance Group */}
                   <tr className="bg-primary/5">
                     <td colSpan={compareItems.length + 1} className="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-primary/60">
-                      Core Info
+                      Info General
                     </td>
                   </tr>
                   {[
-                    { label: 'Price', key: 'price' as const, format: (v: number | string) => typeof v === 'number' ? formatCOP(v) : String(v) },
-                    { label: 'Category', key: 'category' as const, format: (v: number | string) => String(v) },
+                    { label: 'Precio', key: 'price' as const, format: (v: number | string) => typeof v === 'number' ? formatCOP(v) : String(v) },
+                    { label: 'Categoría', key: 'category' as const, format: (v: number | string) => String(v) },
                   ].map((row) => (
                     <tr key={row.label} className="border-b border-primary/5">
                       <td className="p-4 text-sm font-bold text-primary/60 bg-primary/[0.02]">{row.label}</td>
@@ -366,25 +362,23 @@ export default function WishlistPage() {
                         ))}
                     </tr>
                   ))}
-                  {/* Availability Group */}
                   <tr className="bg-primary/5">
                     <td colSpan={compareItems.length + 1} className="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-primary/60">
-                      Availability
+                      Disponibilidad
                     </td>
                   </tr>
                   <tr className="border-b border-primary/5">
-                    <td className="p-4 text-sm font-bold text-primary/60 bg-primary/[0.02]">In Stock</td>
+                    <td className="p-4 text-sm font-bold text-primary/60 bg-primary/[0.02]">En Stock</td>
                     {items
                       .filter((item) => compareItems.includes(item.id))
                       .map((item) => (
                         <td key={item.id} className="p-4 text-center">
                           <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                            Available
+                            Disponible
                           </span>
                         </td>
                       ))}
                   </tr>
-                  {/* Buy Now Row */}
                   <tr>
                     <td className="p-4 bg-primary/[0.02]"></td>
                     {items
@@ -395,7 +389,7 @@ export default function WishlistPage() {
                             href={`/products/${item.productId}`}
                             className="block bg-primary text-white font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors text-sm"
                           >
-                            Buy Now
+                            Comprar Ahora
                           </Link>
                         </td>
                       ))}
@@ -407,29 +401,27 @@ export default function WishlistPage() {
         </div>
       )}
 
-      {/* Price Alerts Tab */}
+      {/* Pestaña de Alertas de Precio */}
       {activeTab === 'alerts' && (
         <div className="spacing-section">
-          {/* Header */}
           <div className="bg-primary/5 rounded-xl border border-primary/10 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="size-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
               <MaterialIcon name="notifications_active" className="text-primary text-2xl" />
             </div>
             <div className="flex-1">
-              <h3 className="font-extrabold text-primary">Price Drop Alerts</h3>
+              <h3 className="font-extrabold text-primary">Alertas de Bajada de Precio</h3>
               <p className="text-sm text-primary/60 mt-0.5">
-                Get notified by email when the price drops on your saved items.
+                Recibe notificaciones por correo cuando baje el precio de tus artículos guardados.
               </p>
             </div>
             <button
               onClick={handleEnableAllAlerts}
               className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap"
             >
-              {Object.values(alertsEnabled).every(Boolean) && items.length > 0 ? 'All Alerts Active' : 'Enable All Alerts'}
+              {Object.values(alertsEnabled).every(Boolean) && items.length > 0 ? 'Todas las Alertas Activas' : 'Activar Todas las Alertas'}
             </button>
           </div>
 
-          {/* Items list */}
           <div className="bg-white rounded-xl border border-primary/10 overflow-hidden">
             {items.map((item, idx) => (
               <div
@@ -438,7 +430,6 @@ export default function WishlistPage() {
                   idx !== items.length - 1 ? 'border-b border-primary/5' : ''
                 }`}
               >
-                {/* Image */}
                 <div className="size-14 rounded-lg overflow-hidden border border-primary/10 shrink-0">
                   {item.image ? (
                     <img src={item.image} alt={item.productName} className="w-full h-full object-cover" />
@@ -449,19 +440,17 @@ export default function WishlistPage() {
                   )}
                 </div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-primary line-clamp-1">{item.productName}</p>
                   <p className="text-xs text-primary/40 mt-0.5">{item.category}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-base font-extrabold text-primary">{formatCOP(item.price)}</p>
-                    <span className="text-[10px] text-primary/40 font-medium">Current price</span>
+                    <span className="text-[10px] text-primary/40 font-medium">Precio actual</span>
                   </div>
                 </div>
 
-                {/* Target Price Input */}
                 <div className="hidden sm:flex items-center gap-2">
-                  <span className="text-xs font-bold text-primary/40">Alert when below</span>
+                  <span className="text-xs font-bold text-primary/40">Alertar cuando baje de</span>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm">$</span>
                     <input
@@ -473,7 +462,6 @@ export default function WishlistPage() {
                   </div>
                 </div>
 
-                {/* Toggle */}
                 <button
                   onClick={() => handleSetAlert(item.id, alertTargets[item.id] ?? parseFloat((Number(item.price) * 0.9).toFixed(0)))}
                   className={`flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
@@ -483,23 +471,22 @@ export default function WishlistPage() {
                   }`}
                 >
                   <MaterialIcon name={alertsEnabled[item.id] ? 'notifications_active' : 'notifications'} className="text-sm" />
-                  {alertsEnabled[item.id] ? 'Alert On' : 'Set Alert'}
+                  {alertsEnabled[item.id] ? 'Alerta Activa' : 'Activar Alerta'}
                 </button>
               </div>
             ))}
           </div>
 
-          {/* Info Banner */}
           <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
             <MaterialIcon name="info" className="text-blue-500 text-base mt-0.5 shrink-0" />
             <p className="text-xs text-blue-700 font-medium">
-              Price alerts are sent to your registered email. You can disable them at any time from your notification settings.
+              Las alertas de precio se envían a tu correo registrado. Puedes desactivarlas en cualquier momento desde la configuración de notificaciones.
             </p>
           </div>
         </div>
       )}
 
-      {/* Mobile Compare Drawer */}
+      {/* Cajón móvil de comparación */}
       {compareItems.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-primary/10 p-4 flex items-center justify-between shadow-xl z-40 lg:hidden">
           <div className="flex items-center gap-2">
@@ -510,13 +497,13 @@ export default function WishlistPage() {
                   <img src={item.image || ''} alt={item.productName} className="w-full h-full object-cover" />
                 </div>
               ))}
-            <span className="text-sm font-bold text-primary">{compareItems.length} selected</span>
+            <span className="text-sm font-bold text-primary">{compareItems.length} seleccionados</span>
           </div>
           <button
             onClick={() => setActiveTab('compare')}
             className="bg-primary text-white font-bold px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm"
           >
-            Compare
+            Comparar
           </button>
         </div>
       )}

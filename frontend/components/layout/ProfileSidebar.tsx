@@ -10,12 +10,12 @@ import { IMAGES } from '@/lib/constants';
 import { cn } from '@/lib/cn';
 
 const navItems = [
-  { href: '/profile', icon: 'person', label: 'My Profile' },
-  { href: '/orders', icon: 'shopping_bag', label: 'My Orders' },
-  { href: '/addresses', icon: 'location_on', label: 'Addresses' },
-  { href: '/payment-methods', icon: 'credit_card', label: 'Payment Methods' },
-  { href: '/wishlist', icon: 'favorite', label: 'Wishlist' },
-  { href: '/compare', icon: 'compare_arrows', label: 'Compare' },
+  { href: '/profile', icon: 'person', label: 'Mi Perfil' },
+  { href: '/orders', icon: 'shopping_bag', label: 'Mis Pedidos' },
+  { href: '/addresses', icon: 'location_on', label: 'Direcciones' },
+  { href: '/payment-methods', icon: 'credit_card', label: 'Métodos de Pago' },
+  { href: '/wishlist', icon: 'favorite', label: 'Lista de Deseos' },
+  { href: '/compare', icon: 'compare_arrows', label: 'Comparar' },
 ];
 
 export function ProfileSidebar() {
@@ -27,19 +27,21 @@ export function ProfileSidebar() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/auth');
     } catch {
-      router.push('/auth');
+      // continuar aunque falle el endpoint
     }
+    router.push('/');
   };
 
   return (
     <aside className="flex flex-col gap-3 sticky top-24">
-      {/* Avatar Card */}
+      {/* Tarjeta de Avatar */}
       <div className="bg-white rounded-xl border border-primary/10 p-5 text-center">
         <div className="relative w-fit mx-auto mb-3">
           <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/10 mx-auto">
-            {user?.firstName ? (
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.firstName} className="w-full h-full object-cover" />
+            ) : user?.firstName ? (
               <div className="w-full h-full bg-primary/10 flex items-center justify-center">
                 <span className="text-2xl font-bold text-primary">
                   {user.firstName.charAt(0).toUpperCase()}
@@ -52,15 +54,15 @@ export function ProfileSidebar() {
           <div className="absolute bottom-0 right-0 size-5 bg-green-500 rounded-full border-2 border-white" />
         </div>
         <p className="font-extrabold text-primary text-sm">
-          {user ? `${user.firstName} ${user.lastName}` : 'Guest'}
+          {user ? `${user.firstName} ${user.lastName}` : 'Invitado'}
         </p>
         <p className="text-xs text-primary/40 mt-0.5 truncate">{user?.email}</p>
         <span className="inline-block mt-2 bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-          Premium Member
+          Miembro Premium
         </span>
       </div>
 
-      {/* Navigation */}
+      {/* Navegación */}
       <nav className="bg-white rounded-xl border border-primary/10 overflow-hidden">
         {navItems.map((item, idx) => {
           const isActive = pathname === item.href;
@@ -86,13 +88,13 @@ export function ProfileSidebar() {
         })}
       </nav>
 
-      {/* Logout */}
+      {/* Cerrar Sesión */}
       <button
         onClick={handleLogout}
         className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-primary/10 text-sm font-semibold text-red-500 hover:bg-red-50 hover:border-red-200 transition-all w-full"
       >
         <MaterialIcon name="logout" className="text-base" />
-        Sign Out
+        Cerrar Sesión
       </button>
     </aside>
   );
