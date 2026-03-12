@@ -191,7 +191,7 @@ export default function AdminOrderDetailPage() {
                         <img src={item.product.image} alt={item.product?.name || ''} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                       )}
                       <div>
-                        <p className="font-semibold text-primary">{item.product?.name || `Producto #${item.productId.slice(0, 8)}`}</p>
+                        <p className="font-semibold text-primary">{item.product?.name || `Producto #${item.productId?.slice(0, 8) ?? 'N/A'}`}</p>
                         <p className="text-sm text-slate-600">Cantidad: {item.quantity} × {formatCOP(Number(item.price))}</p>
                       </div>
                     </div>

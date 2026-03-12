@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import { useToast } from '@/hooks/useToast';
@@ -34,16 +34,35 @@ export default function AdminCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loadError, setLoadError] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/categories');
-      setCategories(res.data.categories || res.data || []);
+      setLoadError(false);
+      const res = await apiClient.get('/api/categories');
+      const raw = res.data?.data ?? res.data ?? [];
+      const arr = Array.isArray(raw) ? raw : [];
+      // Aplanar: el backend retorna solo raices con children anidados
+      const flat: Category[] = [];
+      for (const cat of arr) {
+        const { children, _count, ...rest } = cat;
+        flat.push({ ...rest, productCount: _count?.products ?? rest.productCount });
+        if (Array.isArray(children)) {
+          for (const child of children) {
+            const { _count: childCount, ...childRest } = child;
+            flat.push({ ...childRest, productCount: childCount?.products ?? childRest.productCount });
+          }
+        }
+      }
+      setCategories(flat);
     } catch {
       setCategories([]);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -108,10 +127,10 @@ export default function AdminCategoriesPage() {
       };
 
       if (editingId) {
-        await apiClient.put(`/categories/${editingId}`, payload);
+        await apiClient.put(`/api/categories/${editingId}`, payload);
         toast({ message: 'Categoría actualizada exitosamente', type: 'success' });
       } else {
-        await apiClient.post('/categories', payload);
+        await apiClient.post('/api/categories', payload);
         toast({ message: 'Categoría creada exitosamente', type: 'success' });
       }
       await fetchCategories();
@@ -123,29 +142,39 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`¿Eliminar la categoría "${name}"? Esto puede afectar los productos asociados.`)) return;
+  const requestDelete = (id: string, name: string) => {
+    setConfirmDelete({ id, name });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
+    const { id } = confirmDelete;
+    setConfirmDelete(null);
     setDeletingId(id);
     try {
-      await apiClient.delete(`/categories/${id}`);
+      await apiClient.delete(`/api/categories/${id}`);
       setCategories((prev) => prev.filter((c) => c.id !== id));
       toast({ message: 'Categoría eliminada', type: 'success' });
-    } catch {
-      toast({ message: 'Error al eliminar la categoría', type: 'error' });
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Error al eliminar la categoría';
+      toast({ message: msg, type: 'error' });
     } finally {
       setDeletingId(null);
     }
   };
 
   const handleToggleActive = async (cat: Category) => {
+    setTogglingId(cat.id);
     try {
-      await apiClient.put(`/categories/${cat.id}`, { ...cat, isActive: !cat.isActive });
+      await apiClient.put(`/api/categories/${cat.id}`, { isActive: !cat.isActive });
       setCategories((prev) =>
         prev.map((c) => (c.id === cat.id ? { ...c, isActive: !c.isActive } : c))
       );
       toast({ message: `Categoría ${!cat.isActive ? 'activada' : 'desactivada'}`, type: 'success' });
     } catch {
       toast({ message: 'Error al actualizar el estado de la categoría', type: 'error' });
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -211,7 +240,7 @@ export default function AdminCategoriesPage() {
                   <input
                     type="text"
                     value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    onChange={(e) => setForm({ ...form, slug: generateSlug(e.target.value) })}
                     required
                     placeholder="ej. electronica"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary font-mono focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -298,6 +327,16 @@ export default function AdminCategoriesPage() {
               <div key={i} className="bg-white rounded-xl border border-primary/10 p-4 animate-pulse h-16" />
             ))}
           </div>
+        ) : loadError ? (
+          <div className="bg-white rounded-xl border border-red-200 p-16 text-center">
+            <MaterialIcon name="cloud_off" className="text-5xl text-red-300 mb-4" />
+            <h3 className="font-extrabold text-primary text-lg mb-2">Error al cargar categorías</h3>
+            <p className="text-sm text-primary/50 mb-4">No se pudo conectar con el servidor. Verifica que el backend esté corriendo.</p>
+            <button onClick={fetchCategories} className="inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors">
+              <MaterialIcon name="refresh" className="text-base" />
+              Reintentar
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-xl border border-primary/10 p-16 text-center">
             <MaterialIcon name="category" className="text-5xl text-primary/20 mb-4" />
@@ -327,8 +366,8 @@ export default function AdminCategoriesPage() {
                 {filtered.map((cat) => {
                   const subCats = categories.filter((c) => c.parentId === cat.id);
                   return (
-                    <>
-                      <tr key={cat.id} className="hover:bg-primary/2 transition-colors">
+                    <Fragment key={cat.id}>
+                      <tr className="hover:bg-primary/2 transition-colors">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
                             {cat.image ? (
@@ -359,13 +398,18 @@ export default function AdminCategoriesPage() {
                         <td className="px-5 py-4 text-center">
                           <button
                             onClick={() => handleToggleActive(cat)}
-                            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full transition-colors ${
+                            disabled={togglingId === cat.id}
+                            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full transition-colors disabled:opacity-50 ${
                               cat.isActive
                                 ? 'bg-green-50 text-green-700 hover:bg-green-100'
                                 : 'bg-primary/5 text-primary/50 hover:bg-primary/10'
                             }`}
                           >
-                            <span className={`size-1.5 rounded-full ${cat.isActive ? 'bg-green-500' : 'bg-primary/30'}`} />
+                            {togglingId === cat.id ? (
+                              <MaterialIcon name="hourglass_bottom" className="text-xs animate-spin" />
+                            ) : (
+                              <span className={`size-1.5 rounded-full ${cat.isActive ? 'bg-green-500' : 'bg-primary/30'}`} />
+                            )}
                             {cat.isActive ? 'Activo' : 'Inactivo'}
                           </button>
                         </td>
@@ -379,7 +423,7 @@ export default function AdminCategoriesPage() {
                               <MaterialIcon name="edit" className="text-base" />
                             </button>
                             <button
-                              onClick={() => handleDelete(cat.id, cat.name)}
+                              onClick={() => requestDelete(cat.id, cat.name)}
                               disabled={deletingId === cat.id}
                               className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors disabled:opacity-40"
                               title="Eliminar"
@@ -414,18 +458,49 @@ export default function AdminCategoriesPage() {
                               <button onClick={() => openEditForm(sub)} className="size-8 flex items-center justify-center rounded-lg hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors">
                                 <MaterialIcon name="edit" className="text-base" />
                               </button>
-                              <button onClick={() => handleDelete(sub.id, sub.name)} disabled={deletingId === sub.id} className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors disabled:opacity-40">
+                              <button onClick={() => requestDelete(sub.id, sub.name)} disabled={deletingId === sub.id} className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors disabled:opacity-40">
                                 <MaterialIcon name="delete" className="text-base" />
                               </button>
                             </div>
                           </td>
                         </tr>
                       ))}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Modal de confirmación de eliminación */}
+        {confirmDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="size-10 bg-red-50 rounded-full flex items-center justify-center">
+                  <MaterialIcon name="warning" className="text-red-500 text-xl" />
+                </div>
+                <h3 className="font-extrabold text-primary text-lg">Eliminar categoría</h3>
+              </div>
+              <p className="text-sm text-primary/70 mb-6">
+                ¿Estás seguro de eliminar <strong>&ldquo;{confirmDelete.name}&rdquo;</strong>? Las subcategorías se reasignarán como raíz. Esta acción no se puede deshacer.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="flex-1 py-2.5 border-2 border-primary text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={executeDelete}
+                  className="flex-1 py-2.5 bg-red-500 text-white font-bold rounded-xl text-sm hover:bg-red-600 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

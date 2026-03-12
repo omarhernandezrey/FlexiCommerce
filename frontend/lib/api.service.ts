@@ -117,8 +117,10 @@ export const ordersAPI = {
 // Categories API
 export const categoriesAPI = {
   getAll: () => apiClient.get('/api/categories'),
-
   getById: (id: string) => apiClient.get(`/api/categories/${id}`),
+  create: (data: Record<string, unknown>) => apiClient.post('/api/categories', data),
+  update: (id: string, data: Record<string, unknown>) => apiClient.put(`/api/categories/${id}`, data),
+  remove: (id: string) => apiClient.delete(`/api/categories/${id}`),
 };
 
 // Reviews API
