@@ -23,10 +23,10 @@ const DEFAULT_STORE: Record<string, any> = {
 
 const DEFAULT_CMS: Record<string, any> = {
   sections: [
-    { id: 'hero', visible: true },
-    { id: 'grid', visible: true },
-    { id: 'banner', visible: false },
-    { id: 'newsletter', visible: true },
+    { id: 'hero', title: 'Slider Principal', icon: 'view_carousel', meta: '3 diapositivas · Reproducción automática', enabled: true },
+    { id: 'grid', title: 'Colecciones Destacadas', icon: 'grid_view', meta: '8 artículos · Solo escritorio', enabled: true },
+    { id: 'banner', title: 'Banner Promocional', icon: 'campaign', meta: 'Oferta Flash · Oculto', enabled: false },
+    { id: 'newsletter', title: 'Suscripción al Boletín', icon: 'email', meta: 'Popup + Pie de página', enabled: true },
   ],
   font: 'Inter (Default)',
   maintenanceMode: false,

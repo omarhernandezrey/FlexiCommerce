@@ -7,6 +7,7 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import Link from 'next/link';
 import apiClient from '@/lib/api-client';
+import { formatCOP } from '@/lib/format';
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function ConfirmModal({ open, title, message, confirmLabel = 'Confirmar', variant = 'danger', onConfirm, onCancel }: {
@@ -263,7 +264,7 @@ export default function AdminProductsPage() {
       };
       const rows = [
         ['ID', 'Nombre', 'Categoría', 'Precio', 'Stock', 'Estado', 'Slug'],
-        ...allProducts.map((p) => [p.id, escapeCSV(p.name), escapeCSV(p.category?.name ?? ''), Number(p.price).toFixed(2), p.stock, p.isActive ? 'Activo' : 'Inactivo', p.slug]),
+        ...allProducts.map((p) => [p.id, escapeCSV(p.name), escapeCSV(p.category?.name ?? ''), Number(p.price).toLocaleString('es-CO'), p.stock, p.isActive ? 'Activo' : 'Inactivo', p.slug]),
       ];
       const blob = new Blob(['\uFEFF' + rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -335,7 +336,7 @@ export default function AdminProductsPage() {
               { label: 'Inactivos', value: stats?.inactive, icon: 'pause_circle', cls: 'text-slate-500 bg-slate-100' },
               { label: 'Sin stock', value: stats?.outOfStock, icon: 'cancel', cls: 'text-red-600 bg-red-50' },
               { label: 'Stock bajo', value: stats?.lowStock, icon: 'warning', cls: 'text-amber-600 bg-amber-50' },
-              { label: 'Inventario', value: stats ? `$${(stats.totalValue).toLocaleString('es-CO', { maximumFractionDigits: 0 })}` : null, icon: 'payments', cls: 'text-purple-600 bg-purple-50' },
+              { label: 'Inventario', value: stats ? formatCOP(stats.totalValue) : null, icon: 'payments', cls: 'text-purple-600 bg-purple-50' },
             ] as const).map(({ label, value, icon, cls }) => (
               <div key={label} className="bg-white rounded-xl border border-slate-200 p-3">
                 <div className={`w-7 h-7 rounded-lg mb-2 flex items-center justify-center ${cls}`}>
@@ -490,7 +491,7 @@ export default function AdminProductsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 font-bold text-slate-800">
-                          ${Number(p.price).toLocaleString('es-CO', { maximumFractionDigits: 0 })}
+                          {formatCOP(p.price)}
                         </td>
                         <td className="px-4 py-3 hidden sm:table-cell">
                           {p.stock === 0

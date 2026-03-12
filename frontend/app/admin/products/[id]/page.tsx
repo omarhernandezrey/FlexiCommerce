@@ -8,8 +8,10 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import apiClient from '@/lib/api-client';
 import Link from 'next/link';
+import { formatCOPRaw, parseCOP } from '@/lib/format';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function generateSlug(name: string) {
   return name
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -162,7 +164,7 @@ export default function AdminProductFormPage() {
         name: product.name ?? '',
         slug: product.slug ?? '',
         description: product.description ?? '',
-        price: String(product.price ?? ''),
+        price: product.price ? formatCOPRaw(Number(product.price)) : '',
         stock: String(product.stock ?? ''),
         categoryId: (product as any).categoryId ?? product.category?.id ?? '',
         images: Array.isArray(product.images) ? product.images : [],
@@ -199,7 +201,8 @@ export default function AdminProductFormPage() {
     if (!form.slug.trim()) e.slug = 'El slug es requerido';
     if (!/^[a-z0-9-]+$/.test(form.slug)) e.slug = 'Solo minúsculas, números y guiones';
     if (!form.description.trim()) e.description = 'La descripción es requerida';
-    if (!form.price || isNaN(parseFloat(form.price)) || parseFloat(form.price) < 0) e.price = 'Precio inválido';
+    const priceNum = parseCOP(form.price);
+    if (!form.price || isNaN(priceNum) || priceNum < 0) e.price = 'Precio inválido';
     if (form.stock === '' || isNaN(parseInt(form.stock)) || parseInt(form.stock) < 0) e.stock = 'Stock debe ser ≥ 0';
     if (!form.categoryId) e.categoryId = 'Selecciona una categoría';
     return e;
@@ -221,7 +224,7 @@ export default function AdminProductFormPage() {
         name: form.name.trim(),
         slug: form.slug.trim() || generateSlug(form.name.trim()),
         description: form.description.trim(),
-        price: parseFloat(form.price),
+        price: parseCOP(form.price),
         stock: parseInt(form.stock),
         categoryId: form.categoryId,
         images: form.images,
@@ -392,23 +395,20 @@ export default function AdminProductFormPage() {
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-sm">$</span>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={form.price}
-                      onChange={(e) => handleChange('price', e.target.value)}
-                      step="0.01"
-                      min="0"
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9]/g, '');
+                        handleChange('price', raw ? formatCOPRaw(Number(raw)) : '');
+                      }}
                       className={`w-full pl-8 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 text-sm ${
                         errors.price ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:ring-primary/20 focus:border-primary'
                       }`}
-                      placeholder="0.00"
+                      placeholder="Ej: 129.900"
                     />
                   </div>
                   {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
-                  {form.price && !errors.price && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      {Number(form.price).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}
-                    </p>
-                  )}
                 </div>
 
                 <div>

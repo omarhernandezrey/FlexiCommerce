@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { RecommendedProduct } from '@/hooks/useRecommendations';
 import { useState } from 'react';
+import { formatCOP } from '@/lib/format';
 
 interface ProductCarouselProps {
   title: string;
@@ -127,7 +128,7 @@ export default function ProductCarousel({
 
                   {/* Price */}
                   <p className="text-lg font-bold text-blue-600">
-                    ${Number(product.price).toFixed(2)}
+                    {formatCOP(product.price)}
                   </p>
                 </div>
               </div>

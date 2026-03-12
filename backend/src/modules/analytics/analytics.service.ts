@@ -140,6 +140,7 @@ export class AnalyticsService {
     try {
       const orderItems = await prisma.orderItem.findMany({
         where: {
+          productId: { not: null },
           order: {
             createdAt: {
               gte: startDate,
@@ -148,11 +149,8 @@ export class AnalyticsService {
           },
         },
         include: {
-          order: {
-            select: {
-              createdAt: true,
-            },
-          },
+          product: { select: { name: true } },
+          order: { select: { createdAt: true } },
         },
       });
 
@@ -161,9 +159,10 @@ export class AnalyticsService {
 
       orderItems.forEach((item: any) => {
         const productId = item.productId;
+        if (!productId) return; // producto eliminado (SetNull)
         const existing = productMap.get(productId) || {
           productId,
-          productName: `Product ${productId.substring(0, 8)}`,
+          productName: item.product?.name || item.productName || `Producto ${productId.substring(0, 8)}`,
           unitsSold: 0,
           revenue: 0,
           prices: [],
@@ -298,17 +297,17 @@ export class AnalyticsService {
   static async getRevenueByCategory(startDate: Date, endDate: Date) {
     try {
       const result = await prisma.$queryRaw`
-        SELECT 
+        SELECT
           c.name as category,
-          COUNT(DISTINCT o.id) as orderCount,
-          SUM(oi.quantity) as totalUnits,
-          SUM(oi.price * oi.quantity) as revenue
-        FROM "Order" o
-        JOIN "OrderItem" oi ON o.id = oi.orderId
-        JOIN "Product" p ON oi.productId = p.id
-        JOIN "Category" c ON p.categoryId = c.id
-        WHERE o."createdAt" >= ${startDate}
-        AND o."createdAt" <= ${endDate}
+          COUNT(DISTINCT o.id)::int as "orderCount",
+          COALESCE(SUM(oi.quantity), 0)::int as "totalUnits",
+          COALESCE(SUM(oi.price * oi.quantity), 0)::float as revenue
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        JOIN products p ON oi.product_id = p.id
+        JOIN categories c ON p.category_id = c.id
+        WHERE o.created_at >= ${startDate}
+        AND o.created_at <= ${endDate}
         GROUP BY c.id, c.name
         ORDER BY revenue DESC
       `;
@@ -326,20 +325,20 @@ export class AnalyticsService {
   static async getCustomerStats(startDate: Date, endDate: Date) {
     try {
       const stats = await prisma.$queryRaw`
-        SELECT 
-          COUNT(DISTINCT u.id) as totalCustomers,
-          COUNT(DISTINCT CASE WHEN o."createdAt" >= ${startDate} THEN o."userId" END) as newCustomers,
-          AVG(orderCounts.count) as avgOrdersPerCustomer,
-          MAX(orderCounts.count) as maxOrdersPerCustomer
-        FROM "User" u
-        LEFT JOIN "Order" o ON u.id = o."userId"
+        SELECT
+          COUNT(DISTINCT u.id)::int as "totalCustomers",
+          COUNT(DISTINCT CASE WHEN o.created_at >= ${startDate} THEN o.user_id END)::int as "newCustomers",
+          COALESCE(AVG(oc.cnt), 0)::float as "avgOrdersPerCustomer",
+          COALESCE(MAX(oc.cnt), 0)::int as "maxOrdersPerCustomer"
+        FROM users u
+        LEFT JOIN orders o ON u.id = o.user_id
         LEFT JOIN (
-          SELECT "userId", COUNT(*) as count
-          FROM "Order"
-          WHERE "createdAt" >= ${startDate}
-          AND "createdAt" <= ${endDate}
-          GROUP BY "userId"
-        ) orderCounts ON u.id = orderCounts."userId"
+          SELECT user_id, COUNT(*)::int as cnt
+          FROM orders
+          WHERE created_at >= ${startDate}
+          AND created_at <= ${endDate}
+          GROUP BY user_id
+        ) oc ON u.id = oc.user_id
       `;
 
       return (stats as any[])[0] || {};
