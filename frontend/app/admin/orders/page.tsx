@@ -8,9 +8,9 @@ import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import Link from 'next/link';
 import { formatCOP } from '@/lib/format';
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
   pending: { label: 'Pendiente', color: 'bg-amber-100 text-amber-800', icon: 'hourglass_top' },
-  confirmed: { label: 'Confirmada', color: 'bg-blue-100 text-blue-800', icon: 'check_circle' },
+  processing: { label: 'Procesando', color: 'bg-blue-100 text-blue-800', icon: 'check_circle' },
   shipped: { label: 'Enviada', color: 'bg-purple-100 text-purple-800', icon: 'local_shipping' },
   delivered: { label: 'Entregada', color: 'bg-green-100 text-green-800', icon: 'done_all' },
   cancelled: { label: 'Cancelada', color: 'bg-slate-100 text-slate-800', icon: 'cancel' },
@@ -26,11 +26,15 @@ export default function AdminOrdersPage() {
     fetchAll();
   }, [fetchAll]);
 
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orders.filter((order: any) => {
     const matchesStatus = !filterStatus || order.status === filterStatus;
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.userId.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const userName = `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.toLowerCase();
+    const userEmail = (order.user?.email || '').toLowerCase();
+    const matchesSearch = !term ||
+      order.id.toLowerCase().includes(term) ||
+      userName.includes(term) ||
+      userEmail.includes(term);
     return matchesStatus && matchesSearch;
   });
 
@@ -108,7 +112,7 @@ export default function AdminOrdersPage() {
                 <MaterialIcon name="search" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg" />
                 <input
                   type="text"
-                  placeholder="Buscar por ID de orden o usuario..."
+                  placeholder="Buscar por nombre, email o ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
@@ -123,7 +127,7 @@ export default function AdminOrdersPage() {
                 >
                   <option value="">Todos los Estados</option>
                   <option value="pending">Pendiente</option>
-                  <option value="confirmed">Confirmada</option>
+                  <option value="processing">Procesando</option>
                   <option value="shipped">Enviada</option>
                   <option value="delivered">Entregada</option>
                   <option value="cancelled">Cancelada</option>
@@ -161,6 +165,7 @@ export default function AdminOrdersPage() {
                       <th className="px-6 py-4 text-left text-sm font-semibold text-primary">Total</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-primary">Items</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-primary">Estado</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-primary hidden lg:table-cell">Pago</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-primary">Fecha</th>
                       <th className="px-6 py-4 text-right text-sm font-semibold text-primary">Acciones</th>
                     </tr>
@@ -176,7 +181,15 @@ export default function AdminOrdersPage() {
                               <p className="font-bold text-primary font-mono text-sm">{order.id.slice(0, 8)}...</p>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-slate-600">{order.userId.slice(0, 8)}...</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                            {(order as any).user
+                              ? <div>
+                                  <p className="font-semibold text-primary">{(order as any).user.firstName} {(order as any).user.lastName}</p>
+                                  <p className="text-xs text-slate-400">{(order as any).user.email}</p>
+                                </div>
+                              : <span className="font-mono">{order.userId.slice(0, 8)}...</span>
+                            }
+                          </td>
                           <td className="px-6 py-4">
                             <p className="font-bold text-primary text-lg">
                               {formatCOP(order.total)}
@@ -194,13 +207,26 @@ export default function AdminOrdersPage() {
                               {statusInfo.label}
                             </span>
                           </td>
+                          <td className="px-6 py-4 hidden lg:table-cell">
+                            {(order as any).payment ? (
+                              <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-700">
+                                <MaterialIcon name="check_circle" className="text-sm" />
+                                Pagada
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700">
+                                <MaterialIcon name="schedule" className="text-sm" />
+                                Pendiente
+                              </span>
+                            )}
+                          </td>
                           <td className="px-6 py-4 text-sm text-slate-600">
                             {new Date(order.createdAt || '').toLocaleDateString('es-ES')}
                           </td>
                           <td className="px-6 py-4 text-right">
                             <Link
                               href={`/admin/orders/${order.id}`}
-                              className="px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-200 font-semibold text-sm inline-flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all duration-200 font-semibold text-sm inline-flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100"
                             >
                               <MaterialIcon name="visibility" className="text-base" />
                               Ver Detalles

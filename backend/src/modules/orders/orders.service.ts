@@ -16,7 +16,11 @@ interface CreateOrderOptions {
 export class OrdersService {
   async getAll() {
     return prisma.order.findMany({
-      include: { items: { include: { product: true } } },
+      include: {
+        items: { include: { product: true } },
+        user: { select: { email: true, firstName: true, lastName: true } },
+        payment: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -45,9 +49,17 @@ export class OrdersService {
       where: { id: { in: items.map((i) => i.productId) } },
     });
 
-    const itemsTotal = items.reduce((sum, item) => {
+    // Validar existencia y stock
+    for (const item of items) {
       const product = products.find((p) => p.id === item.productId);
       if (!product) throw new Error(`Producto ${item.productId} no encontrado`);
+      if (product.stock < item.quantity) {
+        throw new Error(`Stock insuficiente para "${product.name}". Disponible: ${product.stock}, solicitado: ${item.quantity}`);
+      }
+    }
+
+    const itemsTotal = items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.productId)!;
       return sum + Number(product.price) * item.quantity;
     }, 0);
 
@@ -58,7 +70,7 @@ export class OrdersService {
     const tax = taxableAmount * 0.19;
     const total = taxableAmount + shippingCost + tax;
 
-    return prisma.order.create({
+    const order = await prisma.order.create({
       data: {
         userId,
         total,
@@ -79,12 +91,48 @@ export class OrdersService {
       },
       include: { items: { include: { product: true } } },
     });
+
+    // Reducir stock de cada producto
+    await Promise.all(
+      items.map((item) =>
+        prisma.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
+        })
+      )
+    );
+
+    return order;
   }
 
+  private static VALID_STATUSES = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const;
+
+  private static ALLOWED_TRANSITIONS: Record<string, string[]> = {
+    PENDING: ['PROCESSING', 'CANCELLED'],
+    PROCESSING: ['SHIPPED', 'CANCELLED'],
+    SHIPPED: ['DELIVERED'],
+    DELIVERED: [],
+    CANCELLED: [],
+  };
+
   async updateStatus(id: string, status: string) {
+    const upperStatus = status.toUpperCase();
+    if (!OrdersService.VALID_STATUSES.includes(upperStatus as any)) {
+      throw new Error(`Estado inválido: ${status}. Valores válidos: ${OrdersService.VALID_STATUSES.join(', ')}`);
+    }
+
+    const current = await prisma.order.findUnique({ where: { id }, select: { status: true } });
+    if (!current) throw new Error('Orden no encontrada');
+
+    const allowed = OrdersService.ALLOWED_TRANSITIONS[current.status] || [];
+    if (!allowed.includes(upperStatus)) {
+      throw new Error(`No se puede cambiar de ${current.status} a ${upperStatus}. Transiciones permitidas: ${allowed.join(', ') || 'ninguna'}`);
+    }
+
     return prisma.order.update({
       where: { id },
-      data: { status: status as any },
+      data: { status: upperStatus as any },
+      include: { items: { include: { product: true } }, payment: true, user: { select: { email: true, firstName: true, lastName: true } } },
     });
   }
 }

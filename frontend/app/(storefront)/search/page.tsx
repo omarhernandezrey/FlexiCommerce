@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useProducts } from '@/hooks/useProducts';
-import { MOCK_PRODUCTS, type MockProduct } from '@/lib/constants';
 
 const SORT_OPTIONS = [
   { value: 'relevance', label: 'Más relevante' },
@@ -78,16 +77,7 @@ function SearchContent() {
     doSearch(term);
   };
 
-  // Use mock fallback when backend not connected
-  const mockResults = MOCK_PRODUCTS.filter((p) =>
-    p.name.toLowerCase().includes(query.toLowerCase()) ||
-    p.category.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const rawResults: MockProduct[] =
-    products.length > 0
-      ? (products as unknown as MockProduct[])
-      : (hasSearched ? mockResults : []);
+  const rawResults: any[] = hasSearched ? (products as any[]) : [];
 
   // Apply filters
   let filtered = rawResults;

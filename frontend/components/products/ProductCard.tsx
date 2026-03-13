@@ -4,13 +4,25 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { StarRating } from '@/components/ui/StarRating';
-import { type MockProduct } from '@/lib/constants';
 import { useCart } from '@/hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
 import { formatCOP } from '@/lib/format';
 
+interface ProductCardProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  images?: string[];
+  rating: number;
+  reviews: number;
+  badge?: string;
+}
+
 interface ProductCardProps {
-  product: MockProduct;
+  product: ProductCardProduct;
 }
 
 export function ProductCard({ product }: ProductCardProps) {

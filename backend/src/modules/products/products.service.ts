@@ -33,7 +33,7 @@ export class ProductsService {
       // status === 'all' → sin filtro
     }
 
-    if (categoryId) where.categoryId = categoryId;
+    if (categoryId) where.category = { slug: categoryId };
 
     if (stockFilter === 'out') where.stock = 0;
     else if (stockFilter === 'low') where.stock = { gt: 0, lte: 10 };

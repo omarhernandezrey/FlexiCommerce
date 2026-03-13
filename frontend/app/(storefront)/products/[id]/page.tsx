@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { StarRating } from '@/components/ui/StarRating';
 import { ProductCard } from '@/components/products/ProductCard';
-import { MOCK_PRODUCTS } from '@/lib/constants';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useProducts } from '@/hooks/useProducts';
@@ -30,19 +29,37 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const { fetchById } = useProducts();
   const { fetchWishlist, addToWishlist, removeFromWishlist, isInWishlist, items: wishlistItems } = useWishlist();
 
-  const [productData, setProductData] = useState(
-    MOCK_PRODUCTS.find((p) => p.id === params.id) || MOCK_PRODUCTS[0]
-  );
+  const [productData, setProductData] = useState<any>(null);
+  const [productLoading, setProductLoading] = useState(true);
 
-  // Load product from backend, fallback to mock
   useEffect(() => {
+    setProductLoading(true);
     fetchById(params.id)
       .then((data) => { if (data) setProductData(data); })
-      .catch(() => {/* keep mock */});
-    fetchWishlist().catch(() => {/* ignore */});
+      .catch(() => {})
+      .finally(() => setProductLoading(false));
+    fetchWishlist().catch(() => {});
   }, [params.id, fetchById, fetchWishlist]);
 
   const product = productData;
+
+  if (productLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="text-center py-24">
+        <MaterialIcon name="error" className="text-4xl text-primary/20 mb-4" />
+        <h2 className="text-xl font-bold text-primary mb-2">Producto no encontrado</h2>
+        <Link href="/products" className="text-primary font-semibold hover:underline">Ver todos los productos</Link>
+      </div>
+    );
+  }
 
   const {
     reviews,
@@ -125,9 +142,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const inWishlist = isInWishlist(product.id);
   const wishlistItem = wishlistItems.find((i) => i.productId === product.id);
 
-  const relatedProducts = MOCK_PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 4);
+  // Related products: se podrían cargar desde el backend en el futuro
+  const relatedProducts: any[] = [];
 
   const handleAddToCart = () => {
     addItem({
@@ -146,7 +162,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     : null;
 
   // Use product.images[] array when available, fallback to repeating the main image
-  const galleryImages = product.images?.length
+  const galleryImages: string[] = product.images?.length
     ? product.images
     : [product.image, product.image, product.image, product.image];
 

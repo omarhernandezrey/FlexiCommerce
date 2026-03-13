@@ -15,49 +15,8 @@ interface Notification {
   read: boolean;
 }
 
-// Mock notifications — replace with API call when backend supports it
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    type: 'order',
-    title: 'Nueva Orden #1042',
-    message: 'Jordan D. realizó un pedido por $299.00',
-    time: 'hace 2m',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'review',
-    title: 'Nueva Reseña',
-    message: 'Maria S. dejó una reseña de 5 estrellas en Acoustic Pro-X',
-    time: 'hace 15m',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'stock',
-    title: 'Alerta de Bajo Stock',
-    message: 'Acoustic Pro-X Wireless solo tiene 3 unidades disponibles',
-    time: 'hace 1h',
-    read: false,
-  },
-  {
-    id: '4',
-    type: 'order',
-    title: 'Orden #1041 Enviada',
-    message: 'El pedido de Carlos M. ha sido despachado',
-    time: 'hace 3h',
-    read: true,
-  },
-  {
-    id: '5',
-    type: 'system',
-    title: 'Actualización del Sistema',
-    message: 'Plataforma FlexiCommerce actualizada a v2.4.1',
-    time: 'hace 1d',
-    read: true,
-  },
-];
+// Notificaciones vacías — se llenará con datos reales cuando haya backend de notificaciones
+const INITIAL_NOTIFICATIONS: Notification[] = [];
 
 const NOTIFICATION_ICONS: Record<string, string> = {
   order: 'shopping_cart',
@@ -75,7 +34,7 @@ const NOTIFICATION_COLORS: Record<string, string> = {
 
 export function AdminHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
 

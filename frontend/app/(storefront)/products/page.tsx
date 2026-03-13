@@ -1,29 +1,22 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useSearch } from '@/hooks/useSearch';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProducts } from '@/hooks/useProducts';
-import { MOCK_PRODUCTS } from '@/lib/constants';
 import { ProductsLoader } from '@/components/products/ProductsLoader';
 import { formatCOP } from '@/lib/format';
+import apiClient from '@/lib/api-client';
 
-const CATEGORY_FILTERS = [
-  { name: 'Electronics', icon: 'devices', count: 1200 },
-  { name: 'Fashion', icon: 'checkroom', count: 3500 },
-  { name: 'Home Decor', icon: 'home', count: 800 },
-  { name: 'Smart Gadgets', icon: 'developer_mode', count: 450 },
-];
-
-// Traducciones de categorías para mostrar en español
-const CATEGORY_LABELS: Record<string, string> = {
-  'Electronics': 'Electrónica',
-  'Fashion': 'Moda',
-  'Home Decor': 'Decoración del Hogar',
-  'Smart Gadgets': 'Gadgets Inteligentes',
-};
+interface CategoryFilter {
+  name: string;
+  slug: string;
+  icon: string;
+  count: number;
+}
 
 const COLOR_SWATCHES = [
   { name: 'Black', bg: 'bg-black' },
@@ -35,6 +28,7 @@ const COLOR_SWATCHES = [
 const SCREEN_SIZES = ['13-inch', '14-inch', '15-inch', '16-inch'];
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
   const [sortBy, setSortBy] = useState('popular');
   const MAX_PRICE = 10000000;
   const [priceRange, setPriceRange] = useState([0, 10000000]);
@@ -48,14 +42,33 @@ export default function ProductsPage() {
 
   const { products, loading, fetchAll } = useProducts();
   const { favorites } = useFavorites();
+  const [categoryFilters, setCategoryFilters] = useState<CategoryFilter[]>([]);
 
   useEffect(() => {
-    fetchAll().catch(() => {
-      console.warn('Using mock data - backend unavailable');
-    });
-  }, [fetchAll]);
+    fetchAll().catch(() => {});
+    // Cargar categorías reales para filtros
+    apiClient.get('/api/categories')
+      .then((res) => {
+        const raw = (res.data as any)?.data ?? res.data;
+        if (!Array.isArray(raw)) return;
+        const filters = raw.map((c: any) => ({
+          name: c.name,
+          slug: c.slug,
+          icon: 'category',
+          count: c._count?.products ?? 0,
+        }));
+        setCategoryFilters(filters);
+        // Pre-seleccionar categoría desde URL ?category=slug
+        const catSlug = searchParams.get('category');
+        if (catSlug) {
+          const match = filters.find((c: CategoryFilter) => c.slug === catSlug);
+          if (match) setSelectedCategories([match.name]);
+        }
+      })
+      .catch(() => {});
+  }, [fetchAll, searchParams]);
 
-  const dataSource = products.length > 0 ? products : MOCK_PRODUCTS;
+  const dataSource = products;
 
   const { searchTerm, setSearchTerm, results: searchResults } = useSearch(
     dataSource,
@@ -171,7 +184,7 @@ export default function ProductsPage() {
       <div>
         <h4 className="text-xs font-bold text-primary/40 uppercase tracking-wider mb-3">Categorías</h4>
         <div className="space-y-1">
-          {CATEGORY_FILTERS.map((cat) => (
+          {categoryFilters.map((cat) => (
             <label key={cat.name} className="flex items-center gap-3 cursor-pointer group py-1.5">
               <input
                 type="checkbox"
@@ -179,9 +192,11 @@ export default function ProductsPage() {
                 onChange={() => toggleCategory(cat.name)}
                 className="rounded border-primary/20 text-primary focus:ring-primary/20 size-3.5"
               />
-              <MaterialIcon name={cat.icon} className="text-primary/40 text-base group-hover:text-primary transition-colors" />
-              <span className="text-sm text-primary/60 group-hover:text-primary transition-colors flex-1">{CATEGORY_LABELS[cat.name] || cat.name}</span>
-              <span className="text-xs text-primary/30 font-medium">{cat.count.toLocaleString()}</span>
+              <MaterialIcon name="category" className="text-primary/40 text-base group-hover:text-primary transition-colors" />
+              <span className="text-sm text-primary/60 group-hover:text-primary transition-colors flex-1">{cat.name}</span>
+              {cat.count > 0 && (
+                <span className="text-xs text-primary/30 font-medium">{cat.count}</span>
+              )}
             </label>
           ))}
         </div>

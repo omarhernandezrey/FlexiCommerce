@@ -10,42 +10,21 @@ import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthAPI } from '@/hooks/useAuthAPI';
 
-const MEGA_MENU_ITEMS = {
-  Electrónica: {
-    featured: [
-      { name: 'Smartphones', icon: 'smartphone', count: 245 },
-      { name: 'Laptops', icon: 'laptop', count: 128 },
-      { name: 'Dispositivos de Audio', icon: 'headphones', count: 342 },
-      { name: 'Relojes Inteligentes', icon: 'watch', count: 89 },
-    ],
-    trending: [
-      'Auriculares Inalámbricos',
-      'Cargadores USB-C',
-      'Fundas para Celular',
-      'Protectores de Pantalla',
-    ],
-  },
-  Moda: {
-    featured: [
-      { name: 'Ropa de Hombre', icon: 'checkroom', count: 521 },
-      { name: 'Ropa de Mujer', icon: 'checkroom', count: 634 },
-      { name: 'Accesorios', icon: 'shopping_bag', count: 289 },
-      { name: 'Calzado', icon: 'directions_walk', count: 412 },
-    ],
-    trending: [
-      'Vestidos de Verano',
-      'Zapatillas Casuales',
-      'Bolsos de Diseñador',
-      'Chaquetas de Invierno',
-    ],
-  },
-};
+interface NavCategory {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string;
+  productCount: number;
+  children: { id: string; name: string; slug: string; productCount: number }[];
+}
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [navCategories, setNavCategories] = useState<NavCategory[]>([]);
   const router = useRouter();
   const { getTotalItems } = useCart();
   const { user, token } = useAuth();
@@ -66,6 +45,30 @@ export function Header() {
         if (data?.storeName) setStoreName(data.storeName);
       })
       .catch(() => {/* usa defaults */});
+  }, []);
+
+  // Cargar categorías reales desde el backend
+  useEffect(() => {
+    apiClient.get('/api/categories')
+      .then((res) => {
+        const raw = (res.data as any)?.data ?? res.data;
+        if (!Array.isArray(raw)) return;
+        const cats: NavCategory[] = raw.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          image: c.image,
+          productCount: c._count?.products ?? 0,
+          children: (c.children || []).map((ch: any) => ({
+            id: ch.id,
+            name: ch.name,
+            slug: ch.slug,
+            productCount: ch._count?.products ?? 0,
+          })),
+        }));
+        setNavCategories(cats);
+      })
+      .catch(() => {});
   }, []);
 
   // Si hay token en el store pero no hay user, intentar recuperar el usuario
@@ -283,68 +286,48 @@ export function Header() {
 
         {/* Mega Menu Nav - Desktop */}
         <nav aria-label="Categorías de productos" className="hidden lg:flex items-center gap-8 py-3 text-sm font-medium border-t border-primary/5">
-          {Object.entries(MEGA_MENU_ITEMS).map(([category, items]) => (
+          {navCategories.slice(0, 6).map((cat) => (
             <div
-              key={category}
+              key={cat.id}
               className="relative group"
-              onMouseEnter={() => setActiveMegaMenu(category)}
+              onMouseEnter={() => setActiveMegaMenu(cat.id)}
               onMouseLeave={() => setActiveMegaMenu(null)}
             >
-              <button className="text-primary hover:text-primary/70 flex items-center gap-1 py-2 px-3 rounded-lg hover:bg-primary/5 transition-colors">
-                {category}
-                <MaterialIcon name="expand_more" className="text-xs group-hover:rotate-180 transition-transform" />
-              </button>
+              <Link
+                href={`/products?category=${cat.slug}`}
+                className="text-primary hover:text-primary/70 flex items-center gap-1 py-2 px-3 rounded-lg hover:bg-primary/5 transition-colors"
+              >
+                {cat.name}
+                {cat.children.length > 0 && (
+                  <MaterialIcon name="expand_more" className="text-xs group-hover:rotate-180 transition-transform" />
+                )}
+              </Link>
 
-              {/* Mega Menu Dropdown */}
-              {activeMegaMenu === category && (
-                <div className="absolute left-0 top-full min-w-max bg-white border border-slate-200 shadow-2xl z-50 animate-fade-in">
-                  <div className="px-8 py-8 min-w-96">
-                    <div className="grid grid-cols-2 gap-8">
-                      {/* Featured Categories */}
-                      <div>
-                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Categorías Destacadas</h3>
-                        <div className="space-y-2">
-                          {items.featured.map((item) => (
-                            <Link
-                              key={item.name}
-                              href="/products"
-                              className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/5 transition-colors group"
-                            >
-                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                                <MaterialIcon name={item.icon} className="text-base" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-primary group-hover:text-primary/80">{item.name}</p>
-                                <p className="text-xs text-slate-500">{item.count} artículos</p>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Trending Products */}
-                      <div>
-                        <h3 className="font-bold text-primary mb-4 text-sm uppercase tracking-wide">Tendencias</h3>
-                        <div className="space-y-2">
-                          {items.trending.map((trend) => (
-                            <Link
-                              key={trend}
-                              href="/products"
-                              className="block p-3 rounded-lg text-sm text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors font-medium"
-                            >
-                              {trend}
-                            </Link>
-                          ))}
-                        </div>
-
-                        {/* Special Banner */}
-                        <div className="mt-4 p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
-                          <p className="text-xs font-bold text-primary mb-2">OFERTA EXCLUSIVA</p>
-                          <p className="text-sm font-bold text-primary">20% de descuento en todo {category}</p>
-                          <p className="text-xs text-slate-600">Código: {category.toUpperCase()}20</p>
-                        </div>
-                      </div>
+              {/* Dropdown con subcategorías */}
+              {activeMegaMenu === cat.id && cat.children.length > 0 && (
+                <div className="absolute left-0 top-full min-w-max bg-white border border-slate-200 shadow-2xl z-50 rounded-lg">
+                  <div className="px-6 py-5 min-w-72">
+                    <h3 className="font-bold text-primary mb-3 text-sm uppercase tracking-wide">{cat.name}</h3>
+                    <div className="space-y-1">
+                      {cat.children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={`/products?category=${child.slug}`}
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-primary/5 transition-colors group"
+                        >
+                          <p className="text-sm font-semibold text-primary group-hover:text-primary/80">{child.name}</p>
+                          {child.productCount > 0 && (
+                            <span className="text-xs text-slate-400">{child.productCount}</span>
+                          )}
+                        </Link>
+                      ))}
                     </div>
+                    <Link
+                      href={`/products?category=${cat.slug}`}
+                      className="block mt-3 pt-3 border-t border-slate-100 text-xs font-bold text-primary hover:text-primary/70 transition-colors"
+                    >
+                      Ver todo en {cat.name} →
+                    </Link>
                   </div>
                 </div>
               )}
@@ -352,10 +335,7 @@ export function Header() {
           ))}
           <div className="h-4 w-px bg-primary/10 mx-2" />
           <Link href="/products" className="text-primary/60 hover:text-primary font-semibold transition-colors">
-            Novedades
-          </Link>
-          <Link href="/products" className="text-red-600 font-semibold italic hover:text-red-700 transition-colors">
-            Liquidación
+            Todos los Productos
           </Link>
         </nav>
 
@@ -401,7 +381,7 @@ export function Header() {
                 {mounted && user?.firstName ? `${user.firstName} ${user.lastName}` : 'Invitado'}
               </h2>
               <p className="text-xs font-medium text-primary/60">
-                {mounted && user ? 'Miembro Premium' : 'Inicia sesión para continuar'}
+                {mounted && user ? user.email : 'Inicia sesión para continuar'}
               </p>
             </div>
             <button 
@@ -433,29 +413,41 @@ export function Header() {
             <div className="mb-6">
               <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-primary/40">Categorías</h3>
               <div className="flex flex-col gap-1">
-                {Object.entries(MEGA_MENU_ITEMS).map(([category, items]) => (
-                  <details key={category} className="group">
+                {navCategories.map((cat) => (
+                  <details key={cat.id} className="group">
                     <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-3 hover:bg-primary/5 transition-colors">
                       <div className="flex items-center gap-3">
-                        <MaterialIcon name={category === 'Electronics' ? 'devices' : 'checkroom'} className="text-primary/70" />
-                        <span className="text-sm font-semibold text-primary">{category}</span>
+                        <MaterialIcon name="category" className="text-primary/70" />
+                        <span className="text-sm font-semibold text-primary">{cat.name}</span>
                       </div>
-                      <MaterialIcon name="expand_more" className="text-sm text-primary/30 group-open:rotate-180 transition-transform" />
+                      {cat.children.length > 0 && (
+                        <MaterialIcon name="expand_more" className="text-sm text-primary/30 group-open:rotate-180 transition-transform" />
+                      )}
                     </summary>
-                    <div className="ml-12 mt-1 flex flex-col gap-2 border-l border-primary/10 pl-4 py-2">
-                      {items.featured.map((item) => (
-                        <Link
-                          key={item.name}
-                          href="/products"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="text-sm text-primary/60 hover:text-primary transition-colors"
-                        >
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
+                    {cat.children.length > 0 && (
+                      <div className="ml-12 mt-1 flex flex-col gap-2 border-l border-primary/10 pl-4 py-2">
+                        {cat.children.map((child) => (
+                          <Link
+                            key={child.id}
+                            href={`/products?category=${child.slug}`}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-sm text-primary/60 hover:text-primary transition-colors"
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </details>
                 ))}
+                <Link
+                  href="/products"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-primary/5 transition-colors"
+                >
+                  <MaterialIcon name="storefront" className="text-primary/70" />
+                  <span className="text-sm font-semibold text-primary">Todos los Productos</span>
+                </Link>
               </div>
             </div>
 
@@ -470,7 +462,6 @@ export function Header() {
                 >
                   <MaterialIcon name="favorite" className="text-primary/70" />
                   <span className="text-sm font-semibold">Lista de deseos</span>
-                  <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold">12</span>
                 </Link>
                 <Link
                   href="/orders"
@@ -507,14 +498,14 @@ export function Header() {
                   <MaterialIcon name="language" className="text-sm text-primary/70" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-primary">ES / MXN</span>
-                  <span className="text-[10px] text-primary/40">Español · México</span>
+                  <span className="text-xs font-bold text-primary">ES / COP</span>
+                  <span className="text-[10px] text-primary/40">Español · Colombia</span>
                 </div>
               </div>
               <MaterialIcon name="chevron_right" className="text-primary/40" />
             </div>
             <div className="mt-4 flex items-center justify-between px-2">
-              <p className="text-[10px] text-primary/30">© 2024 FlexiCommerce</p>
+              <p className="text-[10px] text-primary/30">© 2026 FlexiCommerce</p>
               {mounted && user ? (
                 <button
                   onClick={handleLogout}

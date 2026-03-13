@@ -56,17 +56,17 @@ interface CategoryRevenue {
 // ─── Status ───────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING: 'Pendiente', CONFIRMED: 'Confirmado', PROCESSING: 'Procesando',
+  PENDING: 'Pendiente', PROCESSING: 'Procesando',
   SHIPPED: 'Enviado', DELIVERED: 'Entregado', CANCELLED: 'Cancelado',
-  pending: 'Pendiente', confirmed: 'Confirmado', processing: 'Procesando',
+  pending: 'Pendiente', processing: 'Procesando',
   shipped: 'Enviado', delivered: 'Entregado', cancelled: 'Cancelado',
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700', CONFIRMED: 'bg-blue-100 text-blue-700',
+  PENDING: 'bg-yellow-100 text-yellow-700',
   PROCESSING: 'bg-indigo-100 text-indigo-700', SHIPPED: 'bg-cyan-100 text-cyan-700',
   DELIVERED: 'bg-green-100 text-green-700', CANCELLED: 'bg-red-100 text-red-700',
-  pending: 'bg-yellow-100 text-yellow-700', confirmed: 'bg-blue-100 text-blue-700',
+  pending: 'bg-yellow-100 text-yellow-700',
   processing: 'bg-indigo-100 text-indigo-700', shipped: 'bg-cyan-100 text-cyan-700',
   delivered: 'bg-green-100 text-green-700', cancelled: 'bg-red-100 text-red-700',
 };
@@ -350,12 +350,12 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl border border-primary/10 p-5">
           <h2 className="font-extrabold text-primary text-sm mb-4">Distribución de Órdenes por Estado</h2>
           <div className="flex gap-2 h-3 rounded-full overflow-hidden bg-slate-100">
-            {['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => {
+            {['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => {
               const count = ordersByStatus[status] || 0;
               if (count === 0) return null;
               const pct = (count / orders.length) * 100;
               const barColors: Record<string, string> = {
-                PENDING: 'bg-yellow-400', CONFIRMED: 'bg-blue-400', PROCESSING: 'bg-indigo-400',
+                PENDING: 'bg-yellow-400', PROCESSING: 'bg-indigo-400',
                 SHIPPED: 'bg-cyan-400', DELIVERED: 'bg-green-400', CANCELLED: 'bg-red-400',
               };
               return (
@@ -368,11 +368,11 @@ export default function AdminDashboard() {
             })}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-            {['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => {
+            {['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => {
               const count = ordersByStatus[status] || 0;
               if (count === 0) return null;
               const dotColors: Record<string, string> = {
-                PENDING: 'bg-yellow-400', CONFIRMED: 'bg-blue-400', PROCESSING: 'bg-indigo-400',
+                PENDING: 'bg-yellow-400', PROCESSING: 'bg-indigo-400',
                 SHIPPED: 'bg-cyan-400', DELIVERED: 'bg-green-400', CANCELLED: 'bg-red-400',
               };
               return (

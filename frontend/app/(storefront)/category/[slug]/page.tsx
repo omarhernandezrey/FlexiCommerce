@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProductCard } from '@/components/products/ProductCard';
 import { useProducts } from '@/hooks/useProducts';
-import { MOCK_PRODUCTS, CATEGORIES, type MockProduct } from '@/lib/constants';
+import apiClient from '@/lib/api-client';
 
 const CATEGORY_META: Record<string, { title: string; description: string; gradient: string; icon: string }> = {
   electronics: {
@@ -71,23 +71,27 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
   const { products, loading, fetchAll } = useProducts();
   const [sort, setSort] = useState('featured');
-  const [priceMax, setPriceMax] = useState(5000);
+  const [priceMax, setPriceMax] = useState(10000000);
+  const [otherCategories, setOtherCategories] = useState<{ name: string; slug: string; image?: string; productCount: number }[]>([]);
 
-  // Fallback to mock products filtered by category name
   const categoryName = meta.title;
-  const mockFiltered = MOCK_PRODUCTS.filter(
-    (p) => p.category.toLowerCase() === categoryName.toLowerCase()
-  );
 
   useEffect(() => {
-    fetchAll({ category: categoryName, limit: 24 }).catch(() => {});
-  }, [categoryName, fetchAll]);
+    fetchAll({ category: slug, limit: 24 }).catch(() => {});
+    // Cargar otras categorías para la sección "Otras Categorías"
+    apiClient.get('/api/categories')
+      .then((res) => {
+        const raw = (res.data as any)?.data ?? res.data;
+        if (!Array.isArray(raw)) return;
+        setOtherCategories(raw
+          .filter((c: any) => c.slug !== slug)
+          .map((c: any) => ({ name: c.name, slug: c.slug, image: c.image, productCount: c._count?.products ?? 0 }))
+        );
+      })
+      .catch(() => {});
+  }, [categoryName, slug, fetchAll]);
 
-  // Use real products if available (cast to MockProduct shape), else mock
-  const displayProducts: MockProduct[] =
-    products.length > 0
-      ? (products as unknown as MockProduct[])
-      : mockFiltered;
+  const displayProducts = products as any[];
 
   // Client-side sort
   const sorted = [...displayProducts].sort((a, b) => {
@@ -162,10 +166,10 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
               onChange={(e) => setPriceMax(Number(e.target.value))}
               className="bg-transparent text-xs font-bold text-primary focus:outline-none"
             >
-              <option value={500}>$500</option>
-              <option value={1000}>$1,000</option>
-              <option value={2000}>$2,000</option>
-              <option value={5000}>$5,000+</option>
+              <option value={100000}>$100.000</option>
+              <option value={500000}>$500.000</option>
+              <option value={1000000}>$1.000.000</option>
+              <option value={10000000}>Sin límite</option>
             </select>
           </div>
 
@@ -224,32 +228,39 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       )}
 
       {/* Related Categories */}
-      <div className="spacing-section">
-        <h2 className="text-xl font-extrabold text-primary mb-4">Otras Categorías</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {CATEGORIES.filter((c) => c.name !== meta.title).slice(0, 4).map((cat) => {
-            const catSlug = cat.name.toLowerCase().replace(/\s+/g, '-');
-            return (
+      {otherCategories.length > 0 && (
+        <div className="spacing-section">
+          <h2 className="text-xl font-extrabold text-primary mb-4">Otras Categorías</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {otherCategories.slice(0, 4).map((cat) => (
               <Link
-                key={cat.name}
-                href={`/category/${catSlug}`}
+                key={cat.slug}
+                href={`/products?category=${cat.slug}`}
                 className="group relative overflow-hidden rounded-xl aspect-video bg-primary/5 border border-primary/10 hover:border-primary/30 transition-all"
               >
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                    <MaterialIcon name="category" className="text-3xl text-primary/30" />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-3 left-3">
                   <p className="text-white font-bold text-sm">{cat.name}</p>
-                  <p className="text-white/70 text-xs">{cat.items} items</p>
+                  {cat.productCount > 0 && (
+                    <p className="text-white/70 text-xs">{cat.productCount} productos</p>
+                  )}
                 </div>
               </Link>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

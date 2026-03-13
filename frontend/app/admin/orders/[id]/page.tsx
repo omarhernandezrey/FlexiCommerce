@@ -39,7 +39,7 @@ export default function AdminOrderDetailPage() {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'confirmed':
+      case 'processing':
         return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'shipped':
         return 'bg-purple-100 text-purple-800 border-purple-300';
@@ -55,7 +55,7 @@ export default function AdminOrderDetailPage() {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       pending: 'Pendiente',
-      confirmed: 'Confirmada',
+      processing: 'Procesando',
       shipped: 'Enviada',
       delivered: 'Entregada',
       cancelled: 'Cancelada',
@@ -63,7 +63,7 @@ export default function AdminOrderDetailPage() {
     return labels[status] || status;
   };
 
-  const statusFlow = ['pending', 'confirmed', 'shipped', 'delivered'];
+  const statusFlow = ['pending', 'processing', 'shipped', 'delivered'];
 
   if (loading) {
     return (
@@ -122,45 +122,32 @@ export default function AdminOrderDetailPage() {
         {/* Status Timeline */}
         <div className="bg-white rounded-lg border border-slate-200 p-6 mb-8">
           <h2 className="text-lg font-semibold text-primary mb-4">Estado de la Orden</h2>
-          <div className="flex justify-between items-center mb-6">
-            {statusFlow.map((status, idx) => (
-              <div key={status} className="flex flex-col items-center flex-1">
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold mb-2 border-2 ${
-                    statusFlow.indexOf(currentOrder.status) >= idx
-                      ? 'bg-primary text-white border-primary'
-                      : 'bg-slate-100 text-slate-400 border-slate-300'
-                  }`}
-                >
-                  <MaterialIcon
-                    name={
-                      status === 'pending'
-                        ? 'schedule'
-                        : status === 'confirmed'
-                        ? 'check_circle'
-                        : status === 'shipped'
-                        ? 'local_shipping'
-                        : 'done_all'
-                    }
-                  />
+          <div className="flex items-center mb-6">
+            {statusFlow.map((status, idx) => {
+              const currentIdx = statusFlow.indexOf(currentOrder.status);
+              const isCompleted = currentIdx >= idx;
+              const iconName = status === 'pending' ? 'schedule' : status === 'processing' ? 'check_circle' : status === 'shipped' ? 'local_shipping' : 'done_all';
+              return (
+                <div key={status} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold border-2 transition-colors ${isCompleted ? 'bg-primary text-white border-primary' : 'bg-slate-100 text-slate-400 border-slate-300'}`}>
+                      <MaterialIcon name={iconName} className="text-lg" />
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-600 text-center mt-2">{getStatusLabel(status)}</p>
+                  </div>
+                  {idx < statusFlow.length - 1 && (
+                    <div className={`flex-1 h-1 mx-2 rounded-full ${currentIdx > idx ? 'bg-primary' : 'bg-slate-200'}`} />
+                  )}
                 </div>
-                <p className="text-sm font-semibold text-slate-600 text-center">{getStatusLabel(status)}</p>
-                {idx < statusFlow.length - 1 && (
-                  <div
-                    className={`w-0.5 h-12 mt-2 ${
-                      statusFlow.indexOf(currentOrder.status) > idx ? 'bg-primary' : 'bg-slate-300'
-                    }`}
-                  ></div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Status Actions */}
           <div className="pt-4 border-t border-slate-200">
             <label className="block text-sm font-semibold text-slate-700 mb-3">Cambiar Estado</label>
             <div className="flex gap-2 flex-wrap">
-              {['pending', 'confirmed', 'shipped', 'delivered'].map((status) => (
+              {['pending', 'processing', 'shipped', 'delivered'].map((status) => (
                 <button
                   key={status}
                   onClick={() => handleStatusChange(status)}
@@ -174,6 +161,19 @@ export default function AdminOrderDetailPage() {
                   {getStatusLabel(status)}
                 </button>
               ))}
+              {currentOrder.status !== 'cancelled' && currentOrder.status !== 'delivered' && (
+                <button
+                  onClick={() => {
+                    if (confirm('¿Cancelar esta orden? Esta acción no se puede deshacer.')) {
+                      handleStatusChange('cancelled');
+                    }
+                  }}
+                  disabled={isUpdating}
+                  className="px-4 py-2 rounded-lg font-semibold transition-colors bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                >
+                  Cancelar Orden
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -211,21 +211,17 @@ export default function AdminOrderDetailPage() {
                 <div className="flex justify-between">
                   <p className="text-slate-600">Subtotal</p>
                   <p className="font-semibold text-primary">
-                    {formatCOP((currentOrder as any).items?.reduce((acc: number, i: any) => acc + Number(i.price) * i.quantity, 0) ?? 0)}
+                    {formatCOP(currentOrder.items.reduce((acc, i) => acc + Number(i.price) * i.quantity, 0))}
                   </p>
                 </div>
-                {Number((currentOrder as any).shippingCost) > 0 && (
-                  <div className="flex justify-between">
-                    <p className="text-slate-600">Envío</p>
-                    <p className="font-semibold text-primary">{formatCOP(Number((currentOrder as any).shippingCost))}</p>
-                  </div>
-                )}
-                {Number((currentOrder as any).shippingCost) === 0 && (
-                  <div className="flex justify-between">
-                    <p className="text-slate-600">Envío</p>
+                <div className="flex justify-between">
+                  <p className="text-slate-600">Envío</p>
+                  {Number(currentOrder.shippingCost) > 0 ? (
+                    <p className="font-semibold text-primary">{formatCOP(Number(currentOrder.shippingCost))}</p>
+                  ) : (
                     <p className="font-semibold text-green-600">Gratis</p>
-                  </div>
-                )}
+                  )}
+                </div>
                 <div className="flex justify-between text-xs text-slate-400">
                   <p>IVA (19%)</p>
                   <p>Incluido en total</p>
@@ -241,12 +237,12 @@ export default function AdminOrderDetailPage() {
             <div className="bg-white rounded-lg border border-slate-200 p-6">
               <h2 className="text-lg font-semibold text-primary mb-4">Detalles</h2>
               <div className="space-y-3 text-sm">
-                {(currentOrder as any).shippingAddress && (
+                {currentOrder.shippingAddress && (
                   <div>
                     <p className="text-slate-600">Dirección de Envío</p>
                     <p className="font-semibold text-primary text-xs leading-relaxed">
                       {(() => {
-                        const addr = (currentOrder as any).shippingAddress;
+                        const addr = currentOrder.shippingAddress;
                         if (typeof addr === 'string') return addr;
                         return `${addr.firstName || ''} ${addr.lastName || ''}, ${addr.address || ''}, ${addr.city || ''}`.trim().replace(/^,\s*|,\s*$/g, '');
                       })()}
@@ -256,13 +252,13 @@ export default function AdminOrderDetailPage() {
                 <div>
                   <p className="text-slate-600">Método de Pago</p>
                   <p className="font-semibold text-primary">
-                    {(currentOrder as any).paymentMethod || 'No especificado'}
+                    {currentOrder.paymentMethod || currentOrder.payment?.method || 'No especificado'}
                   </p>
                 </div>
                 <div>
                   <p className="text-slate-600">Método de Envío</p>
                   <p className="font-semibold text-primary capitalize">
-                    {(currentOrder as any).shippingMethod || 'Estándar'}
+                    {currentOrder.shippingMethod || 'Estándar'}
                   </p>
                 </div>
                 <div>

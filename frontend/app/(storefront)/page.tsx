@@ -4,50 +4,42 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProductCard } from '@/components/products/ProductCard';
-import { MOCK_PRODUCTS, IMAGES, CATEGORIES } from '@/lib/constants';
 import { useProducts } from '@/hooks/useProducts';
+import apiClient from '@/lib/api-client';
 
-const HERO_SLIDES = [
-  {
-    title: 'Eleva Tu Estilo Cotidiano',
-    description: 'Experimenta la combinación perfecta de rendimiento y estética con nuestras novedades curadas.',
-    tag: 'Colección Verano 2024',
-  },
-  {
-    title: 'Calidad Premium Garantizada',
-    description: 'Descubre nuestra última colección con diseños exclusivos y materiales de primera.',
-    tag: 'Novedades',
-  },
-  {
-    title: 'Edición Limitada Exclusiva',
-    description: 'Consigue tus artículos favoritos antes de que se agoten. Stock limitado disponible ahora.',
-    tag: 'Oferta Flash',
-  },
-];
+interface HomeCategory {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string;
+  productCount: number;
+}
 
 export default function StorefrontHome() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
+  const [categories, setCategories] = useState<HomeCategory[]>([]);
   const { products: apiProducts, fetchAll } = useProducts();
 
   useEffect(() => {
     fetchAll().catch(() => {});
+    // Cargar categorías reales
+    apiClient.get('/api/categories')
+      .then((res) => {
+        const raw = (res.data as any)?.data ?? res.data;
+        if (!Array.isArray(raw)) return;
+        const cats: HomeCategory[] = raw.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          image: c.image,
+          productCount: c._count?.products ?? 0,
+        }));
+        setCategories(cats);
+      })
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const featuredProducts = apiProducts.length > 0 ? apiProducts.slice(0, 8) : MOCK_PRODUCTS.slice(0, 8);
-
-  useEffect(() => {
-    if (!autoPlay) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [autoPlay]);
-
-  const goToSlide = (idx: number) => { setCurrentSlide(idx); setAutoPlay(false); };
-  const prevSlide = () => { setCurrentSlide((p) => (p - 1 + HERO_SLIDES.length) % HERO_SLIDES.length); setAutoPlay(false); };
-  const nextSlide = () => { setCurrentSlide((p) => (p + 1) % HERO_SLIDES.length); setAutoPlay(false); };
+  const featuredProducts = apiProducts.slice(0, 8);
 
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -64,134 +56,74 @@ export default function StorefrontHome() {
 
   return (
     <div className="section-wrapper">
-      {/* Hero Slider */}
-      <section
-        className="relative rounded-2xl overflow-hidden h-80 sm:h-96 md:h-[520px] group"
-        onMouseEnter={() => setAutoPlay(false)}
-        onMouseLeave={() => setAutoPlay(true)}
-      >
-        {HERO_SLIDES.map((slide, idx) => (
-          <div
-            key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              idx === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent z-10" />
-            <img src={IMAGES.hero} alt={slide.title} className="w-full h-full object-cover" />
-            <div className="relative z-20 h-full flex flex-col justify-center px-6 sm:px-8 md:px-12 lg:px-16 max-w-3xl text-white">
-              <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-3 sm:mb-4 inline-block w-fit">
-                {slide.tag}
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight mb-4 sm:mb-6">{slide.title}</h2>
-              <p className="text-sm sm:text-base md:text-lg text-white/80 mb-6 sm:mb-8">{slide.description}</p>
-              <div className="flex gap-3 sm:gap-4 flex-wrap">
-                <Link
-                  href="/products"
-                  className="px-6 sm:px-8 py-2.5 sm:py-3 bg-white text-primary font-bold rounded-lg hover:bg-gray-100 transition-all shadow-lg text-sm sm:text-base"
-                >
-                  Comprar ahora
-                </Link>
-                <Link
-                  href="/products"
-                  className="px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-white/40 text-white font-bold rounded-lg hover:bg-white/10 transition-all text-sm sm:text-base"
-                >
-                  Ver todos
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30 size-9 sm:size-10 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-        >
-          <MaterialIcon name="arrow_back" className="text-lg sm:text-xl" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30 size-9 sm:size-10 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-        >
-          <MaterialIcon name="arrow_forward" className="text-lg sm:text-xl" />
-        </button>
-
-        {/* Slide Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-          {HERO_SLIDES.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => goToSlide(idx)}
-              className={`rounded-full transition-all duration-300 ${
-                idx === currentSlide ? 'bg-white w-8 h-2' : 'bg-white/50 hover:bg-white/70 w-2 h-2'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Slide Counter */}
-        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-30 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-semibold">
-          {currentSlide + 1} / {HERO_SLIDES.length}
-        </div>
-      </section>
-
       {/* Browse Categories */}
-      <section className="spacing-section">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Explorar Categorías</h2>
-            <p className="text-primary/60 text-xs sm:text-sm mt-1">Encuentra lo que buscas</p>
-          </div>
-          <Link
-            href="/products"
-            className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
-          >
-            Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
-          {CATEGORIES.map((cat) => (
+      {categories.length > 0 && (
+        <section className="spacing-section">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Explorar Categorías</h2>
+              <p className="text-primary/60 text-xs sm:text-sm mt-1">Encuentra lo que buscas</p>
+            </div>
             <Link
-              key={cat.name}
-              href={`/products?category=${cat.name.toLowerCase().replace(/ /g, '')}`}
-              className="group relative h-32 sm:h-40 md:h-48 rounded-lg sm:rounded-xl overflow-hidden bg-primary/5"
+              href="/products"
+              className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
             >
-              <img
-                src={cat.image}
-                alt={cat.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/70 to-transparent" />
-              <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-white">
-                <p className="font-extrabold text-xs sm:text-sm md:text-lg leading-tight">{cat.name}</p>
-                <p className="text-[10px] sm:text-xs text-white/80">{cat.items} items</p>
-              </div>
+              Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
             </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Trending Now */}
-      <section className="spacing-section">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Tendencias</h2>
-            <p className="text-primary/60 text-xs sm:text-sm mt-1">Los productos más vendidos esta semana</p>
           </div>
-          <Link
-            href="/products"
-            className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
-          >
-            Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product as any} />
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
+            {categories.slice(0, 8).map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${cat.slug}`}
+                className="group relative h-32 sm:h-40 md:h-48 rounded-lg sm:rounded-xl overflow-hidden bg-primary/5"
+              >
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 transition-colors">
+                    <MaterialIcon name="category" className="text-4xl text-primary/30" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/70 to-transparent" />
+                <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-white">
+                  <p className="font-extrabold text-xs sm:text-sm md:text-lg leading-tight">{cat.name}</p>
+                  {cat.productCount > 0 && (
+                    <p className="text-[10px] sm:text-xs text-white/80">{cat.productCount} productos</p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Productos Destacados */}
+      {featuredProducts.length > 0 && (
+        <section className="spacing-section">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-primary">Productos Destacados</h2>
+              <p className="text-primary/60 text-xs sm:text-sm mt-1">Descubre nuestro catálogo</p>
+            </div>
+            <Link
+              href="/products"
+              className="flex items-center gap-1 text-primary font-semibold text-xs sm:text-sm hover:underline"
+            >
+              Ver todos <MaterialIcon name="arrow_forward" className="text-base" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-gap-standard">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product as any} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Engineered for Scale - Platform Features */}
       <section className="bg-primary text-white rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 lg:p-16 relative overflow-hidden">
@@ -228,17 +160,9 @@ export default function StorefrontHome() {
           <div className="hidden lg:block relative">
             <img
               src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80"
-              alt="Analytics Dashboard"
+              alt="Plataforma FlexiCommerce"
               className="rounded-lg sm:rounded-xl shadow-2xl rotate-3 w-full object-cover"
             />
-            <div className="absolute -bottom-6 -left-6 bg-white p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-xl text-primary max-w-xs">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="size-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-extrabold uppercase text-primary/40">Tráfico Global</span>
-              </div>
-              <p className="text-xl sm:text-2xl font-extrabold">4.2M+</p>
-              <p className="text-xs text-primary/60 font-medium italic">Transacciones Diarias Activas</p>
-            </div>
           </div>
         </div>
       </section>

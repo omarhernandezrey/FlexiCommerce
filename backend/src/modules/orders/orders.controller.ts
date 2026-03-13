@@ -50,6 +50,7 @@ export class OrdersController {
         shippingAddress: req.body.shippingAddress,
         shippingMethod: req.body.shippingMethod,
         shippingCost: req.body.shippingCost,
+        discount: req.body.discount,
         currency: 'COP',
       });
 
@@ -87,16 +88,16 @@ export class OrdersController {
     try {
       const order = await this.service.updateStatus(req.params.id, req.body.status);
 
-      // Send status update emails
+      // Send status update emails to the CUSTOMER (not the admin)
       try {
-        if (req.body.status === 'shipped') {
-          await emailService.sendOrderShipped(
-            order.id,
-            req.user.email,
-            req.body.trackingNumber
-          );
-        } else if (req.body.status === 'delivered') {
-          await emailService.sendOrderDelivered(order.id, req.user.email);
+        const customerEmail = (order as any).user?.email;
+        if (customerEmail) {
+          const upperStatus = req.body.status?.toUpperCase?.() ?? '';
+          if (upperStatus === 'SHIPPED') {
+            await emailService.sendOrderShipped(order.id, customerEmail, req.body.trackingNumber);
+          } else if (upperStatus === 'DELIVERED') {
+            await emailService.sendOrderDelivered(order.id, customerEmail);
+          }
         }
       } catch (_emailError) {
         // Email sending is non-critical
