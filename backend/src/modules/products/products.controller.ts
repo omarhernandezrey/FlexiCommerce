@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ProductsService } from './products.service.js';
 
 // Campos permitidos para crear/actualizar productos
-const ALLOWED_FIELDS = ['name', 'slug', 'description', 'price', 'stock', 'images', 'categoryId', 'isActive'] as const;
+const ALLOWED_FIELDS = ['name', 'slug', 'description', 'price', 'stock', 'images', 'categoryId', 'isActive', 'isFeatured'] as const;
 
 function pickAllowed(body: Record<string, unknown>) {
   const result: Record<string, unknown> = {};
@@ -50,6 +50,7 @@ export class ProductsController {
         sortBy,
         sortOrder,
         search,
+        featured,
       } = req.query;
 
       // Solo usuarios ADMIN pueden activar adminMode (ver inactivos)
@@ -64,6 +65,7 @@ export class ProductsController {
         sortBy as string | undefined,
         sortOrder as 'asc' | 'desc' | undefined,
         search as string | undefined,
+        featured === 'true' ? true : undefined,
       );
       res.json({ success: true, ...result });
     } catch (error) {

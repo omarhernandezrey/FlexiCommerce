@@ -5,6 +5,7 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProtectedRoute } from '@/components/auth/AuthProvider';
 import { useToast } from '@/hooks/useToast';
 import apiClient from '@/lib/api-client';
+import { formatCOP } from '@/lib/format';
 
 interface Coupon {
   id: string;
@@ -17,6 +18,7 @@ interface Coupon {
   expiresAt?: string;
   isActive: boolean;
   description?: string;
+  createdAt?: string;
 }
 
 const EMPTY_FORM = {
@@ -30,27 +32,43 @@ const EMPTY_FORM = {
   description: '',
 };
 
-const generateCode = () =>
-  Math.random().toString(36).substring(2, 10).toUpperCase();
+function generateCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  const array = new Uint8Array(10);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 10; i++) {
+    result += chars[array[i] % chars.length];
+  }
+  return result;
+}
+
+type FilterTab = 'all' | 'active' | 'inactive' | 'expired';
 
 export default function AdminCouponsPage() {
   const { toast } = useToast();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteCoupon, setConfirmDeleteCoupon] = useState<Coupon | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterTab, setFilterTab] = useState<FilterTab>('all');
   const [form, setForm] = useState(EMPTY_FORM);
 
   const fetchCoupons = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get('/coupons');
-      setCoupons(res.data.coupons || res.data || []);
+      setFetchError(false);
+      const res = await apiClient.get('/api/coupons');
+      const data = (res.data as any)?.data ?? res.data ?? [];
+      setCoupons(Array.isArray(data) ? data : []);
     } catch {
       setCoupons([]);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -90,7 +108,13 @@ export default function AdminCouponsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.code || !form.value) {
-      toast({ message: 'El código y el valor son requeridos', type: 'error' });
+      toast({ message: 'El codigo y el valor son requeridos', type: 'error' });
+      return;
+    }
+
+    const numValue = parseFloat(form.value);
+    if (form.type === 'percentage' && numValue > 100) {
+      toast({ message: 'El porcentaje no puede ser mayor a 100', type: 'error' });
       return;
     }
 
@@ -99,7 +123,7 @@ export default function AdminCouponsPage() {
       const payload = {
         code: form.code.toUpperCase(),
         type: form.type,
-        value: parseFloat(form.value),
+        value: numValue,
         minOrderAmount: form.minOrderAmount ? parseFloat(form.minOrderAmount) : undefined,
         maxUses: form.maxUses ? parseInt(form.maxUses) : undefined,
         expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : undefined,
@@ -108,30 +132,31 @@ export default function AdminCouponsPage() {
       };
 
       if (editingId) {
-        await apiClient.put(`/coupons/${editingId}`, payload);
-        toast({ message: 'Cupón actualizado exitosamente', type: 'success' });
+        await apiClient.put(`/api/coupons/${editingId}`, payload);
+        toast({ message: 'Cupon actualizado exitosamente', type: 'success' });
       } else {
-        await apiClient.post('/coupons', payload);
-        toast({ message: 'Cupón creado exitosamente', type: 'success' });
+        await apiClient.post('/api/coupons', payload);
+        toast({ message: 'Cupon creado exitosamente', type: 'success' });
       }
       await fetchCoupons();
       handleCancel();
-    } catch {
-      toast({ message: 'Error al guardar el cupón', type: 'error' });
+    } catch (error: any) {
+      const msg = error?.response?.data?.error || 'Error al guardar el cupon';
+      toast({ message: msg, type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: string, code: string) => {
-    if (!confirm(`¿Eliminar el cupón "${code}"?`)) return;
-    setDeletingId(id);
+  const handleDelete = async (coupon: Coupon) => {
+    setConfirmDeleteCoupon(null);
+    setDeletingId(coupon.id);
     try {
-      await apiClient.delete(`/coupons/${id}`);
-      setCoupons((prev) => prev.filter((c) => c.id !== id));
-      toast({ message: 'Cupón eliminado', type: 'success' });
+      await apiClient.delete(`/api/coupons/${coupon.id}`);
+      setCoupons((prev) => prev.filter((c) => c.id !== coupon.id));
+      toast({ message: 'Cupon eliminado', type: 'success' });
     } catch {
-      toast({ message: 'Error al eliminar el cupón', type: 'error' });
+      toast({ message: 'Error al eliminar el cupon', type: 'error' });
     } finally {
       setDeletingId(null);
     }
@@ -139,23 +164,30 @@ export default function AdminCouponsPage() {
 
   const handleToggleActive = async (coupon: Coupon) => {
     try {
-      await apiClient.put(`/coupons/${coupon.id}`, { ...coupon, isActive: !coupon.isActive });
+      await apiClient.put(`/api/coupons/${coupon.id}`, { isActive: !coupon.isActive });
       setCoupons((prev) =>
         prev.map((c) => (c.id === coupon.id ? { ...c, isActive: !c.isActive } : c))
       );
-      toast({ message: `Cupón ${!coupon.isActive ? 'activado' : 'desactivado'}`, type: 'success' });
+      toast({ message: `Cupon ${!coupon.isActive ? 'activado' : 'desactivado'}`, type: 'success' });
     } catch {
-      toast({ message: 'Error al actualizar el estado del cupón', type: 'error' });
+      toast({ message: 'Error al actualizar el estado del cupon', type: 'error' });
     }
   };
 
-  const filtered = coupons.filter((c) =>
-    c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.description || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const isExpired = (coupon: Coupon) =>
     coupon.expiresAt ? new Date(coupon.expiresAt) < new Date() : false;
+
+  const filtered = coupons
+    .filter((c) => {
+      if (filterTab === 'active') return c.isActive && !isExpired(c);
+      if (filterTab === 'inactive') return !c.isActive;
+      if (filterTab === 'expired') return isExpired(c);
+      return true;
+    })
+    .filter((c) =>
+      c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const getUsagePercent = (coupon: Coupon) =>
     coupon.maxUses ? Math.round((coupon.usedCount / coupon.maxUses) * 100) : null;
@@ -167,6 +199,13 @@ export default function AdminCouponsPage() {
     totalUses: coupons.reduce((sum, c) => sum + c.usedCount, 0),
   };
 
+  const filterTabs: { key: FilterTab; label: string; count: number }[] = [
+    { key: 'all', label: 'Todos', count: coupons.length },
+    { key: 'active', label: 'Activos', count: stats.active },
+    { key: 'inactive', label: 'Inactivos', count: coupons.filter((c) => !c.isActive).length },
+    { key: 'expired', label: 'Vencidos', count: stats.expired },
+  ];
+
   return (
     <ProtectedRoute>
       <div className="p-6 space-y-6">
@@ -174,7 +213,7 @@ export default function AdminCouponsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-primary">Cupones y Descuentos</h1>
-            <p className="text-primary/50 text-sm mt-0.5">Administra códigos promocionales y descuentos</p>
+            <p className="text-primary/50 text-sm mt-0.5">Administra codigos promocionales y descuentos</p>
           </div>
           {!showForm && (
             <button
@@ -182,7 +221,7 @@ export default function AdminCouponsPage() {
               className="flex items-center gap-2 bg-primary text-white font-bold px-4 py-2.5 rounded-xl hover:bg-primary/90 transition-colors text-sm"
             >
               <MaterialIcon name="add" className="text-base" />
-              Crear Cupón
+              Crear Cupon
             </button>
           )}
         </div>
@@ -210,7 +249,7 @@ export default function AdminCouponsPage() {
           <div className="bg-white rounded-xl border border-primary/10 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-extrabold text-primary text-lg">
-                {editingId ? 'Editar Cupón' : 'Nuevo Cupón'}
+                {editingId ? 'Editar Cupon' : 'Nuevo Cupon'}
               </h2>
               <button onClick={handleCancel} className="text-primary/40 hover:text-primary transition-colors">
                 <MaterialIcon name="close" className="text-xl" />
@@ -221,7 +260,7 @@ export default function AdminCouponsPage() {
               {/* Code */}
               <div>
                 <label className="block text-xs font-bold text-primary mb-1.5">
-                  Código de Cupón <span className="text-red-500">*</span>
+                  Codigo de Cupon <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -253,7 +292,7 @@ export default function AdminCouponsPage() {
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="percentage">Porcentaje (%)</option>
-                    <option value="fixed">Monto Fijo</option>
+                    <option value="fixed">Monto Fijo (COP)</option>
                   </select>
                 </div>
                 <div>
@@ -272,7 +311,7 @@ export default function AdminCouponsPage() {
                       value={form.value}
                       onChange={(e) => setForm({ ...form, value: e.target.value })}
                       required
-                      placeholder={form.type === 'percentage' ? '20' : '10.00'}
+                      placeholder={form.type === 'percentage' ? '20' : '10000'}
                       className="w-full h-10 pl-7 pr-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
@@ -282,19 +321,19 @@ export default function AdminCouponsPage() {
               {/* Min Order + Max Uses */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Monto Mínimo de Orden</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Monto Minimo de Orden</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={form.minOrderAmount}
                     onChange={(e) => setForm({ ...form, minOrderAmount: e.target.value })}
-                    placeholder="0 = sin mínimo"
+                    placeholder="0 = sin minimo"
                     className="w-full h-10 px-3 border border-primary/10 rounded-lg text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Usos Máximos</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Usos Maximos</label>
                   <input
                     type="number"
                     min="0"
@@ -318,7 +357,7 @@ export default function AdminCouponsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1.5">Descripción</label>
+                  <label className="block text-xs font-bold text-primary mb-1.5">Descripcion</label>
                   <input
                     type="text"
                     value={form.description}
@@ -345,42 +384,81 @@ export default function AdminCouponsPage() {
                 </button>
                 <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
                   {saving && <MaterialIcon name="hourglass_bottom" className="text-base" />}
-                  {saving ? 'Guardando...' : editingId ? 'Actualizar Cupón' : 'Crear Cupón'}
+                  {saving ? 'Guardando...' : editingId ? 'Actualizar Cupon' : 'Crear Cupon'}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Search */}
-        <div className="relative max-w-sm">
-          <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base" />
-          <input
-            type="text"
-            placeholder="Buscar por código o descripción..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 border border-primary/10 rounded-xl text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
+        {/* Filter Tabs + Search */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex gap-1 bg-primary/5 rounded-xl p-1">
+            {filterTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setFilterTab(tab.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  filterTab === tab.key
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-primary/50 hover:text-primary'
+                }`}
+              >
+                {tab.label} ({tab.count})
+              </button>
+            ))}
+          </div>
+          <div className="relative w-full sm:w-auto sm:min-w-[280px]">
+            <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-base" />
+            <input
+              type="text"
+              placeholder="Buscar por codigo o descripcion..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-10 pl-9 pr-4 border border-primary/10 rounded-xl text-sm text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
         </div>
 
         {/* Coupons List */}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl border border-primary/10 p-5 animate-pulse h-20" />
+              <div key={i} className="bg-white rounded-xl border border-primary/10 p-5 animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="w-28 h-10 bg-primary/10 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-48 bg-primary/10 rounded" />
+                    <div className="h-3 w-32 bg-primary/5 rounded" />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="size-8 bg-primary/5 rounded-lg" />
+                    <div className="size-8 bg-primary/5 rounded-lg" />
+                  </div>
+                </div>
+              </div>
             ))}
+          </div>
+        ) : fetchError ? (
+          <div className="bg-white rounded-xl border border-primary/10 p-16 text-center">
+            <MaterialIcon name="error_outline" className="text-5xl text-red-400 mb-4" />
+            <h3 className="font-extrabold text-primary text-lg mb-2">Error al cargar cupones</h3>
+            <p className="text-sm text-primary/50 mb-4">No se pudo conectar con el servidor</p>
+            <button onClick={fetchCoupons} className="inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors">
+              <MaterialIcon name="refresh" className="text-base" />
+              Reintentar
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-xl border border-primary/10 p-16 text-center">
             <MaterialIcon name="local_offer" className="text-5xl text-primary/20 mb-4" />
             <h3 className="font-extrabold text-primary text-lg mb-2">
-              {searchTerm ? 'No hay cupones que coincidan con tu búsqueda' : 'Sin cupones aún'}
+              {searchTerm || filterTab !== 'all' ? 'No hay cupones que coincidan' : 'Sin cupones aun'}
             </h3>
-            {!searchTerm && (
+            {!searchTerm && filterTab === 'all' && (
               <button onClick={openAddForm} className="mt-4 inline-flex items-center gap-2 bg-primary text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors">
                 <MaterialIcon name="add" className="text-base" />
-                Crear Primer Cupón
+                Crear Primer Cupon
               </button>
             )}
           </div>
@@ -401,7 +479,7 @@ export default function AdminCouponsPage() {
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       {/* Code Badge */}
                       <div className={`px-4 py-2 rounded-xl border-2 border-dashed shrink-0 ${
-                        expired ? 'border-orange-300 bg-orange-50' : coupon.isActive ? 'border-primary/30 bg-primary/5' : 'border-primary/10 bg-primary/2'
+                        expired ? 'border-orange-300 bg-orange-50' : coupon.isActive ? 'border-primary/30 bg-primary/5' : 'border-primary/10 bg-primary/[0.02]'
                       }`}>
                         <span className={`font-mono font-extrabold text-sm tracking-widest ${expired ? 'text-orange-600' : 'text-primary'}`}>
                           {coupon.code}
@@ -412,11 +490,13 @@ export default function AdminCouponsPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-extrabold text-primary text-base">
-                            {coupon.type === 'percentage' ? `${coupon.value}% de descuento` : `$${coupon.value} de descuento`}
+                            {coupon.type === 'percentage'
+                              ? `${coupon.value}% de descuento`
+                              : `${formatCOP(coupon.value)} de descuento`}
                           </span>
-                          {coupon.minOrderAmount && (
-                            <span className="text-xs text-primary/40">mín ${coupon.minOrderAmount}</span>
-                          )}
+                          {coupon.minOrderAmount ? (
+                            <span className="text-xs text-primary/40">min {formatCOP(coupon.minOrderAmount)}</span>
+                          ) : null}
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                             expired
                               ? 'bg-orange-50 text-orange-600'
@@ -436,7 +516,12 @@ export default function AdminCouponsPage() {
                           </span>
                           {coupon.expiresAt && (
                             <span className="text-xs text-primary/40">
-                              Vence: {new Date(coupon.expiresAt).toLocaleDateString()}
+                              Vence: {new Date(coupon.expiresAt).toLocaleDateString('es-CO')}
+                            </span>
+                          )}
+                          {coupon.createdAt && (
+                            <span className="text-xs text-primary/30">
+                              Creado: {new Date(coupon.createdAt).toLocaleDateString('es-CO')}
                             </span>
                           )}
                         </div>
@@ -458,7 +543,7 @@ export default function AdminCouponsPage() {
                           onClick={() => handleToggleActive(coupon)}
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${coupon.isActive ? 'bg-primary' : 'bg-primary/20'}`}
                         >
-                          <span className={`inline-block size-3.5 transform rounded-full bg-white transition-transform ${coupon.isActive ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                          <span className={`inline-block size-3.5 transform rounded-full bg-white transition-transform ${coupon.isActive ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
                         </button>
                       )}
                       <button
@@ -468,7 +553,7 @@ export default function AdminCouponsPage() {
                         <MaterialIcon name="edit" className="text-base" />
                       </button>
                       <button
-                        onClick={() => handleDelete(coupon.id, coupon.code)}
+                        onClick={() => setConfirmDeleteCoupon(coupon)}
                         disabled={deletingId === coupon.id}
                         className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors disabled:opacity-40"
                       >
@@ -479,6 +564,40 @@ export default function AdminCouponsPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {confirmDeleteCoupon && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="size-10 bg-red-50 rounded-full flex items-center justify-center shrink-0">
+                  <MaterialIcon name="delete" className="text-red-500 text-xl" />
+                </div>
+                <h3 className="font-extrabold text-primary text-lg">Eliminar Cupon</h3>
+              </div>
+              <p className="text-sm text-primary/60 mb-1">
+                Estas seguro de eliminar el cupon:
+              </p>
+              <p className="font-mono font-extrabold text-primary text-base mb-6">
+                {confirmDeleteCoupon.code}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDeleteCoupon(null)}
+                  className="flex-1 py-2.5 border-2 border-primary/20 text-primary font-bold rounded-xl text-sm hover:bg-primary/5 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(confirmDeleteCoupon)}
+                  className="flex-1 py-2.5 bg-red-500 text-white font-bold rounded-xl text-sm hover:bg-red-600 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -4,27 +4,31 @@ export const IMAGES = {
   analytics: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCIy0gcHjwNSDqx62eBXIDCkKKbr1ZP1NYQJHKwE_bqBESTOE3udHLpRSACwXaeKlkW-TntKk5O5qedbaXfYis_tMoZ_RgQgTZCJHEuv_Mn_GSEUSZ3Jpfta0YO-i_0hmNHU6AbziO7hSPgHoEnsesnFDiE1piapFsOtIx5OpbX1U5Cby65f4KoV7L45cdYVrTOoAWt6MW_2Fxl-865DYWADWDC6e2eiW7_c2cU8FpLBAo6eXPRQ24nk9uF_DEtemAnHbLe5Ax4GiA',
 };
 
+export interface FooterLink {
+  label: string;
+  href: string;
+}
 
-export const FOOTER_LINKS = {
+export const FOOTER_LINKS: Record<string, FooterLink[]> = {
   shop: [
-    'Novedades Destacadas',
-    'Gadgets Electrónicos',
-    'Moda de Lujo',
-    'Decoración de Interiores',
-    'Colecciones Exclusivas',
+    { label: 'Todos los Productos', href: '/products' },
+    { label: 'Novedades', href: '/products?sortBy=createdAt&sortOrder=desc' },
+    { label: 'Ofertas', href: '/products?sort=price_asc' },
+    { label: 'Favoritos', href: '/wishlist' },
+    { label: 'Mi Carrito', href: '/cart' },
   ],
   company: [
-    'Acerca de FlexiCommerce',
-    'Características de la Plataforma',
-    'Programa de Socios',
-    'Soluciones B2B',
-    'Empleos',
+    { label: 'Acerca de FlexiCommerce', href: '/cms/about' },
+    { label: 'Términos y Condiciones', href: '/cms/terminos-condiciones' },
+    { label: 'Política de Privacidad', href: '/cms/politica-privacidad' },
+    { label: 'Programa de Socios', href: '/cms/socios' },
+    { label: 'Empleos', href: '/cms/empleos' },
   ],
   support: [
-    'Centro de Atención al Cliente',
-    'Envíos y Entregas',
-    'Política de Devoluciones',
-    'Pagos Seguros',
-    'Contáctanos',
+    { label: 'Centro de Ayuda', href: '/cms/ayuda' },
+    { label: 'Envíos y Entregas', href: '/cms/envios' },
+    { label: 'Devoluciones', href: '/cms/devoluciones' },
+    { label: 'Pagos Seguros', href: '/cms/pagos-seguros' },
+    { label: 'Contáctanos', href: '/cms/contacto' },
   ],
 };

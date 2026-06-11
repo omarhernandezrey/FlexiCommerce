@@ -36,69 +36,72 @@ The setup script will:
 ### Manual Setup
 
 ```bash
-# Copy environment template
-cp .env.example .env.local
+# Copiar plantilla de variables (OBLIGATORIO: completar JWT_SECRET)
+cp .env.example .env
 
-# Start Docker services
-docker-compose up -d
-
-# Install backend dependencies
-cd backend && npm install && cd ..
-
-# Install frontend dependencies
-cd frontend && npm install && cd ..
-
-# Run database migrations
-docker-compose exec backend npx prisma migrate dev
-
-# Seed database
-docker-compose exec backend npx prisma db seed
+# Levantar todo el stack (las migraciones de Prisma corren automáticamente
+# al arrancar el backend — ver backend/docker-entrypoint.sh)
+docker compose up -d --build
 ```
 
 ### Access Services
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
-- **Database**: localhost:5432 (user: flexicommerce)
-- **Redis**: localhost:6379
+- **Frontend**: http://localhost:3000 (configurable con `FRONTEND_PORT`)
+- **Backend API**: http://localhost:3001 (configurable con `BACKEND_PORT`)
+- **Database**: localhost:5434 (user: flexicommerce, configurable con `DB_PORT`)
+- **Redis**: localhost:6379 (configurable con `REDIS_PORT`)
 - **PgAdmin**: http://localhost:5050 (profile: dev-tools)
 
+> ⚠️ Las variables `NEXT_PUBLIC_*` se compilan dentro del bundle del frontend.
+> Si cambias `BACKEND_PORT` o las URLs públicas, actualiza `NEXT_PUBLIC_API_URL`
+> en `.env` y reconstruye: `docker compose build frontend`.
+
 ## Docker Setup
+
+### Estructura
+
+- `backend/Dockerfile` — multi-stage (deps → build → prod-deps → runner), usuario no-root, `prisma migrate deploy` automático al arrancar (desactivable con `RUN_MIGRATIONS=false`)
+- `frontend/Dockerfile` — multi-stage con Next.js `output: standalone`, usuario no-root
+- `docker-compose.yml` — stack de producción (postgres, redis, backend, frontend, pgadmin opcional)
+- `docker-compose.dev.yml` — override de desarrollo con hot-reload
 
 ### Build Images
 
 ```bash
 # Build all images
-docker-compose build
+docker compose build
 
 # Build specific service
-docker-compose build backend
-docker-compose build frontend
+docker compose build backend
+docker compose build frontend
 
 # Build with no cache
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ### Docker Commands
 
 ```bash
-# Start services
-docker-compose up -d
+# Start services (producción)
+docker compose up -d
+
+# Desarrollo con hot-reload (tsx watch + next dev)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 # Stop services
-docker-compose down
+docker compose down
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # View specific service logs
-docker-compose logs -f backend
+docker compose logs -f backend
 
 # Connect to container
-docker-compose exec backend bash
+docker compose exec backend bash
 
 # Run one-off command
-docker-compose run --rm backend npm test
+docker compose run --rm backend npm test
 ```
 
 ### Database Services

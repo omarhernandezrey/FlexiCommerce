@@ -12,6 +12,7 @@ export class ProductsService {
     sortBy = 'createdAt',
     sortOrder: 'asc' | 'desc' = 'desc',
     search?: string,
+    featured?: boolean,
   ) {
     const safePage = Math.min(10000, Math.max(1, Number.isFinite(page) ? Math.floor(page) : 1));
     const maxLimit = adminMode ? 10000 : 100;
@@ -33,6 +34,7 @@ export class ProductsService {
       // status === 'all' → sin filtro
     }
 
+    if (featured) where.isFeatured = true;
     if (categoryId) where.category = { slug: categoryId };
 
     if (stockFilter === 'out') where.stock = 0;

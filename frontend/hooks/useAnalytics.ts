@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import apiClient from '@/lib/api-client';
 
 export interface SalesMetrics {
@@ -8,7 +8,7 @@ export interface SalesMetrics {
   totalOrders: number;
   averageOrderValue: number;
   totalCustomers: number;
-  conversionRate: number;
+  ordersPerCustomer: number;
 }
 
 export interface DailySales {
@@ -34,127 +34,115 @@ export interface AnalyticsState {
   dateRange: { startDate: string; endDate: string };
 }
 
-const initialState: AnalyticsState = {
-  metrics: null,
-  dailySales: [],
-  topProducts: [],
-  loading: false,
-  error: null,
-  dateRange: {
-    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
-  },
-};
+const getInitialDateRange = () => ({
+  startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  endDate: new Date().toISOString().split('T')[0],
+});
 
 export function useAnalytics() {
-  const [state, setState] = useState<AnalyticsState>(initialState);
+  const [metrics, setMetrics] = useState<SalesMetrics | null>(null);
+  const [dailySales, setDailySales] = useState<DailySales[]>([]);
+  const [topProducts, setTopProducts] = useState<ProductSales[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dateRange, setDateRangeState] = useState(getInitialDateRange);
+
+  // Ref para leer dateRange dentro de callbacks sin recrearlos
+  const dateRangeRef = useRef(dateRange);
+  dateRangeRef.current = dateRange;
 
   const fetchMetrics = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    setLoading(true);
+    setError(null);
     try {
+      const dr = dateRangeRef.current;
       const response = await apiClient.get('/api/analytics/metrics', {
-        params: {
-          startDate: state.dateRange.startDate,
-          endDate: state.dateRange.endDate,
-        },
+        params: { startDate: dr.startDate, endDate: dr.endDate },
       });
-      setState((prev) => ({
-        ...prev,
-        metrics: response.data,
-        loading: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error fetching metrics',
-        loading: false,
-      }));
+      const data = (response.data as any)?.data ?? response.data;
+      // Normalizar: backend envía conversionRate, frontend lo muestra como ordersPerCustomer
+      setMetrics({
+        totalSales: Number(data.totalSales) || 0,
+        totalOrders: Number(data.totalOrders) || 0,
+        averageOrderValue: Number(data.averageOrderValue) || 0,
+        totalCustomers: Number(data.totalCustomers) || 0,
+        ordersPerCustomer: Number(data.conversionRate ?? data.ordersPerCustomer) || 0,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar métricas');
+    } finally {
+      setLoading(false);
     }
-  }, [state.dateRange]);
+  }, []);
 
   const fetchDailySales = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    setLoading(true);
+    setError(null);
     try {
+      const dr = dateRangeRef.current;
       const response = await apiClient.get('/api/analytics/daily-sales', {
-        params: {
-          startDate: state.dateRange.startDate,
-          endDate: state.dateRange.endDate,
-        },
+        params: { startDate: dr.startDate, endDate: dr.endDate },
       });
-      setState((prev) => ({
-        ...prev,
-        dailySales: response.data,
-        loading: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error fetching sales data',
-        loading: false,
-      }));
+      const raw = (response.data as any)?.data ?? response.data;
+      setDailySales(Array.isArray(raw) ? raw : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar ventas diarias');
+    } finally {
+      setLoading(false);
     }
-  }, [state.dateRange]);
+  }, []);
 
   const fetchTopProducts = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    setLoading(true);
+    setError(null);
     try {
+      const dr = dateRangeRef.current;
       const response = await apiClient.get('/api/analytics/top-products', {
-        params: {
-          startDate: state.dateRange.startDate,
-          endDate: state.dateRange.endDate,
-          limit: 10,
-        },
+        params: { startDate: dr.startDate, endDate: dr.endDate, limit: 10 },
       });
-      setState((prev) => ({
-        ...prev,
-        topProducts: response.data,
-        loading: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error fetching top products',
-        loading: false,
-      }));
+      const raw = (response.data as any)?.data ?? response.data;
+      setTopProducts(Array.isArray(raw) ? raw : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar productos top');
+    } finally {
+      setLoading(false);
     }
-  }, [state.dateRange]);
+  }, []);
 
   const setDateRange = useCallback((startDate: string, endDate: string) => {
-    setState((prev) => ({
-      ...prev,
-      dateRange: { startDate, endDate },
-    }));
+    setDateRangeState({ startDate, endDate });
   }, []);
 
   const exportReport = useCallback(async (format: 'csv' | 'pdf' = 'csv') => {
-    try {
-      const response = await apiClient.get(`/api/analytics/export-${format}`, {
-        params: {
-          startDate: state.dateRange.startDate,
-          endDate: state.dateRange.endDate,
-        },
-        responseType: format === 'pdf' ? 'arraybuffer' : 'text',
-      });
+    const dr = dateRangeRef.current;
+    // El endpoint /export-pdf ahora devuelve texto plano (.txt)
+    const endpoint = format === 'pdf' ? '/api/analytics/export-pdf' : '/api/analytics/export-csv';
+    const ext = format === 'pdf' ? 'txt' : 'csv';
+    const mime = format === 'pdf' ? 'text/plain' : 'text/csv';
 
-      const blob = new Blob([response.data], {
-        type: format === 'pdf' ? 'application/pdf' : 'text/csv',
-      });
+    const response = await apiClient.get(endpoint, {
+      params: { startDate: dr.startDate, endDate: dr.endDate },
+      responseType: 'text',
+    });
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `report-${Date.now()}.${format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error exporting report:', error);
-    }
-  }, [state.dateRange]);
+    const blob = new Blob([response.data], { type: `${mime}; charset=utf-8` });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `reporte-analytics-${dr.startDate}_${dr.endDate}.${ext}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, []);
 
   return {
-    ...state,
+    metrics,
+    dailySales,
+    topProducts,
+    loading,
+    error,
+    dateRange,
     fetchMetrics,
     fetchDailySales,
     fetchTopProducts,

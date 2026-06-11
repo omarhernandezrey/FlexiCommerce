@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import CartPage from '@/app/cart/page';
+import { formatCOP } from '@/lib/format';
 
 // Mock next/link
 jest.mock('next/link', () => {
@@ -7,6 +8,18 @@ jest.mock('next/link', () => {
     return <a href={href}>{children}</a>;
   };
 });
+
+// Mock next/navigation (CartPage usa useRouter)
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => '/cart',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+// Mock useAuth (CartPage muestra CTA de login si no hay usuario)
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, isAuthenticated: false }),
+}));
 
 // Mock de Breadcrumbs para simplificar
 jest.mock('@/components/ui/Breadcrumbs', () => ({
@@ -64,8 +77,12 @@ describe('CartPage', () => {
 
   it('muestra el total calculado correctamente', () => {
     render(<CartPage />);
-    // subtotal = 2029.97, tax = 8% = 162.40, total = 2192.37
-    expect(screen.getByText('$2029.97')).toBeInTheDocument();
+    // subtotal = 2029.97, envío gratis → total = subtotal, formateado como COP.
+    // Intl usa espacios no separables (NBSP); testing-library normaliza el DOM
+    // a espacio común, así que el esperado también se normaliza.
+    // (aparece en Subtotal y Total, por eso getAllByText)
+    const expected = formatCOP(2029.97).replace(/\s/g, ' ');
+    expect(screen.getAllByText(expected).length).toBeGreaterThanOrEqual(1);
   });
 
   it('el botón de eliminar llama a removeItem con el id correcto', () => {

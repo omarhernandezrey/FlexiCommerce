@@ -12,6 +12,7 @@ jest.mock('../../../database/prisma', () => ({
     },
     product: {
       findMany: jest.fn(),
+      update: jest.fn(),
     },
   },
 }));
@@ -21,7 +22,7 @@ import prisma from '../../../database/prisma';
 const mockOrder = {
   id: 'order-1',
   userId: 'user-1',
-  status: 'pending',
+  status: 'PENDING',
   total: 1999.98,
   createdAt: new Date(),
   items: [
@@ -30,8 +31,8 @@ const mockOrder = {
 };
 
 const mockProducts = [
-  { id: 'prod-1', price: 999.99 },
-  { id: 'prod-2', price: 499.99 },
+  { id: 'prod-1', name: 'Laptop Pro', price: 999.99, stock: 10 },
+  { id: 'prod-2', name: 'Mouse', price: 499.99, stock: 10 },
 ];
 
 describe('OrdersService', () => {
@@ -72,9 +73,10 @@ describe('OrdersService', () => {
   });
 
   describe('create', () => {
-    it('calcula el total correctamente basado en precios del producto', async () => {
+    it('calcula el total con IVA (19%) basado en precios del producto y descuenta stock', async () => {
       (prisma.product.findMany as jest.Mock).mockResolvedValue(mockProducts);
       (prisma.order.create as jest.Mock).mockResolvedValue(mockOrder);
+      (prisma.product.update as jest.Mock).mockResolvedValue({});
 
       const items = [
         { productId: 'prod-1', quantity: 2 }, // 999.99 * 2 = 1999.98
@@ -83,7 +85,8 @@ describe('OrdersService', () => {
 
       await ordersService.create('user-1', items);
 
-      const expectedTotal = 999.99 * 2 + 499.99 * 1;
+      const itemsTotal = 999.99 * 2 + 499.99 * 1;
+      const expectedTotal = itemsTotal + itemsTotal * 0.19; // subtotal + IVA 19%
       expect(prisma.order.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -92,11 +95,18 @@ describe('OrdersService', () => {
           }),
         })
       );
+
+      // Descuenta stock de cada producto del pedido
+      expect(prisma.product.update).toHaveBeenCalledTimes(2);
+      expect(prisma.product.update).toHaveBeenCalledWith({
+        where: { id: 'prod-1' },
+        data: { stock: { decrement: 2 } },
+      });
     });
 
     it('lanza error si un producto del pedido no existe', async () => {
       (prisma.product.findMany as jest.Mock).mockResolvedValue([
-        { id: 'prod-1', price: 999.99 },
+        { id: 'prod-1', name: 'Laptop Pro', price: 999.99, stock: 10 },
       ]);
 
       const items = [
@@ -108,21 +118,51 @@ describe('OrdersService', () => {
         'Producto no-existe no encontrado'
       );
     });
+
+    it('lanza error si no hay stock suficiente', async () => {
+      (prisma.product.findMany as jest.Mock).mockResolvedValue([
+        { id: 'prod-1', name: 'Laptop Pro', price: 999.99, stock: 1 },
+      ]);
+
+      const items = [{ productId: 'prod-1', quantity: 5 }];
+
+      await expect(ordersService.create('user-1', items)).rejects.toThrow(
+        'Stock insuficiente'
+      );
+    });
   });
 
   describe('updateStatus', () => {
-    it('actualiza el estado de la orden', async () => {
+    it('actualiza el estado cuando la transición es válida (PENDING → PROCESSING)', async () => {
+      (prisma.order.findUnique as jest.Mock).mockResolvedValue({ status: 'PENDING' });
       (prisma.order.update as jest.Mock).mockResolvedValue({
         ...mockOrder,
-        status: 'shipped',
+        status: 'PROCESSING',
       });
 
-      await ordersService.updateStatus('order-1', 'shipped');
+      await ordersService.updateStatus('order-1', 'processing');
 
-      expect(prisma.order.update).toHaveBeenCalledWith({
-        where: { id: 'order-1' },
-        data: { status: 'shipped' },
-      });
+      expect(prisma.order.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'order-1' },
+          data: { status: 'PROCESSING' },
+        })
+      );
+    });
+
+    it('rechaza transiciones inválidas (PENDING → SHIPPED)', async () => {
+      (prisma.order.findUnique as jest.Mock).mockResolvedValue({ status: 'PENDING' });
+
+      await expect(ordersService.updateStatus('order-1', 'shipped')).rejects.toThrow(
+        'No se puede cambiar de PENDING a SHIPPED'
+      );
+      expect(prisma.order.update).not.toHaveBeenCalled();
+    });
+
+    it('rechaza estados inválidos', async () => {
+      await expect(ordersService.updateStatus('order-1', 'volando')).rejects.toThrow(
+        'Estado inválido'
+      );
     });
   });
 });

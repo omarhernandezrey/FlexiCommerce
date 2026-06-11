@@ -7,22 +7,10 @@ import { StarRating } from '@/components/ui/StarRating';
 import { useCart } from '@/hooks/useCart';
 import { useFavorites } from '@/hooks/useFavorites';
 import { formatCOP } from '@/lib/format';
-
-interface ProductCardProduct {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  images?: string[];
-  rating: number;
-  reviews: number;
-  badge?: string;
-}
+import { Product } from '@/lib/api.service';
 
 interface ProductCardProps {
-  product: ProductCardProduct;
+  product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -30,13 +18,16 @@ export function ProductCard({ product }: ProductCardProps) {
   const [mounted, setMounted] = useState(false);
   const { addItem } = useCart();
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
-  // mounted evita hydration mismatch: localStorage no existe en el servidor
   useEffect(() => setMounted(true), []);
   const isFav = mounted && isFavorite(product.id);
   const price = Number(product.price) || 0;
   const originalPrice = product.originalPrice != null ? Number(product.originalPrice) : undefined;
+  const stock = Number(product.stock) || 0;
+  const isOutOfStock = stock === 0;
+  const isLowStock = stock > 0 && stock <= 5;
 
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
     addItem({
       id: product.id,
       name: product.name,
@@ -63,23 +54,33 @@ export function ProductCard({ product }: ProductCardProps) {
           <img
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
             src={product.image}
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = `https://placehold.co/400x400/f1f5f9/94a3b8?text=${encodeURIComponent(product.name)}`;
+              (e.currentTarget as HTMLImageElement).src = '/images/product-placeholder.svg';
             }}
           />
         </Link>
         <button
           onClick={handleToggleFavorite}
-          className={`absolute top-1 right-1 sm:top-2 sm:right-2 size-7 sm:size-8 rounded-full backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity ${
-            isFav ? 'bg-red-100 text-red-500' : 'bg-white/80 text-primary hover:text-red-500'
+          className={`absolute top-1 right-1 sm:top-2 sm:right-2 size-7 sm:size-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-all ${
+            isFav ? 'bg-red-100 text-red-500' : 'bg-white/80 text-primary hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100'
           }`}
-          title={isFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          aria-label={isFav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
         >
           <MaterialIcon name="favorite" className="text-base sm:text-xl" filled={isFav} />
         </button>
-        {product.badge && (
+        {isOutOfStock && (
+          <span className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-slate-700 text-white text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider">
+            Agotado
+          </span>
+        )}
+        {!isOutOfStock && isLowStock && (
+          <span className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-amber-500 text-white text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider">
+            ¡Últimas {stock} uds!
+          </span>
+        )}
+        {!isOutOfStock && !isLowStock && product.badge && (
           product.badge.toLowerCase().includes('sale') ? (
             <span className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-red-600 text-white text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded uppercase tracking-wider">
               {product.badge}
@@ -98,13 +99,13 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/products/${product.id}`} className="block font-bold text-xs sm:text-sm text-primary group-hover:text-primary/70 transition-colors line-clamp-2">
           {product.name}
         </Link>
-        <StarRating rating={product.rating} reviews={product.reviews} />
+        <StarRating rating={product.rating ?? 0} reviews={product.reviews} />
         <div className="flex items-center justify-between pt-1 sm:pt-2 gap-1">
           <div className="flex items-center gap-1">
             <span className="text-base sm:text-lg md:text-xl font-extrabold text-primary">
               {formatCOP(price)}
             </span>
-            {originalPrice != null && (
+            {originalPrice != null && originalPrice > price && (
               <span className="text-xs text-primary/40 line-through">
                 {formatCOP(originalPrice)}
               </span>
@@ -112,14 +113,17 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           <button
             onClick={handleAddToCart}
+            disabled={isOutOfStock}
             className={`size-7 sm:size-9 rounded-lg flex items-center justify-center transition-all font-bold text-xs sm:text-sm flex-shrink-0 ${
-              addedToCart
-                ? 'bg-success text-white'
-                : 'bg-primary text-white hover:bg-primary/90'
+              isOutOfStock
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : addedToCart
+                  ? 'bg-green-600 text-white'
+                  : 'bg-primary text-white hover:bg-primary/90'
             }`}
-            title={addedToCart ? 'Agregado al carrito' : 'Agregar al carrito'}
+            aria-label={isOutOfStock ? 'Producto agotado' : addedToCart ? 'Agregado al carrito' : 'Agregar al carrito'}
           >
-            <MaterialIcon name={addedToCart ? 'check' : 'add_shopping_cart'} />
+            <MaterialIcon name={isOutOfStock ? 'block' : addedToCart ? 'check' : 'add_shopping_cart'} />
           </button>
         </div>
       </div>

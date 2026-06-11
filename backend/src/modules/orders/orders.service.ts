@@ -1,4 +1,5 @@
 import prisma from '../../database/prisma.js';
+import { CouponsService } from '../coupons/coupons.service.js';
 
 interface OrderItemInput {
   productId: string;
@@ -10,6 +11,7 @@ interface CreateOrderOptions {
   shippingMethod?: string;
   shippingCost?: number;
   discount?: number;
+  couponCode?: string;
   currency?: string;
 }
 
@@ -64,8 +66,20 @@ export class OrdersService {
     }, 0);
 
     const shippingCost = options.shippingCost ?? 0;
-    // El descuento se aplica al subtotal antes de calcular el IVA
-    const discount = Math.min(options.discount ?? 0, itemsTotal);
+
+    // Si hay cupón, validar en backend y calcular descuento real (no confiar en el frontend)
+    let discount = 0;
+    if (options.couponCode) {
+      const couponsService = new CouponsService();
+      const coupon = await couponsService.validateForCheckout(options.couponCode, itemsTotal);
+      discount = couponsService.calculateDiscount(coupon, itemsTotal);
+      // Incrementar uso del cupón
+      await couponsService.incrementUsage(coupon.id);
+    } else if (options.discount) {
+      // Fallback: aceptar descuento directo solo si no hay couponCode (compat legacy)
+      discount = Math.min(options.discount, itemsTotal);
+    }
+
     const taxableAmount = itemsTotal - discount;
     const tax = taxableAmount * 0.19;
     const total = taxableAmount + shippingCost + tax;

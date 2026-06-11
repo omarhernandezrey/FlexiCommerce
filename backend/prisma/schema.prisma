@@ -81,6 +81,7 @@ model Product {
   stock       Int      @default(0)
   images      String[]
   isActive    Boolean  @default(true) @map("is_active")
+  isFeatured  Boolean  @default(false) @map("is_featured")
   categoryId  String   @map("category_id")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -91,6 +92,15 @@ model Product {
   wishlists   Wishlist[]
 
   @@map("products")
+}
+
+model NewsletterSubscription {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter_subscriptions")
 }
 
 model Order {
@@ -201,6 +211,23 @@ model Setting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("settings")
+}
+
+model Coupon {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  type           String    // 'percentage' | 'fixed'
+  value          Float
+  minOrderAmount Float?    @map("min_order_amount")
+  maxUses        Int?      @map("max_uses")
+  usedCount      Int       @default(0) @map("used_count")
+  expiresAt      DateTime? @map("expires_at")
+  isActive       Boolean   @default(true) @map("is_active")
+  description    String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("coupons")
 }
 
 model CmsPage {

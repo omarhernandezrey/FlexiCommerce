@@ -11,6 +11,7 @@ jest.mock('../../../database/prisma', () => ({
       update: jest.fn(),
       count: jest.fn(),
     },
+    $transaction: jest.fn(),
   },
 }));
 
@@ -54,7 +55,7 @@ describe('ProductsService', () => {
       );
     });
 
-    it('aplica filtro por categoría cuando se provee', async () => {
+    it('aplica filtro por slug de categoría cuando se provee', async () => {
       (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.product.count as jest.Mock).mockResolvedValue(0);
 
@@ -62,7 +63,7 @@ describe('ProductsService', () => {
 
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { categoryId: 'cat-1', isActive: true },
+          where: { category: { slug: 'cat-1' }, isActive: true },
         })
       );
     });
@@ -93,18 +94,20 @@ describe('ProductsService', () => {
   });
 
   describe('remove', () => {
-    it('hace soft delete (isActive = false) en lugar de eliminar', async () => {
-      (prisma.product.update as jest.Mock).mockResolvedValue({
-        ...mockProduct,
-        isActive: false,
-      });
+    it('hace hard delete en transacción, limpiando wishlists y reviews primero', async () => {
+      const tx = {
+        wishlist: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
+        review: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
+        product: { delete: jest.fn().mockResolvedValue(mockProduct) },
+      };
+      (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => fn(tx));
 
-      await productsService.remove('prod-1');
+      const result = await productsService.remove('prod-1');
 
-      expect(prisma.product.update).toHaveBeenCalledWith({
-        where: { id: 'prod-1' },
-        data: { isActive: false },
-      });
+      expect(tx.wishlist.deleteMany).toHaveBeenCalledWith({ where: { productId: 'prod-1' } });
+      expect(tx.review.deleteMany).toHaveBeenCalledWith({ where: { productId: 'prod-1' } });
+      expect(tx.product.delete).toHaveBeenCalledWith({ where: { id: 'prod-1' } });
+      expect(result).toEqual(mockProduct);
     });
   });
 });

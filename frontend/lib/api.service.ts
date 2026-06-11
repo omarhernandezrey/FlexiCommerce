@@ -6,10 +6,15 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
   category: string;
   image: string;
+  images?: string[];
   rating?: number;
+  reviews?: number;
   stock: number;
+  badge?: string;
+  isFeatured?: boolean;
 }
 
 export interface User {
@@ -108,7 +113,7 @@ export const ordersAPI = {
 
   getById: (id: string) => apiClient.get(`/api/orders/${id}`),
 
-  create: (data: Partial<Order> & { discount?: number }) => apiClient.post('/api/orders', data),
+  create: (data: Partial<Order> & { discount?: number; couponCode?: string }) => apiClient.post('/api/orders', data),
 
   updateStatus: (id: string, status: Order['status']) =>
     apiClient.patch(`/api/orders/${id}/status`, { status }),

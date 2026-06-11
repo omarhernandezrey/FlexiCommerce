@@ -17,13 +17,16 @@ const getDateRange = (req: Request): { startDate: Date; endDate: Date } => {
   const startDate = req.query.startDate
     ? new Date(req.query.startDate as string)
     : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Last 30 days
-  
+
   const endDate = req.query.endDate
     ? new Date(req.query.endDate as string)
     : new Date();
 
   return { startDate, endDate };
 };
+
+const formatCOPPlain = (n: number): string =>
+  '$ ' + Math.round(n).toLocaleString('es-CO');
 
 // Metrics endpoint
 router.get('/metrics', verifyToken, requireAdmin, async (req: Request, res: Response) => {
@@ -125,28 +128,42 @@ router.get('/products', verifyToken, requireAdmin, async (req: Request, res: Res
   }
 });
 
-// Export CSV endpoint
+// Export CSV endpoint — incluye resumen + ventas diarias + top products
 router.get('/export-csv', verifyToken, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { startDate, endDate } = getDateRange(req);
-    const dailySales = await AnalyticsService.getDailySales(startDate, endDate, 100);
-    const metrics = await AnalyticsService.getMetrics(startDate, endDate);
+    const [dailySales, metrics, topProducts] = await Promise.all([
+      AnalyticsService.getDailySales(startDate, endDate, 100),
+      AnalyticsService.getMetrics(startDate, endDate),
+      AnalyticsService.getTopProducts(startDate, endDate, 20),
+    ]);
 
-    // Build CSV header
-    let csv = 'Date,Sales,Orders,Average Order Value\n';
+    let csv = '\uFEFF'; // BOM para Excel
 
-    // Add daily sales data
+    // Resumen
+    csv += 'REPORTE ANALYTICS - FLEXICOMMERCE\n';
+    csv += `Periodo,"${startDate.toISOString().split('T')[0]} a ${endDate.toISOString().split('T')[0]}"\n\n`;
+    csv += 'RESUMEN GENERAL\n';
+    csv += `Ventas Totales,"${formatCOPPlain(metrics.totalSales)}"\n`;
+    csv += `Total Ordenes,${metrics.totalOrders}\n`;
+    csv += `Ticket Promedio,"${formatCOPPlain(metrics.averageOrderValue)}"\n`;
+    csv += `Clientes Unicos,${metrics.totalCustomers}\n`;
+    csv += `Ordenes por Cliente,${(metrics.conversionRate / 100).toFixed(1)}\n`;
+
+    // Ventas diarias
+    csv += '\nVENTAS DIARIAS\n';
+    csv += 'Fecha,Ventas,Ordenes,Ticket Promedio\n';
     dailySales.forEach((day) => {
-      csv += `${day.date},${day.sales},${day.orders},${(day.sales / day.orders).toFixed(2)}\n`;
+      const avg = day.orders > 0 ? (day.sales / day.orders) : 0;
+      csv += `${day.date},"${formatCOPPlain(day.sales)}",${day.orders},"${formatCOPPlain(avg)}"\n`;
     });
 
-    // Add summary section
-    csv += '\n\nSummary Report\n';
-    csv += `Total Sales,${metrics.totalSales}\n`;
-    csv += `Total Orders,${metrics.totalOrders}\n`;
-    csv += `Average Order Value,${metrics.averageOrderValue}\n`;
-    csv += `Total Customers,${metrics.totalCustomers}\n`;
-    csv += `Conversion Rate,${metrics.conversionRate}%\n`;
+    // Top Products
+    csv += '\nPRODUCTOS MAS VENDIDOS\n';
+    csv += 'Posicion,Producto,Unidades Vendidas,Ingresos\n';
+    topProducts.forEach((p, idx) => {
+      csv += `${idx + 1},"${p.productName}",${p.unitsSold},"${formatCOPPlain(p.revenue)}"\n`;
+    });
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename=analytics-${new Date().toISOString().split('T')[0]}.csv`);
@@ -158,30 +175,70 @@ router.get('/export-csv', verifyToken, requireAdmin, async (req: Request, res: R
   }
 });
 
-// Export PDF endpoint (mock - returns a simple text as placeholder)
+// Export PDF — genera texto plano formateado como reporte descargable
 router.get('/export-pdf', verifyToken, requireAdmin, async (req: Request, res: Response) => {
   try {
-    // En producción, usar librería como pdfkit o puppeteer
     const { startDate, endDate } = getDateRange(req);
-    const metrics = await AnalyticsService.getMetrics(startDate, endDate);
+    const [metrics, topProducts, dailySales] = await Promise.all([
+      AnalyticsService.getMetrics(startDate, endDate),
+      AnalyticsService.getTopProducts(startDate, endDate, 10),
+      AnalyticsService.getDailySales(startDate, endDate, 30),
+    ]);
 
-    // Simple PDF structure with metrics
-    const pdfContent = Buffer.from(
-      '%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n4 0 obj\n<< /Length 200 >>\nstream\nBT\n/F1 20 Tf\n50 750 Td\n(FlexiCommerce Analytics Report) Tj\n0 -30 Td\n/F1 12 Tf\n(Total Sales: $' +
-        metrics.totalSales +
-        ') Tj\n0 -20 Td\n(Total Orders: ' +
-        metrics.totalOrders +
-        ') Tj\n0 -20 Td\n(Customers: ' +
-        metrics.totalCustomers +
-        ') Tj\nET\nendstream\nendobj\n5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\nxref\n0 6\n0000000000 65535 f\n0000000009 00000 n\n0000000058 00000 n\n0000000115 00000 n\n0000000252 00000 n\n0000000500 00000 n\ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n578\n%%EOF'
-    );
+    const sep = '='.repeat(60);
+    const lines: string[] = [];
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=analytics-${new Date().toISOString().split('T')[0]}.pdf`);
-    res.send(pdfContent);
+    lines.push(sep);
+    lines.push('         FLEXICOMMERCE - REPORTE DE ANALYTICS');
+    lines.push(sep);
+    lines.push(`Periodo: ${startDate.toISOString().split('T')[0]} a ${endDate.toISOString().split('T')[0]}`);
+    lines.push(`Generado: ${new Date().toLocaleString('es-CO')}`);
+    lines.push('');
+
+    lines.push('-'.repeat(60));
+    lines.push('  RESUMEN GENERAL');
+    lines.push('-'.repeat(60));
+    lines.push(`  Ventas Totales:      ${formatCOPPlain(metrics.totalSales)}`);
+    lines.push(`  Total Ordenes:       ${metrics.totalOrders}`);
+    lines.push(`  Ticket Promedio:     ${formatCOPPlain(metrics.averageOrderValue)}`);
+    lines.push(`  Clientes Unicos:     ${metrics.totalCustomers}`);
+    lines.push(`  Ordenes por Cliente: ${(metrics.conversionRate / 100).toFixed(1)}`);
+    lines.push('');
+
+    if (topProducts.length > 0) {
+      lines.push('-'.repeat(60));
+      lines.push('  PRODUCTOS MAS VENDIDOS');
+      lines.push('-'.repeat(60));
+      topProducts.forEach((p, i) => {
+        lines.push(`  ${(i + 1).toString().padStart(2)}. ${p.productName}`);
+        lines.push(`      ${p.unitsSold} uds vendidas — ${formatCOPPlain(p.revenue)}`);
+      });
+      lines.push('');
+    }
+
+    if (dailySales.length > 0) {
+      lines.push('-'.repeat(60));
+      lines.push('  VENTAS DIARIAS (ultimos registros)');
+      lines.push('-'.repeat(60));
+      dailySales.slice(-10).forEach((d) => {
+        lines.push(`  ${d.date}  |  ${formatCOPPlain(d.sales).padStart(15)}  |  ${d.orders} ordenes`);
+      });
+      lines.push('');
+    }
+
+    lines.push(sep);
+    lines.push('  Reporte generado automaticamente por FlexiCommerce');
+    lines.push(sep);
+
+    const content = lines.join('\n');
+
+    // Enviar como texto plano con extensión .txt (alternativa honesta al PDF dummy)
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=analytics-${new Date().toISOString().split('T')[0]}.txt`);
+    res.send(Buffer.from(content, 'utf-8'));
   } catch (error) {
     res.status(500).json({
-      error: error instanceof Error ? error.message : 'Error exporting PDF',
+      error: error instanceof Error ? error.message : 'Error exporting report',
     });
   }
 });

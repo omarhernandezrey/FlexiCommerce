@@ -25,6 +25,8 @@ import analyticsRoutes from './modules/analytics/analytics.routes.js';
 import wishlistRoutes from './modules/wishlist/wishlist.routes.js';
 import recommendationsRoutes from './modules/recommendations/recommendations.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
+import couponsRoutes from './modules/coupons/coupons.routes.js';
+import newsletterRoutes from './modules/newsletter/newsletter.routes.js';
 
 dotenv.config();
 
@@ -120,6 +122,8 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/coupons', couponsRoutes);
 
 // Error handling
 app.use(errorHandler);

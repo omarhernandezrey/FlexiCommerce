@@ -43,6 +43,32 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const product = productData;
 
+  const {
+    reviews,
+    stats,
+    loading: reviewsLoading,
+    hasUserReview,
+    userReview,
+    createReview,
+    updateReview,
+    deleteReview,
+    fetchReviews,
+  } = useReviews(productData?.id ?? '');
+
+  // Review form state
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [reviewLimit, setReviewLimit] = useState(10);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [hoverStar, setHoverStar] = useState(0);
+
+  const [quantity, setQuantity] = useState(1);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].name);
+  const [activeTab, setActiveTab] = useState<Tab>('Descripción');
+
   if (productLoading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -60,26 +86,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       </div>
     );
   }
-
-  const {
-    reviews,
-    stats,
-    loading: reviewsLoading,
-    hasUserReview,
-    userReview,
-    createReview,
-    updateReview,
-    deleteReview,
-    fetchReviews,
-  } = useReviews(product.id);
-
-  // Review form state
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState('');
-  const [isEditingReview, setIsEditingReview] = useState(false);
-  const [reviewLimit, setReviewLimit] = useState(10);
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [hoverStar, setHoverStar] = useState(0);
 
   // Helpers
   const getInitials = (name: string) =>
@@ -133,12 +139,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       await addToWishlist(product.id, product.name, product.price, product.image, product.category);
     }
   };
-  const [quantity, setQuantity] = useState(1);
-  const [addedToCart, setAddedToCart] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].name);
-  const [activeTab, setActiveTab] = useState<Tab>('Descripción');
-
   const inWishlist = isInWishlist(product.id);
   const wishlistItem = wishlistItems.find((i) => i.productId === product.id);
 

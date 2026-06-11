@@ -51,6 +51,7 @@ export class OrdersController {
         shippingMethod: req.body.shippingMethod,
         shippingCost: req.body.shippingCost,
         discount: req.body.discount,
+        couponCode: req.body.couponCode,
         currency: 'COP',
       });
 

@@ -1,0 +1,34 @@
+# =============================================================================
+# FlexiCommerce — Jenkins CI
+#
+#   docker compose -f ci/jenkins/docker-compose.jenkins.yml up -d --build
+#   → http://localhost:8080  (admin / flexicommerce por defecto)
+#
+# DOCKER_GID debe coincidir con: stat -c '%g' /var/run/docker.sock
+# =============================================================================
+
+name: flexicommerce-ci-jenkins
+
+services:
+  jenkins:
+    build:
+      context: .
+      args:
+        DOCKER_GID: ${DOCKER_GID:-1001}
+    image: flexicommerce-jenkins
+    container_name: flexicommerce-jenkins
+    ports:
+      - "${JENKINS_PORT:-8080}:8080"
+    environment:
+      JENKINS_ADMIN_USER: ${JENKINS_ADMIN_USER:-admin}
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:-flexicommerce}
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # Daemon de Docker del host (para construir las imágenes del proyecto)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Repo local — el job clona desde file:///workspace
+      - ../..:/workspace:ro
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:

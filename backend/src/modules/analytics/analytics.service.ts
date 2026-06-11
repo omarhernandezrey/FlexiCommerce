@@ -140,7 +140,6 @@ export class AnalyticsService {
     try {
       const orderItems = await prisma.orderItem.findMany({
         where: {
-          productId: { not: null },
           order: {
             createdAt: {
               gte: startDate,
@@ -149,43 +148,40 @@ export class AnalyticsService {
           },
         },
         include: {
-          product: { select: { name: true } },
-          order: { select: { createdAt: true } },
+          product: { select: { id: true, name: true } },
         },
       });
 
-      // Group by product and calculate stats
-      const productMap = new Map<string, any>();
+      // Agrupar por productId (si existe) o por precio unitario (para items huérfanos)
+      const productMap = new Map<string, { productId: string; productName: string; unitsSold: number; revenue: number }>();
 
       orderItems.forEach((item: any) => {
-        const productId = item.productId;
-        if (!productId) return; // producto eliminado (SetNull)
-        const existing = productMap.get(productId) || {
-          productId,
-          productName: item.product?.name || item.productName || `Producto ${productId.substring(0, 8)}`,
-          unitsSold: 0,
-          revenue: 0,
-          prices: [],
-        };
+        const price = Number(item.price);
+        // Clave: productId real si existe, sino agrupar por precio
+        const key = item.productId ?? `orphan_${price}`;
+        const existing = productMap.get(key);
 
-        existing.unitsSold += item.quantity;
-        existing.revenue += item.price * item.quantity;
-        existing.prices.push(item.price);
-
-        productMap.set(productId, existing);
+        if (existing) {
+          existing.unitsSold += item.quantity;
+          existing.revenue += price * item.quantity;
+        } else {
+          productMap.set(key, {
+            productId: item.productId ?? key,
+            productName: item.product?.name ?? `Producto (${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(price)} c/u)`,
+            unitsSold: item.quantity,
+            revenue: price * item.quantity,
+          });
+        }
       });
 
-      // Calculate trends and convert to results
       const result = Array.from(productMap.values())
-        .map((item: any) => {
-          return {
-            productId: item.productId,
-            productName: item.productName,
-            unitsSold: item.unitsSold,
-            revenue: Math.round(item.revenue * 100) / 100,
-            trend: 0, // Will calculate from previous period in enhanced version
-          };
-        })
+        .map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          unitsSold: item.unitsSold,
+          revenue: Math.round(item.revenue * 100) / 100,
+          trend: 0,
+        }))
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, limit);
 

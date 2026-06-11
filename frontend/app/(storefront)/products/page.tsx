@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { ProductCard } from '@/components/products/ProductCard';
@@ -27,7 +27,16 @@ const COLOR_SWATCHES = [
 
 const SCREEN_SIZES = ['13-inch', '14-inch', '15-inch', '16-inch'];
 
+// useSearchParams() requiere un boundary de Suspense para el prerender estático
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsLoader />}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const [sortBy, setSortBy] = useState('popular');
   const MAX_PRICE = 10000000;

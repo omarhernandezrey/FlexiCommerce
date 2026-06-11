@@ -5,372 +5,395 @@ import { MaterialIcon } from '@/components/ui/MaterialIcon';
 import { LogoCropModal } from '@/components/ui/LogoCropModal';
 import apiClient from '@/lib/api-client';
 import { useToast } from '@/hooks/useToast';
-import { useProducts } from '@/hooks/useProducts';
-import { useOrdersAdmin } from '@/hooks/useOrdersAdmin';
+import type { CmsSections, BenefitItem } from '@/hooks/useCmsHomepage';
 
-const CMS_SECTIONS = [
-  {
-    id: 'hero',
-    title: 'Sección Hero con Slider',
-    subtitle: '3 Diapositivas • Reproducción automática activa',
-    icon: 'imagesmode',
-    color: 'bg-indigo-50 text-indigo-600',
-    visible: true,
-  },
-  {
-    id: 'grid',
-    title: 'Cuadrícula de Colecciones Destacadas',
-    subtitle: '8 Elementos • Solo escritorio',
-    icon: 'grid_view',
-    color: 'bg-emerald-50 text-emerald-600',
-    visible: true,
-  },
-  {
-    id: 'banner',
-    title: 'Barra de Banner Promocional',
-    subtitle: 'Cuenta regresiva de oferta • Posición superior',
-    icon: 'ads_click',
-    color: 'bg-orange-50 text-orange-600',
-    visible: false,
-  },
-  {
-    id: 'newsletter',
-    title: 'Suscripción al Boletín',
-    subtitle: 'Popup + Bloque de pie de página',
-    icon: 'mail',
-    color: 'bg-blue-50 text-blue-600',
-    visible: true,
-  },
+const FONT_OPTIONS = ['Inter (Predeterminada)', 'Montserrat', 'Playfair Display', 'Roboto'];
+
+const BENEFIT_ICON_OPTIONS = [
+  'local_shipping', 'autorenew', 'verified_user', 'support_agent',
+  'star', 'favorite', 'bolt', 'workspace_premium', 'shield',
+  'payments', 'storefront', 'loyalty', 'thumb_up', 'eco',
 ];
 
-const FONT_OPTIONS = ['Inter (Default)', 'Montserrat', 'Playfair Display', 'Roboto'];
+const DEFAULT_SECTIONS: CmsSections = {
+  hero: { visible: true, subtitle: 'Descubre productos exclusivos con la mejor calidad y los mejores precios', cta: 'Explorar Tienda', ctaLink: '/products' },
+  categories: { visible: true, title: 'Explorar Categorías', subtitle: 'Encuentra lo que buscas' },
+  products: { visible: true, title: 'Productos Destacados', subtitle: 'Seleccionados para ti' },
+  benefits: {
+    visible: true,
+    title: '¿Por qué comprar aquí?',
+    subtitle: 'Nos comprometemos a ofrecerte la mejor experiencia de compra online con beneficios reales.',
+    items: [
+      { icon: 'local_shipping', title: 'Envío Rápido', desc: 'Envíos a todo el país. Gratis en compras superiores.' },
+      { icon: 'autorenew', title: 'Devoluciones Fáciles', desc: 'Hasta 30 días para devolver o cambiar tu compra.' },
+      { icon: 'verified_user', title: 'Pago 100% Seguro', desc: 'Transacciones encriptadas y múltiples métodos de pago.' },
+      { icon: 'support_agent', title: 'Soporte Dedicado', desc: 'Atención al cliente disponible para ayudarte siempre.' },
+    ],
+  },
+  newsletter: { visible: true, title: 'Únete a Nuestro Boletín', subtitle: 'Recibe ofertas exclusivas, acceso anticipado a novedades y beneficios solo para miembros' },
+};
 
-const SECTION_ICONS = ['imagesmode', 'grid_view', 'ads_click', 'mail', 'stars', 'local_offer', 'video_library', 'article'];
-const SECTION_COLORS = [
-  'bg-indigo-50 text-indigo-600',
-  'bg-emerald-50 text-emerald-600',
-  'bg-orange-50 text-orange-600',
-  'bg-blue-50 text-blue-600',
-  'bg-pink-50 text-pink-600',
-  'bg-violet-50 text-violet-600',
-];
-
-export default function CMSDashboardPage() {
-  const [sections, setSections] = useState(CMS_SECTIONS);
+export default function CMSPage() {
+  const [sections, setSections] = useState<CmsSections>(DEFAULT_SECTIONS);
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [showLogoCrop, setShowLogoCrop] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editSubtitle, setEditSubtitle] = useState('');
-  const [addingSection, setAddingSection] = useState(false);
-  const [newSectionTitle, setNewSectionTitle] = useState('');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const { toasts, toast } = useToast();
-  const { products, fetchAll: fetchProducts } = useProducts();
-  const { orders, fetchAll: fetchOrders } = useOrdersAdmin();
 
+  // Cargar settings al montar
   useEffect(() => {
-    fetchProducts();
-    fetchOrders();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const totalRevenue = orders.reduce((acc, o) => acc + Number(o.total), 0);
-  const pendingOrders = orders.filter((o) => o.status === 'pending').length;
-
-  // Load CMS settings from backend on mount
-  useEffect(() => {
-    const loadSettings = async () => {
+    const load = async () => {
       try {
         const res = await apiClient.get('/api/admin/cms/settings');
         const data = (res.data as any)?.data ?? res.data;
         if (data.sections) {
-          setSections((prev) =>
-            prev.map((s) => {
-              const saved = data.sections.find((saved: { id: string; visible: boolean }) => saved.id === s.id);
-              return saved ? { ...s, visible: saved.visible } : s;
-            })
-          );
+          setSections({
+            hero: { ...DEFAULT_SECTIONS.hero, ...data.sections.hero },
+            categories: { ...DEFAULT_SECTIONS.categories, ...data.sections.categories },
+            products: { ...DEFAULT_SECTIONS.products, ...data.sections.products },
+            benefits: {
+              ...DEFAULT_SECTIONS.benefits,
+              ...data.sections.benefits,
+              items: Array.isArray(data.sections.benefits?.items) && data.sections.benefits.items.length > 0
+                ? data.sections.benefits.items
+                : DEFAULT_SECTIONS.benefits.items,
+            },
+            newsletter: { ...DEFAULT_SECTIONS.newsletter, ...data.sections.newsletter },
+          });
         }
         if (data.font) setSelectedFont(data.font);
         if (typeof data.maintenanceMode === 'boolean') setMaintenanceMode(data.maintenanceMode);
-      } catch { /* ignore */ }
+      } catch { /* use defaults */ }
       try {
         const storeRes = await apiClient.get('/api/admin/settings');
         const storeData = (storeRes.data as any)?.data ?? storeRes.data;
         if (storeData?.logoUrl) setLogoUrl(storeData.logoUrl);
-      } catch {
-        // Backend endpoint may not exist yet — use defaults silently
-      }
+      } catch { /* ignore */ }
+      setLoading(false);
     };
-    loadSettings();
+    load();
   }, []);
-
-  const toggleVisibility = (id: string) => {
-    setSections((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, visible: !s.visible } : s))
-    );
-  };
-
-  const handleEditSection = (section: typeof sections[number]) => {
-    setEditingId(section.id);
-    setEditTitle(section.title);
-    setEditSubtitle(section.subtitle);
-  };
-
-  const handleSaveEdit = () => {
-    if (!editTitle.trim()) return;
-    setSections((prev) =>
-      prev.map((s) => s.id === editingId ? { ...s, title: editTitle.trim(), subtitle: editSubtitle.trim() } : s)
-    );
-    setEditingId(null);
-  };
-
-  const handleAddSection = () => {
-    if (!newSectionTitle.trim()) return;
-    const id = `section-${Date.now()}`;
-    const iconIndex = sections.length % SECTION_ICONS.length;
-    const colorIndex = sections.length % SECTION_COLORS.length;
-    setSections((prev) => [
-      ...prev,
-      {
-        id,
-        title: newSectionTitle.trim(),
-        subtitle: 'Nueva sección • Sin configurar',
-        icon: SECTION_ICONS[iconIndex],
-        color: SECTION_COLORS[colorIndex],
-        visible: true,
-      },
-    ]);
-    setNewSectionTitle('');
-    setAddingSection(false);
-    toast({ message: 'Sección agregada. Guarda para conservar los cambios.', type: 'success' });
-  };
-
-  const handlePreview = () => {
-    window.open('/', '_blank');
-  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await Promise.all([
         apiClient.post('/api/admin/cms/settings', {
-          sections: sections.map((s) => ({ id: s.id, visible: s.visible })),
+          sections,
           font: selectedFont,
           maintenanceMode,
         }),
         logoUrl !== null && apiClient.put('/api/admin/settings', { logoUrl }),
       ]);
-      toast({ message: 'Configuración del CMS guardada exitosamente', type: 'success' });
+      toast({ message: 'Configuración guardada exitosamente', type: 'success' });
     } catch {
-      toast({ message: 'Error al guardar. Cambios guardados localmente.', type: 'error' });
+      toast({ message: 'Error al guardar configuración', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
+  const toggleSection = (key: keyof CmsSections) => {
+    setSections((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], visible: !prev[key].visible },
+    }));
+  };
+
+  const updateSection = <K extends keyof CmsSections>(key: K, field: string, value: any) => {
+    setSections((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], [field]: value },
+    }));
+  };
+
+  const updateBenefitItem = (index: number, field: keyof BenefitItem, value: string) => {
+    setSections((prev) => ({
+      ...prev,
+      benefits: {
+        ...prev.benefits,
+        items: prev.benefits.items.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item
+        ),
+      },
+    }));
+  };
+
+  const addBenefitItem = () => {
+    setSections((prev) => ({
+      ...prev,
+      benefits: {
+        ...prev.benefits,
+        items: [...prev.benefits.items, { icon: 'star', title: '', desc: '' }],
+      },
+    }));
+  };
+
+  const removeBenefitItem = (index: number) => {
+    setSections((prev) => ({
+      ...prev,
+      benefits: {
+        ...prev.benefits,
+        items: prev.benefits.items.filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  const SECTION_CONFIG = [
+    { key: 'hero' as const, label: 'Banner Principal', icon: 'imagesmode', color: 'bg-indigo-50 text-indigo-600' },
+    { key: 'categories' as const, label: 'Categorías', icon: 'grid_view', color: 'bg-emerald-50 text-emerald-600' },
+    { key: 'products' as const, label: 'Productos Destacados', icon: 'storefront', color: 'bg-orange-50 text-orange-600' },
+    { key: 'benefits' as const, label: 'Beneficios', icon: 'verified_user', color: 'bg-blue-50 text-blue-600' },
+    { key: 'newsletter' as const, label: 'Newsletter', icon: 'mail', color: 'bg-pink-50 text-pink-600' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto bg-background-light p-6">
+        <div className="animate-pulse space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 h-20" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto bg-background-light p-6">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {[
-          {
-            label: 'Ventas Totales',
-            value: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(totalRevenue),
-            sub: `${orders.length} órdenes en total`,
-            subColor: 'text-emerald-600',
-            subIcon: 'trending_up',
-            icon: 'payments',
-          },
-          {
-            label: 'Productos en Catálogo',
-            value: String(products.length),
-            sub: `${products.filter((p) => (p.stock ?? 0) === 0).length} sin stock`,
-            subColor: 'text-emerald-600',
-            subIcon: 'check_circle',
-            icon: 'storefront',
-          },
-          {
-            label: 'Órdenes Pendientes',
-            value: String(pendingOrders),
-            sub: pendingOrders > 0 ? `${pendingOrders} requieren atención` : 'Sin pendientes',
-            subColor: pendingOrders > 0 ? 'text-amber-600' : 'text-emerald-600',
-            subIcon: pendingOrders > 0 ? 'schedule' : 'check_circle',
-            icon: 'pending_actions',
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <MaterialIcon name="web" className="text-primary text-2xl" />
+            Editor de Página Principal
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">Configura el contenido y la apariencia de tu tienda</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => window.open('/', '_blank')}
+            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2"
           >
-            <div>
-              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-              <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
-              <p className={`text-xs font-medium flex items-center gap-1 mt-1 ${stat.subColor}`}>
-                <MaterialIcon name={stat.subIcon} className="text-sm" />
-                {stat.sub}
-              </p>
-            </div>
-            <div className="size-12 bg-primary/5 text-primary rounded-lg flex items-center justify-center">
-              <MaterialIcon name={stat.icon} className="text-xl" />
-            </div>
-          </div>
-        ))}
+            <MaterialIcon name="open_in_new" className="text-base" />
+            Vista Previa
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center gap-2"
+          >
+            {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Page Builder - Main Canvas */}
-        <div className="flex-1 space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Constructor de Páginas: Inicio</h2>
-              <p className="text-sm text-slate-500">Administra las secciones y el diseño de la página principal de tu tienda.</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handlePreview}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2"
-              >
-                <MaterialIcon name="open_in_new" className="text-base" />
-                Vista Previa
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center gap-2"
-              >
-                {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-          </div>
+        {/* Secciones del Homepage */}
+        <div className="flex-1 space-y-3">
+          {SECTION_CONFIG.map(({ key, label, icon, color }) => {
+            const section = sections[key];
+            const isExpanded = expandedSection === key;
 
-          {/* CMS Section Cards */}
-          <div className="space-y-3">
-            {sections.map((section) => (
-              <div
-                key={section.id}
-                className="group bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:border-primary/30 transition-all"
-              >
-                {/* Drag Handle */}
-                <div className="cursor-grab active:cursor-grabbing p-2 opacity-40 group-hover:opacity-100 transition-opacity">
-                  <MaterialIcon name="drag_indicator" className="text-slate-400 text-xl" />
+            return (
+              <div key={key} className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                {/* Section Header */}
+                <div className="p-4 flex items-center gap-4">
+                  <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
+                    <MaterialIcon name={icon} className="text-xl" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-slate-900">{label}</h4>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {section.visible ? 'Visible en la tienda' : 'Oculta'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleSection(key)}
+                      className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                      title={section.visible ? 'Ocultar' : 'Mostrar'}
+                    >
+                      <MaterialIcon name={section.visible ? 'visibility' : 'visibility_off'} className="text-xl" />
+                    </button>
+                    <button
+                      onClick={() => setExpandedSection(isExpanded ? null : key)}
+                      className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1"
+                    >
+                      <MaterialIcon name={isExpanded ? 'expand_less' : 'edit'} className="text-sm" />
+                      {isExpanded ? 'Cerrar' : 'Editar'}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Icon */}
-                <div className={`size-12 rounded-lg flex items-center justify-center shrink-0 ${section.color}`}>
-                  <MaterialIcon name={section.icon} className="text-xl" />
-                </div>
+                {/* Section Editor */}
+                {isExpanded && (
+                  <div className="border-t border-slate-100 p-4 bg-slate-50 space-y-4">
+                    {/* Hero Editor */}
+                    {key === 'hero' && (
+                      <>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-600 mb-1">Subtítulo del Hero</label>
+                          <textarea
+                            value={sections.hero.subtitle}
+                            onChange={(e) => updateSection('hero', 'subtitle', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                            rows={2}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-1">Texto del Botón (CTA)</label>
+                            <input
+                              value={sections.hero.cta}
+                              onChange={(e) => updateSection('hero', 'cta', e.target.value)}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-1">Enlace del Botón</label>
+                            <input
+                              value={sections.hero.ctaLink}
+                              onChange={(e) => updateSection('hero', 'ctaLink', e.target.value)}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              placeholder="/products"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
 
-                {/* Info / Inline Edit */}
-                <div className="flex-1 min-w-0">
-                  {editingId === section.id ? (
-                    <div className="flex flex-col gap-1.5">
-                      <input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        className="w-full px-2 py-1 border border-primary/30 rounded text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="Título de la sección"
-                        autoFocus
-                      />
-                      <input
-                        value={editSubtitle}
-                        onChange={(e) => setEditSubtitle(e.target.value)}
-                        className="w-full px-2 py-1 border border-slate-200 rounded text-xs text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        placeholder="Subtítulo / descripción"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <h4 className="text-sm font-semibold text-slate-900">{section.title}</h4>
-                      <p className="text-xs text-slate-500 uppercase tracking-tighter mt-0.5">{section.subtitle}</p>
-                    </>
-                  )}
-                </div>
+                    {/* Categories / Products Editor (same structure) */}
+                    {(key === 'categories' || key === 'products') && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-600 mb-1">Título</label>
+                          <input
+                            value={(section as any).title}
+                            onChange={(e) => updateSection(key, 'title', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-600 mb-1">Subtítulo</label>
+                          <input
+                            value={(section as any).subtitle}
+                            onChange={(e) => updateSection(key, 'subtitle', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+                      </div>
+                    )}
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  {editingId === section.id ? (
-                    <>
-                      <button
-                        onClick={handleSaveEdit}
-                        className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors"
-                      >
-                        Cancelar
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => toggleVisibility(section.id)}
-                        className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                        title={section.visible ? 'Ocultar Sección' : 'Mostrar Sección'}
-                      >
-                        <MaterialIcon
-                          name={section.visible ? 'visibility' : 'visibility_off'}
-                          className="text-xl"
-                        />
-                      </button>
-                      <button
-                        onClick={() => handleEditSection(section)}
-                        className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors"
-                      >
-                        Editar
-                      </button>
-                    </>
-                  )}
-                </div>
+                    {/* Benefits Editor */}
+                    {key === 'benefits' && (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-1">Título de la Sección</label>
+                            <input
+                              value={sections.benefits.title}
+                              onChange={(e) => updateSection('benefits', 'title', e.target.value)}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-1">Subtítulo</label>
+                            <input
+                              value={sections.benefits.subtitle}
+                              onChange={(e) => updateSection('benefits', 'subtitle', e.target.value)}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <label className="block text-xs font-bold text-slate-600">Beneficios ({sections.benefits.items.length})</label>
+                          {sections.benefits.items.map((item, idx) => (
+                            <div key={idx} className="bg-white rounded-lg border border-slate-200 p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-bold text-slate-400 w-4">{idx + 1}</span>
+                                <select
+                                  value={item.icon}
+                                  onChange={(e) => updateBenefitItem(idx, 'icon', e.target.value)}
+                                  className="px-2 py-1 border border-slate-200 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                                  {BENEFIT_ICON_OPTIONS.map((ic) => (
+                                    <option key={ic} value={ic}>{ic}</option>
+                                  ))}
+                                </select>
+                                <MaterialIcon name={item.icon} className="text-primary text-lg" />
+                                <div className="flex-1" />
+                                <button
+                                  onClick={() => removeBenefitItem(idx)}
+                                  className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Eliminar"
+                                >
+                                  <MaterialIcon name="close" className="text-sm" />
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <input
+                                  value={item.title}
+                                  onChange={(e) => updateBenefitItem(idx, 'title', e.target.value)}
+                                  placeholder="Título"
+                                  className="px-2 py-1.5 border border-slate-200 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                                <input
+                                  value={item.desc}
+                                  onChange={(e) => updateBenefitItem(idx, 'desc', e.target.value)}
+                                  placeholder="Descripción"
+                                  className="px-2 py-1.5 border border-slate-200 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {sections.benefits.items.length < 6 && (
+                            <button
+                              onClick={addBenefitItem}
+                              className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-xs font-medium text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-1"
+                            >
+                              <MaterialIcon name="add" className="text-sm" />
+                              Agregar Beneficio
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Newsletter Editor */}
+                    {key === 'newsletter' && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-600 mb-1">Título</label>
+                          <input
+                            value={sections.newsletter.title}
+                            onChange={(e) => updateSection('newsletter', 'title', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-600 mb-1">Subtítulo</label>
+                          <input
+                            value={sections.newsletter.subtitle}
+                            onChange={(e) => updateSection('newsletter', 'subtitle', e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            ))}
-
-            {/* Add New Section */}
-            {addingSection ? (
-              <div className="bg-white border-2 border-primary/30 rounded-xl p-4 flex items-center gap-3">
-                <MaterialIcon name="add_circle" className="text-primary text-xl shrink-0" />
-                <input
-                  value={newSectionTitle}
-                  onChange={(e) => setNewSectionTitle(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleAddSection(); if (e.key === 'Escape') setAddingSection(false); }}
-                  className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Nombre de la nueva sección..."
-                  autoFocus
-                />
-                <button
-                  onClick={handleAddSection}
-                  disabled={!newSectionTitle.trim()}
-                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-40"
-                >
-                  Agregar
-                </button>
-                <button
-                  onClick={() => { setAddingSection(false); setNewSectionTitle(''); }}
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setAddingSection(true)}
-                className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-sm font-medium text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
-              >
-                <MaterialIcon name="add_circle" className="text-xl" />
-                Agregar Nueva Sección
-              </button>
-            )}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Store Branding Panel - Right Sidebar */}
+        {/* Sidebar — Marca de la Tienda */}
         <aside className="w-full lg:w-80 shrink-0">
           <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 sticky top-6">
             <h3 className="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -379,7 +402,7 @@ export default function CMSDashboardPage() {
             </h3>
 
             <div className="space-y-6">
-              {/* Logo Upload con Crop */}
+              {/* Logo Upload */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Logo de la Tienda</label>
                 {logoUrl ? (
@@ -407,7 +430,7 @@ export default function CMSDashboardPage() {
                       <MaterialIcon name="add_photo_alternate" className="text-slate-400 text-xl" />
                     </div>
                     <p className="text-[10px] text-slate-500 leading-tight">Subir y ajustar logo</p>
-                    <p className="text-[9px] text-slate-400 mt-1">SVG, PNG, JPG · Máx. 3MB</p>
+                    <p className="text-[9px] text-slate-400 mt-1">SVG, PNG, JPG</p>
                   </button>
                 )}
               </div>
@@ -417,34 +440,6 @@ export default function CMSDashboardPage() {
                   onSave={(dataUrl) => { setLogoUrl(dataUrl); setShowLogoCrop(false); }}
                 />
               )}
-
-              {/* Brand Colors */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-3">Colores de Marca</label>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="size-6 rounded bg-primary border border-white shadow-sm"></div>
-                      <span className="text-xs font-medium">Primario</span>
-                    </div>
-                    <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">
-                      #0F1729
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="size-6 rounded bg-indigo-500 border border-white shadow-sm"></div>
-                      <span className="text-xs font-medium">Acento</span>
-                    </div>
-                    <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">
-                      #6366F1
-                    </span>
-                  </div>
-                  <button className="w-full py-2 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
-                    Editar Paleta
-                  </button>
-                </div>
-              </div>
 
               {/* Typography */}
               <div>
@@ -458,6 +453,7 @@ export default function CMSDashboardPage() {
                     <option key={font}>{font}</option>
                   ))}
                 </select>
+                <p className="text-[10px] text-slate-400 mt-1">Se aplica a toda la tienda al guardar</p>
               </div>
 
               {/* Maintenance Mode */}
@@ -480,6 +476,12 @@ export default function CMSDashboardPage() {
                     />
                   </button>
                 </div>
+                {maintenanceMode && (
+                  <p className="text-[10px] text-amber-600 font-medium mt-2 flex items-center gap-1">
+                    <MaterialIcon name="warning" className="text-xs" />
+                    La tienda no será visible para los clientes
+                  </p>
+                )}
               </div>
 
               <button
@@ -488,7 +490,7 @@ export default function CMSDashboardPage() {
                 className="w-full py-3 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {saving && <MaterialIcon name="sync" className="text-base animate-spin" />}
-                {saving ? 'Guardando...' : 'Aplicar Globalmente'}
+                {saving ? 'Guardando...' : 'Guardar Todo'}
               </button>
             </div>
           </div>

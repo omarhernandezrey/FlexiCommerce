@@ -29,6 +29,9 @@
       "@/utils/*": ["./src/utils/*"]
     }
   },
+  "tsc-alias": {
+    "resolveFullPaths": true
+  },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

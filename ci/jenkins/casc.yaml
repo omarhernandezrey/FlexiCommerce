@@ -1,0 +1,39 @@
+# =============================================================================
+# Jenkins Configuration as Code — FlexiCommerce
+# Se aplica automáticamente al arrancar (CASC_JENKINS_CONFIG).
+# Credenciales: variables JENKINS_ADMIN_USER / JENKINS_ADMIN_PASSWORD del compose.
+# =============================================================================
+jenkins:
+  systemMessage: "FlexiCommerce CI — administrado como código (ci/jenkins/casc.yaml)"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_USER:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-flexicommerce}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+
+jobs:
+  - script: >
+      pipelineJob('flexicommerce-ci') {
+        description('Pipeline de CI de FlexiCommerce: tests de backend y frontend en paralelo + build de imágenes Docker. El repo local está montado en /workspace; el pipeline corre sobre el último commit de main.')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('file:///workspace') }
+                branch('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+            lightweight(false)
+          }
+        }
+      }

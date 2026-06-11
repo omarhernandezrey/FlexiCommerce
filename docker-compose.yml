@@ -1,7 +1,19 @@
-version: '3.9'
+# =============================================================================
+# FlexiCommerce — Stack de producción
+#
+#   cp .env.example .env   (y completa JWT_SECRET, Wompi, etc.)
+#   docker compose up -d --build
+#
+# Desarrollo con hot-reload:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# PgAdmin (opcional):
+#   docker compose --profile dev-tools up -d
+# =============================================================================
+
+name: flexicommerce
 
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: flexicommerce-db
@@ -13,22 +25,21 @@ services:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/prisma/migrations:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-flexicommerce}']
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-flexicommerce} -d ${DB_NAME:-flexicommerce_dev}']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - flexicommerce
+    restart: unless-stopped
 
-  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: flexicommerce-cache
+    command: redis-server --appendonly yes
     ports:
       - "${REDIS_PORT:-6379}:6379"
-    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,66 +49,65 @@ services:
       retries: 5
     networks:
       - flexicommerce
+    restart: unless-stopped
 
-  # Backend API
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./backend
+    image: flexicommerce-api
     container_name: flexicommerce-api
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: production
+      PORT: 3001
       DATABASE_URL: postgresql://${DB_USER:-flexicommerce}:${DB_PASSWORD:-dev_password}@postgres:5432/${DB_NAME:-flexicommerce_dev}
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-dev_secret_key_change_in_production}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en el archivo .env}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
-      PORT: 3001
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      # Wompi Colombia
+      WOMPI_ENV: ${WOMPI_ENV:-sandbox}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
+      WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-}
+      WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
+      # Observabilidad (opcional)
+      SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
-      - "3001:3001"
+      - "${BACKEND_PORT:-3001}:3001"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/health']
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - flexicommerce
     restart: unless-stopped
 
-  # Frontend
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-FlexiCommerce}
+        NEXT_PUBLIC_WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
+        NEXT_PUBLIC_WOMPI_ENV: ${WOMPI_ENV:-sandbox}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    image: flexicommerce-web
     container_name: flexicommerce-web
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: production
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-      - /app/.next
-      - /app/node_modules
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      backend:
+        condition: service_healthy
     networks:
       - flexicommerce
     restart: unless-stopped
 
-  # PgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: flexicommerce-pgadmin
@@ -105,9 +115,10 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - flexicommerce
     profiles:
@@ -115,9 +126,7 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
   redis_data:
-    driver: local
 
 networks:
   flexicommerce:

@@ -22,13 +22,41 @@ const DEFAULT_STORE: Record<string, any> = {
 };
 
 const DEFAULT_CMS: Record<string, any> = {
-  sections: [
-    { id: 'hero', title: 'Slider Principal', icon: 'view_carousel', meta: '3 diapositivas · Reproducción automática', enabled: true },
-    { id: 'grid', title: 'Colecciones Destacadas', icon: 'grid_view', meta: '8 artículos · Solo escritorio', enabled: true },
-    { id: 'banner', title: 'Banner Promocional', icon: 'campaign', meta: 'Oferta Flash · Oculto', enabled: false },
-    { id: 'newsletter', title: 'Suscripción al Boletín', icon: 'email', meta: 'Popup + Pie de página', enabled: true },
-  ],
-  font: 'Inter (Default)',
+  sections: {
+    hero: {
+      visible: true,
+      subtitle: 'Descubre productos exclusivos con la mejor calidad y los mejores precios',
+      cta: 'Explorar Tienda',
+      ctaLink: '/products',
+    },
+    categories: {
+      visible: true,
+      title: 'Explorar Categorías',
+      subtitle: 'Encuentra lo que buscas',
+    },
+    products: {
+      visible: true,
+      title: 'Productos Destacados',
+      subtitle: 'Seleccionados para ti',
+    },
+    benefits: {
+      visible: true,
+      title: '¿Por qué comprar aquí?',
+      subtitle: 'Nos comprometemos a ofrecerte la mejor experiencia de compra online con beneficios reales.',
+      items: [
+        { icon: 'local_shipping', title: 'Envío Rápido', desc: 'Envíos a todo el país. Gratis en compras superiores.' },
+        { icon: 'autorenew', title: 'Devoluciones Fáciles', desc: 'Hasta 30 días para devolver o cambiar tu compra.' },
+        { icon: 'verified_user', title: 'Pago 100% Seguro', desc: 'Transacciones encriptadas y múltiples métodos de pago.' },
+        { icon: 'support_agent', title: 'Soporte Dedicado', desc: 'Atención al cliente disponible para ayudarte siempre.' },
+      ],
+    },
+    newsletter: {
+      visible: true,
+      title: 'Únete a Nuestro Boletín',
+      subtitle: 'Recibe ofertas exclusivas, acceso anticipado a novedades y beneficios solo para miembros',
+    },
+  },
+  font: 'Inter (Predeterminada)',
   maintenanceMode: false,
 };
 
@@ -102,6 +130,27 @@ router.post('/cms/settings', authenticate, authorize('ADMIN'), async (req: Reque
     res.json({ success: true, data: updated });
   } catch {
     res.status(500).json({ success: false, error: 'Error al guardar CMS' });
+  }
+});
+
+// GET /api/admin/cms/homepage — PÚBLICO, sin auth (consumido por el storefront)
+router.get('/cms/homepage', async (_req: Request, res: Response) => {
+  try {
+    const [cmsData, storeData] = await Promise.all([
+      getSetting('cmsSettings', DEFAULT_CMS),
+      getSetting('storeSettings', DEFAULT_STORE),
+    ]);
+    res.json({
+      success: true,
+      data: {
+        sections: cmsData.sections,
+        font: cmsData.font,
+        maintenanceMode: cmsData.maintenanceMode,
+        storeName: storeData.storeName || 'FlexiCommerce',
+      },
+    });
+  } catch {
+    res.json({ success: true, data: { ...DEFAULT_CMS, storeName: 'FlexiCommerce' } });
   }
 });
 

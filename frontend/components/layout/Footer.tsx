@@ -19,15 +19,15 @@ export function Footer() {
               Redefiniendo el panorama del comercio digital con tecnología escalable de nivel empresarial y experiencias de usuario premium.
             </p>
             <div className="flex gap-4">
-              <a className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl" href="#">
+              <span className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl cursor-pointer">
                 <MaterialIcon name="public" />
-              </a>
-              <a className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl" href="#">
+              </span>
+              <span className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl cursor-pointer">
                 <MaterialIcon name="forum" />
-              </a>
-              <a className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl" href="#">
+              </span>
+              <span className="text-primary/40 hover:text-primary transition-colors text-base sm:text-xl cursor-pointer">
                 <MaterialIcon name="alternate_email" />
-              </a>
+              </span>
             </div>
           </div>
 
@@ -36,9 +36,9 @@ export function Footer() {
             <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Tienda</h3>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-sm text-primary/60">
               {FOOTER_LINKS.shop.map((item) => (
-                <li key={item}>
-                  <Link href="/products" className="hover:text-primary transition-colors line-clamp-2">
-                    {item}
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-primary transition-colors line-clamp-2">
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -50,8 +50,10 @@ export function Footer() {
             <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Empresa</h3>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-sm text-primary/60">
               {FOOTER_LINKS.company.map((item) => (
-                <li key={item}>
-                  <a href="#" className="hover:text-primary transition-colors line-clamp-2">{item}</a>
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-primary transition-colors line-clamp-2">
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -62,8 +64,10 @@ export function Footer() {
             <h3 className="font-extrabold text-primary mb-3 sm:mb-6 text-xs sm:text-sm uppercase tracking-wider">Soporte</h3>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-sm text-primary/60">
               {FOOTER_LINKS.support.map((item) => (
-                <li key={item}>
-                  <a href="#" className="hover:text-primary transition-colors line-clamp-2">{item}</a>
+                <li key={item.href}>
+                  <Link href={item.href} className="hover:text-primary transition-colors line-clamp-2">
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -71,12 +75,12 @@ export function Footer() {
         </div>
 
         <div className="pt-6 sm:pt-8 border-t border-primary/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-          <p className="text-[10px] sm:text-xs text-primary/40">© 2024 FlexiCommerce Inc. Todos los derechos reservados.</p>
+          <p className="text-[10px] sm:text-xs text-primary/40">© {new Date().getFullYear()} FlexiCommerce Inc. Todos los derechos reservados.</p>
           <div className="flex gap-4 sm:gap-6 text-[8px] sm:text-[10px] font-bold text-primary/40 uppercase tracking-widest">
-            <a className="hover:text-primary transition-colors" href="#">Privacidad</a>
-            <a className="hover:text-primary transition-colors" href="#">Términos</a>
-            <a className="hover:text-primary transition-colors" href="#">Cookies</a>
-            <a className="hidden sm:inline hover:text-primary transition-colors" href="#">Accesibilidad</a>
+            <Link className="hover:text-primary transition-colors" href="/cms/politica-privacidad">Privacidad</Link>
+            <Link className="hover:text-primary transition-colors" href="/cms/terminos-condiciones">Términos</Link>
+            <Link className="hover:text-primary transition-colors" href="/cms/cookies">Cookies</Link>
+            <Link className="hidden sm:inline hover:text-primary transition-colors" href="/cms/accesibilidad">Accesibilidad</Link>
           </div>
         </div>
       </div>

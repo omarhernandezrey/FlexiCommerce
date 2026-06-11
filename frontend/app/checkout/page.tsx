@@ -83,6 +83,7 @@ export default function CheckoutPage() {
         shippingMethod,
         shippingCost,
         discount: promoDiscount,
+        couponCode: promoApplied || undefined,
       });
 
       // 2. Abrir el widget de Wompi con el orderId y los datos del cliente
@@ -129,11 +130,10 @@ export default function CheckoutPage() {
     if (!promoCode.trim()) return;
     setPromoLoading(true);
     try {
-      const res = await apiClient.get(`/coupons?code=${encodeURIComponent(promoCode.trim())}`);
-      const coupons: Array<{ code: string; type: string; value: number; isActive: boolean; expiresAt?: string; minOrderAmount?: number }> = res.data?.data ?? res.data ?? [];
-      const coupon = Array.isArray(coupons)
-        ? coupons.find((c) => c.code.toLowerCase() === promoCode.trim().toLowerCase() && c.isActive)
-        : null;
+      const res = await apiClient.get(`/api/coupons?code=${encodeURIComponent(promoCode.trim())}`);
+      const rawData = (res.data as any)?.data ?? res.data ?? [];
+      const coupons: Array<{ code: string; type: string; value: number; isActive: boolean; expiresAt?: string; minOrderAmount?: number }> = Array.isArray(rawData) ? rawData : [];
+      const coupon = coupons.find((c) => c.code.toLowerCase() === promoCode.trim().toLowerCase() && c.isActive) ?? null;
 
       if (!coupon) throw new Error('invalid');
 
