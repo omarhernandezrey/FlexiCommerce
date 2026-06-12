@@ -7,7 +7,8 @@ version: 2.1
 jobs:
   calidad:
     docker:
-      - image: cimg/node:22.16
+      # Node >= 22.18: type stripping por defecto — Jest 30 lee jest.config.ts sin ts-node
+      - image: cimg/node:22.22
     resource_class: medium
     steps:
       - checkout
