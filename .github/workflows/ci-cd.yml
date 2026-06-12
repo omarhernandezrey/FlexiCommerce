@@ -233,8 +233,13 @@ jobs:
           echo "[2/3] API + base de datos (GET /api/products)"
           curl -sf 'http://localhost:3001/api/products?limit=1' | grep -q '"success":true'
 
-          echo "[3/3] Frontend responde 200"
-          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/)
+          echo "[3/3] Frontend responde 200 (con reintentos mientras arranca)"
+          code=000
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/ || true)
+            [ "$code" = "200" ] && break
+            sleep 5
+          done
           [ "$code" = "200" ] || { echo "Frontend respondió $code"; exit 1; }
 
           echo "✅ Aplicación desplegada, operativa y verificada en CI"
