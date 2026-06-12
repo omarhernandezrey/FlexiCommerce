@@ -211,9 +211,14 @@ docker compose --profile ci up -d --build
 ```
 
 - **URL**: http://localhost:8080 — usuario `admin`, contraseña `flexicommerce` (cambiables en `.env` con `JENKINS_ADMIN_USER` / `JENKINS_ADMIN_PASSWORD`)
-- **Job `flexicommerce-ci`** (definido en `Jenkinsfile`): instala dependencias → type-check + tests de backend y frontend en paralelo → construye las imágenes Docker
-- El pipeline corre sobre el **último commit de `main`** del repo local — haz commit antes de ejecutarlo
-- Para ejecutarlo: entra al job en la UI y pulsa **"Build Now"** (o ▶️)
+- **Job `flexicommerce-ci`** (definido en `Jenkinsfile`), etapas:
+  1. **Dependencias** — `npm ci` + `prisma generate`
+  2. **Calidad** — type-check + tests de backend y frontend en paralelo (80 tests)
+  3. **Imágenes Docker** — construye las imágenes de backend y frontend
+  4. **Desplegar contenedores** — `docker compose up -d` con las imágenes recién construidas (conserva datos y red)
+  5. **Pruebas funcionales (smoke tests)** — verifica la app desplegada: health check del backend, API consultando la base de datos y frontend respondiendo 200
+- **Disparo automático**: el job revisa el repo cada ~5 min (`pollSCM`) y se ejecuta solo con cada commit nuevo en `main`. También puedes lanzarlo manualmente con **"Build Now"**
+- El pipeline corre sobre el **último commit de `main`** del repo local — haz commit para que tus cambios entren al siguiente build
 
 ---
 

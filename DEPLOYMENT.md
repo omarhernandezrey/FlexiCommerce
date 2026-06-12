@@ -206,7 +206,9 @@ docker compose --profile ci up -d --build
 
 - El job **flexicommerce-ci** se crea automáticamente (JCasC + Job DSL, `ci/jenkins/casc.yaml`)
 - El pipeline (`Jenkinsfile` en la raíz) corre sobre **el último commit de `main`** del repo local (montado en `/workspace`) — commitea antes de ejecutar
-- Stages: dependencias (paralelo) → type-check + tests backend + tests frontend (paralelo) → build de imágenes Docker
+- Stages: dependencias → type-check + tests backend + tests frontend (paralelo) → build de imágenes → **deploy** (`docker compose up -d`, mismo proyecto, conserva datos) → **smoke tests** contra los contenedores desplegados (health, API+DB, frontend)
+- **Trigger automático**: `pollSCM('H/5 * * * *')` — cada commit en `main` dispara el pipeline solo
+- El deploy copia el `.env` real desde `/workspace` (los secretos no viven en el repo); Jenkins está unido a la red `flexicommerce` para alcanzar `backend:3001` y `frontend:3000` en los smoke tests
 - Credenciales y puerto configurables: `JENKINS_ADMIN_USER`, `JENKINS_ADMIN_PASSWORD`, `JENKINS_PORT`
 - `DOCKER_GID` (build arg) debe coincidir con `stat -c '%g' /var/run/docker.sock`
 
