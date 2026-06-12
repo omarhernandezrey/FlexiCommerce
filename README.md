@@ -2,159 +2,51 @@
 
 [![CI/CD Pipeline](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/ci-cd.yml)
 [![CodeQL](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/codeql.yml)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/omarhernandezrey/FlexiCommerce/tree/main.svg?style=shield)](https://app.circleci.com/pipelines/github/omarhernandezrey/FlexiCommerce)
 
-> Plataforma de e-commerce profesional, escalable y moderna
+**Plataforma de e-commerce full-stack** (web + móvil) con pagos reales, panel de administración, dockerizada de punta a punta y con un ecosistema completo de CI/CD: cada commit se prueba, se construye, se despliega y se verifica automáticamente.
 
-**Estado**: ✅ Arquitectura reorganizada | Frontend + Backend separados | Lista para desarrollo
+| | |
+|---|---|
+| 🌐 **Web** | Next.js 14 + TypeScript + Tailwind (PWA, i18n) |
+| 📱 **Móvil** | Expo SDK 54 + React Native + expo-router |
+| ⚙️ **API** | Express + Prisma + PostgreSQL + Redis |
+| 💳 **Pagos** | Wompi Colombia (tarjetas, PSE, Nequi, corresponsal) |
+| 🐳 **Infra** | Docker Compose (multi-stage, no-root, healthchecks) |
+| 🔁 **CI/CD** | Jenkins + GitHub Actions + CircleCI + CodeQL + Trivy + Dependabot |
+| ✅ **Tests** | 101 tests (27 backend · 53 frontend · 21 mobile) |
 
 ---
 
 ## 📋 Tabla de Contenidos
 
-- [🎯 Descripción](#-descripción)
-- [🏗️ Estructura del Proyecto](#️-estructura-del-proyecto)
-- [🚀 Quick Start](#-quick-start)
-- [🐳 Levantar todo con Docker (recomendado)](#-levantar-todo-con-docker-recomendado)
-- [🤖 CI con Jenkins](#-ci-con-jenkins)
-- [📦 Tecnologías](#-tecnologías)
-- [📖 Documentación](#-documentación)
-
----
-
-## 🎯 Descripción
-
-FlexiCommerce es una plataforma de e-commerce completa, profesional y lista para producción con:
-
-✨ **Frontend moderno** - Next.js + React + TypeScript + Tailwind  
-⚡ **Backend robusto** - Express + Prisma + PostgreSQL  
-🔐 **Seguridad** - JWT, validación, CORS  
-📱 **Responsive** - Diseño mobile-first  
-🎨 **Diseños incluidos** - Prototipos UI/UX en `/Design`  
-🌍 **Scalable** - Arquitectura modular y profesional  
-
----
-
-## 🏗️ Estructura del Proyecto
-
-```
-FlexiCommerce/
-├── frontend/          # 🎨 Next.js App (Puerto 3000)
-├── backend/           # 🔧 Express Server (Puerto 3001)
-├── Design/            # 📐 Prototipos de UI/UX
-└── ARCHITECTURE.md    # 📚 Documentación detallada
-```
-
-### Frontend
-```
-frontend/
-├── app/               # Next.js App Router
-├── components/        # Componentes React
-├── hooks/            # Custom hooks
-├── lib/              # Utilidades
-├── services/         # API calls
-├── store/            # Estado global (Zustand)
-├── types/            # TypeScript types
-└── styles/           # CSS global
-```
-
-### Backend
-```
-backend/
-├── src/
-│   ├── modules/      # Módulos funcionales
-│   ├── middlewares/  # Middlewares Express
-│   ├── config/       # Configuraciones
-│   ├── database/     # Prisma ORM
-│   ├── utils/        # Utilidades
-│   ├── app.ts        # Configuración Express
-│   └── server.ts     # Punto de entrada
-└── prisma/           # Schema ORM
-```
-
----
-
-## 🚀 Quick Start
-
-> 💡 **La forma más rápida y confiable es con Docker** — ver [🐳 Levantar todo con Docker](#-levantar-todo-con-docker-recomendado). Esta sección describe el modo manual (sin Docker).
-
-### Requisitos
-- Node.js 22+
-- npm
-- PostgreSQL (para backend) — o usa el de Docker
-- Docker + Docker Compose (para la opción recomendada)
-
-### 1️⃣ Instalación
-
-```bash
-# Clonar repositorio
-git clone git@github.com:omarhernandezrey/FlexiCommerce.git
-cd FlexiCommerce
-
-# Instalar dependencias (monorepo)
-npm install
-```
-
-### 2️⃣ Configurar Variables de Entorno
-
-**Frontend** (`frontend/.env.local`):
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_APP_NAME=FlexiCommerce
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-**Backend** (`backend/.env`):
-```bash
-PORT=3001
-NODE_ENV=development
-DATABASE_URL=postgresql://user:password@localhost:5432/flexicommerce
-JWT_SECRET=your_secret_key_here
-CORS_ORIGIN=http://localhost:3000
-```
-
-### 3️⃣ Ejecutar en Desarrollo
-
-Desde la **raíz**:
-```bash
-# Ambos proyectos
-npm run dev
-```
-
-O **por separado**:
-```bash
-# Terminal 1 - Frontend
-cd frontend
-npm run dev
-# http://localhost:3000
-
-# Terminal 2 - Backend
-cd backend
-npm run dev
-# http://localhost:3001
-```
-
-### 4️⃣ Verificar
-
-- 🌐 Frontend: http://localhost:3000
-- 📡 Backend: http://localhost:3001
-- 🏥 Health Check: http://localhost:3001/api/health
+- [Levantar todo con Docker (recomendado)](#-levantar-todo-con-docker-recomendado)
+- [Estructura del proyecto](#-estructura-del-proyecto)
+- [Funcionalidades](#-funcionalidades)
+- [Stack tecnológico](#-stack-tecnológico)
+- [Desarrollo local sin Docker](#-desarrollo-local-sin-docker)
+- [Tests](#-tests)
+- [CI/CD — el ciclo completo](#-cicd--el-ciclo-completo)
+- [Documentación](#-documentación)
 
 ---
 
 ## 🐳 Levantar todo con Docker (recomendado)
 
-Todo el stack (frontend, backend, PostgreSQL y Redis) corre en Docker bajo un solo proyecto `flexicommerce`, con migraciones de Prisma automáticas al arrancar.
+Lo único que necesitas instalado es **Docker** (con Compose). Todo lo demás — Node, PostgreSQL, Redis, migraciones — vive en los contenedores.
 
-### 1️⃣ Configurar `.env` (solo la primera vez)
+### 1️⃣ Clonar y configurar (solo la primera vez)
 
 ```bash
-cp .env.example .env
+git clone git@github.com:omarhernandezrey/FlexiCommerce.git
+cd FlexiCommerce
 
-# OBLIGATORIO: generar y pegar el JWT_SECRET en .env
+cp .env.example .env
+# OBLIGATORIO: genera un secreto y pégalo en JWT_SECRET= dentro de .env
 openssl rand -hex 32
 ```
 
-El resto de valores del `.env` ya funcionan por defecto. Los puertos son configurables (`FRONTEND_PORT`, `BACKEND_PORT`, `DB_PORT`, etc.) por si alguno está ocupado.
+El resto de valores del `.env` funcionan por defecto. Si algún puerto está ocupado en tu máquina, cámbialo ahí (`FRONTEND_PORT`, `BACKEND_PORT`, `DB_PORT`, …).
 
 ### 2️⃣ Levantar el stack
 
@@ -162,26 +54,27 @@ El resto de valores del `.env` ya funcionan por defecto. Los puertos son configu
 docker compose up -d --build
 ```
 
-La primera vez tarda unos minutos (construye las imágenes). Las siguientes veces basta `docker compose up -d` y arranca en segundos.
+La primera vez tarda unos minutos (construye las imágenes y aplica las migraciones de Prisma automáticamente). Las siguientes veces basta `docker compose up -d`.
 
 ### 3️⃣ Verificar
 
 ```bash
-docker compose ps          # los 4 servicios deben decir "healthy"
+docker compose ps    # los 4 servicios deben decir "healthy"
 ```
 
-| Servicio | URL |
-|----------|-----|
-| 🌐 Frontend | http://localhost:3000 |
-| 📡 Backend API | http://localhost:3001/api/health |
-| 🐘 PostgreSQL | localhost:5434 (user: `flexicommerce`) |
-| 🔴 Redis | localhost:6379 |
+| Servicio | URL | Contenedor |
+|----------|-----|------------|
+| 🌐 Frontend | http://localhost:3000 | `flexicommerce-web` |
+| 📡 Backend API | http://localhost:3001/api/health | `flexicommerce-api` |
+| 🐘 PostgreSQL | `localhost:5434` (user `flexicommerce`) | `flexicommerce-db` |
+| 🔴 Redis | `localhost:6379` | `flexicommerce-cache` |
 
-### Servicios opcionales (perfiles)
+### Servicios opcionales (perfiles de compose)
 
 ```bash
-docker compose --profile ci up -d          # + Jenkins CI    → http://localhost:8080
-docker compose --profile dev-tools up -d   # + PgAdmin       → http://localhost:5050
+docker compose --profile ci up -d          # + Jenkins CI  → http://localhost:8080
+docker compose --profile dev-tools up -d   # + PgAdmin     → http://localhost:5050
+docker compose -f monitoring/docker-compose.monitoring.yml up -d   # Prometheus (9090) + Grafana (3002)
 ```
 
 ### Desarrollo con hot-reload dentro de Docker
@@ -190,217 +83,212 @@ docker compose --profile dev-tools up -d   # + PgAdmin       → http://localhos
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-Monta el código fuente en los contenedores y usa `tsx watch` + `next dev` — los cambios se recargan solos.
+Monta tu código fuente en los contenedores (`tsx watch` + `next dev`): editas y se recarga solo.
 
-### Comandos útiles
+### Comandos del día a día
 
 ```bash
-docker compose logs -f backend   # logs en vivo de un servicio
-docker compose down              # apagar todo (los datos se conservan)
-docker compose build frontend    # reconstruir tras cambiar NEXT_PUBLIC_* en .env
+docker compose logs -f backend      # logs en vivo
+docker compose down                 # apagar todo (los datos se conservan)
+docker compose build frontend       # reconstruir tras cambiar NEXT_PUBLIC_* en .env
 docker compose exec postgres psql -U flexicommerce -d flexicommerce_dev   # consola SQL
 ```
 
-> ⚠️ Las variables `NEXT_PUBLIC_*` se compilan dentro del bundle del frontend en tiempo de build. Si cambias `BACKEND_PORT` o las URLs públicas en `.env`, reconstruye: `docker compose build frontend`.
+> ⚠️ Las variables `NEXT_PUBLIC_*` se compilan **dentro del bundle** del frontend en tiempo de build. Si cambias `BACKEND_PORT` o las URLs públicas en `.env`, reconstruye: `docker compose build frontend`.
 
 ---
 
-## 🤖 CI con Jenkins
+## 🏗️ Estructura del proyecto
 
-Jenkins corre como servicio opcional del compose (perfil `ci`) con **configuración como código** (`ci/jenkins/`): arranca ya configurado, sin asistente de instalación, y el job de CI se crea solo.
+Monorepo con npm workspaces (`frontend` + `backend`; `mobile` es independiente):
+
+```
+FlexiCommerce/
+├── frontend/            # 🎨 Next.js 14 — storefront + panel admin (puerto 3000)
+│   ├── app/             #    App Router: (storefront), admin/, auth/, checkout/, cart/...
+│   ├── components/      #    Componentes React reutilizables
+│   ├── hooks/           #    useProducts, useCart, useAuth, useReviews, useWishlist...
+│   ├── store/           #    Estado global con Zustand
+│   ├── e2e/             #    Tests E2E con Playwright
+│   └── Dockerfile       #    Multi-stage con output standalone
+│
+├── backend/             # ⚙️ Express + Prisma (puerto 3001)
+│   ├── src/modules/     #    auth, products, orders, payments, coupons, reviews,
+│   │                    #    wishlist, categories, cms, analytics, admin, users,
+│   │                    #    newsletter, recommendations
+│   ├── prisma/          #    Schema + migraciones (se aplican solas al arrancar)
+│   ├── Dockerfile       #    Multi-stage, usuario no-root, migrate deploy automático
+│   └── docker-entrypoint.sh
+│
+├── mobile/              # 📱 Expo SDK 54 + expo-router (Android/iOS con Expo Go)
+│
+├── ci/jenkins/          # 🤖 Jenkins como código: Dockerfile, plugins, casc.yaml
+├── .github/             #    workflows (ci-cd, codeql) + dependabot.yml
+├── .circleci/           #    config de CircleCI
+├── Jenkinsfile          #    Pipeline local: tests → build → deploy → smoke tests
+│
+├── monitoring/          # 📊 Prometheus + Grafana + alertas
+├── k6/                  # 🔥 Pruebas de carga (normal, spike, auth)
+├── Design/              # 📐 Prototipos UI/UX
+│
+├── docker-compose.yml       # Stack de producción (+ perfiles ci y dev-tools)
+└── docker-compose.dev.yml   # Override de desarrollo con hot-reload
+```
+
+---
+
+## ✨ Funcionalidades
+
+### Tienda (storefront)
+- Catálogo con búsqueda, filtros por categoría, precio y stock
+- Detalle de producto con galería, reseñas y calificaciones
+- Carrito persistente, wishlist y favoritos
+- **Checkout con Wompi Colombia**: tarjetas, PSE, Nequi y corresponsal bancario, con verificación de firma en webhook, cupones de descuento e IVA (19 %) calculado en el backend
+- Autenticación JWT (registro, login, perfil, historial de órdenes)
+- PWA instalable, i18n (next-intl), diseño responsive mobile-first
+
+### Panel de administración (`/admin`)
+- Dashboard con métricas y analytics
+- CRUD de productos (duplicar, activar/desactivar, borrado masivo, estadísticas de inventario)
+- Gestión de órdenes con transiciones de estado validadas (PENDING → PROCESSING → SHIPPED → DELIVERED)
+- Cupones, categorías, usuarios, reseñas y CMS de la página principal
+
+### Plataforma
+- API REST documentada (Swagger UI en `/api/docs` en desarrollo, `openapi.yaml`)
+- Rate limiting con Redis, logging con Winston, métricas Prometheus, Sentry opcional
+- WebSockets (Socket.IO) para actualizaciones en tiempo real
+
+---
+
+## 📦 Stack tecnológico
+
+| Capa | Tecnologías |
+|------|-------------|
+| **Frontend** | Next.js 14 · React 18 · TypeScript 5 · Tailwind CSS · Zustand · next-intl · next-pwa · Sentry |
+| **Backend** | Node.js 22 · Express 4 · Prisma 5 · PostgreSQL 16 · Redis 7 · JWT · Socket.IO · Winston · Swagger |
+| **Móvil** | Expo SDK 54 · React Native · expo-router 6 · Zustand · Axios |
+| **Pagos** | Wompi Colombia (sandbox y producción) |
+| **Testing** | Jest (unitarios) · Playwright (E2E) · k6 (carga) |
+| **DevOps** | Docker · Docker Compose · Jenkins · GitHub Actions · CircleCI · CodeQL · Trivy · Dependabot · Prometheus · Grafana |
+
+---
+
+## 💻 Desarrollo local sin Docker
+
+<details>
+<summary>Ver instrucciones (Node 22+, PostgreSQL y Redis locales)</summary>
+
+### Requisitos
+- Node.js **22.18+** (Jest 30 lee `jest.config.ts` con type stripping nativo)
+- PostgreSQL 16 y Redis corriendo localmente
+
+### Pasos
+
+```bash
+# 1. Instalar dependencias (monorepo con workspaces)
+npm install
+
+# 2. Variables de entorno
+#    backend/.env       → DATABASE_URL, JWT_SECRET, CORS_ORIGIN, Wompi...
+#    frontend/.env.local → NEXT_PUBLIC_API_URL=http://localhost:3001
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+
+# 3. Base de datos
+cd backend && npx prisma generate && npx prisma migrate deploy && cd ..
+
+# 4. Levantar (cada uno en su terminal)
+cd backend && npm run dev     # http://localhost:3001
+cd frontend && npm run dev    # http://localhost:3000
+
+# Móvil (opcional, requiere Expo Go en el teléfono)
+cd mobile && npm run tunnel
+```
+
+</details>
+
+---
+
+## 🧪 Tests
+
+**101 tests** en total, todos en verde y ejecutados automáticamente en cada commit por los 3 sistemas de CI:
+
+```bash
+cd backend && npm test     # 27 tests — servicios (products, orders, auth) con Prisma mockeado
+cd frontend && npm test    # 53 tests — componentes y páginas con Testing Library
+cd mobile && npm test      # 21 tests — stores y componentes con jest-expo
+
+cd frontend && npm run test:e2e   # Playwright E2E (requiere el stack corriendo)
+k6 run k6/load-test-normal.js     # Pruebas de carga (requiere k6)
+```
+
+---
+
+## 🔁 CI/CD — el ciclo completo
+
+Cada commit a `main` activa **4 sistemas en paralelo** que prueban, construyen, despliegan y verifican la aplicación:
+
+```
+                          git push / commit a main
+                                    │
+        ┌──────────────┬────────────┼──────────────┬──────────────┐
+        ▼              ▼            ▼              ▼              ▼
+   🤖 Jenkins     ⚡ GitHub      🔒 CodeQL     🟢 CircleCI    🤝 Dependabot
+    (local)        Actions       (SAST)       (CI externo)   (dependencias)
+        │              │                            │
+  tests + build   lint + tests              tests + build
+  DEPLOY real     Trivy + ghcr.io           de imágenes
+  smoke tests     deploy-verification
+                  (stack completo + smoke)
+```
+
+| Sistema | Configuración | Qué hace en cada commit |
+|---------|--------------|--------------------------|
+| **Jenkins** (local, perfil `ci`) | `Jenkinsfile` + `ci/jenkins/` | 5 etapas: dependencias → type-check + 80 tests en paralelo → build de imágenes → **despliegue real** (`docker compose up -d`) → **smoke tests** contra la app viva (health, API + DB, frontend). Se dispara solo cada ~5 min (`pollSCM`) |
+| **GitHub Actions** | `.github/workflows/ci-cd.yml` | Lint, type-check, 80 tests, escaneo de vulnerabilidades con **Trivy**, publicación de imágenes versionadas en **ghcr.io** y `deploy-verification`: levanta el stack completo en el runner y ejecuta los smoke tests |
+| **CodeQL** | `.github/workflows/codeql.yml` | Análisis estático de seguridad (SAST) en cada push + escaneo semanal programado |
+| **CircleCI** | `.circleci/config.yml` | Pipeline externo redundante: calidad (type-check + tests) → build de imágenes Docker |
+| **Dependabot** | `.github/dependabot.yml` | PRs automáticos semanales: dependencias npm (3 workspaces), imágenes base de Docker y versiones de actions — cada PR pasa por todo el CI antes de poder mezclarse |
+
+### Jenkins en 30 segundos
 
 ```bash
 docker compose --profile ci up -d --build
+# → http://localhost:8080  (admin / flexicommerce, cambiables en .env)
 ```
 
-- **URL**: http://localhost:8080 — usuario `admin`, contraseña `flexicommerce` (cambiables en `.env` con `JENKINS_ADMIN_USER` / `JENKINS_ADMIN_PASSWORD`)
-- **Job `flexicommerce-ci`** (definido en `Jenkinsfile`), etapas:
-  1. **Dependencias** — `npm ci` + `prisma generate`
-  2. **Calidad** — type-check + tests de backend y frontend en paralelo (80 tests)
-  3. **Imágenes Docker** — construye las imágenes de backend y frontend
-  4. **Desplegar contenedores** — `docker compose up -d` con las imágenes recién construidas (conserva datos y red)
-  5. **Pruebas funcionales (smoke tests)** — verifica la app desplegada: health check del backend, API consultando la base de datos y frontend respondiendo 200
-- **Disparo automático**: el job revisa el repo cada ~5 min (`pollSCM`) y se ejecuta solo con cada commit nuevo en `main`. También puedes lanzarlo manualmente con **"Build Now"**
-- El pipeline corre sobre el **último commit de `main`** del repo local — haz commit para que tus cambios entren al siguiente build
+Arranca **ya configurado** (configuración como código, sin asistente de instalación) con el job `flexicommerce-ci` creado automáticamente. Importante: el pipeline corre sobre el **último commit de `main`** — commitea para que tus cambios entren al siguiente build.
 
-### Integración continua en la nube
-
-Además del Jenkins local, cada push a `main`/`develop` dispara CI en la nube:
-
-- **GitHub Actions** (`.github/workflows/ci-cd.yml`): lint, type-check, los 80 tests, escaneo de vulnerabilidades con **Trivy**, publicación de imágenes en `ghcr.io` y **verificación de despliegue** (levanta el stack completo con Docker Compose y ejecuta smoke tests contra la app corriendo)
-- **CodeQL** (`.github/workflows/codeql.yml`): análisis estático de seguridad del código (SAST) nativo de GitHub, también programado semanalmente
-- **Dependabot** (`.github/dependabot.yml`): PRs automáticos semanales con actualizaciones de dependencias npm, imágenes Docker y actions
-- **CircleCI** (`.circleci/config.yml`): servicio de CI externo alternativo — para activarlo entra a [circleci.com](https://circleci.com) con GitHub y habilita el repo
-- *Nota*: Travis CI y Codeship quedaron descartados — Codeship fue descontinuado por CloudBees y Travis dejó de ser gratuito/relevante; las herramientas de arriba son el estándar actual
-
----
-
-## 📦 Tecnologías
-
-### Frontend 🎨
-| Tech | Versión | Uso |
-|------|---------|-----|
-| Next.js | 14.0+ | Framework React |
-| React | 18.2+ | UI Library |
-| TypeScript | 5.3+ | Type Safety |
-| Tailwind CSS | 3.4+ | Styling |
-| Zustand | 4.4+ | State Management |
-| Axios | 1.6+ | HTTP Client |
-| React Hook Form | 7.48+ | Form Management |
-
-### Backend 🔧
-| Tech | Versión | Uso |
-|------|---------|-----|
-| Express | 4.18+ | Web Framework |
-| Prisma | 5.7+ | ORM |
-| PostgreSQL | 15+ | Database |
-| TypeScript | 5.3+ | Type Safety |
-| JWT | - | Authentication |
-| Bcrypt | 5.1+ | Password Hashing |
-| Cors | 2.8+ | CORS Handling |
+> 📝 ¿Por qué no Travis CI o Codeship? Codeship fue descontinuado por CloudBees y Travis dejó de ofrecer un plan gratuito útil. Las herramientas integradas son el estándar actual de la industria.
 
 ---
 
 ## 📖 Documentación
 
-Para más detalles, ver:
-
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Estructura completa del proyecto
-- **[Design/](./Design/)** - Prototipos UI/UX
-- **Frontend README**: `cd frontend && cat README.md`
-- **Backend README**: `cd backend && cat README.md`
-
----
-
-## 🔧 Scripts Disponibles
-
-### Monorepo (Raíz)
-```bash
-npm run dev          # Dev mode en ambos proyectos
-npm run build        # Build de ambos
-npm run start        # Producción
-npm run lint         # Linting
-npm run type-check   # Type checking
-npm run format       # Format código
-```
-
-### Frontend
-```bash
-cd frontend
-npm run dev          # Dev server (puerto 3000)
-npm run build        # Build optimizado
-npm run start        # Servidor producción
-npm run lint         # ESLint
-npm run type-check   # TypeScript check
-npm run format       # Prettier format
-```
-
-### Backend
-```bash
-cd backend
-npm run dev          # Dev con hot reload (puerto 3001)
-npm run build        # Compilar TypeScript
-npm run start        # Servidor producción
-npm run lint         # ESLint
-npm run type-check   # TypeScript check
-npm run db:migrate   # Run Prisma migrations
-npm run db:generate  # Generate Prisma client
-```
-
----
-
-## 🔐 Autenticación
-
-El sistema usa **JWT** (JSON Web Tokens):
-
-1. Cliente hace login → Backend genera JWT
-2. JWT se almacena en localStorage/cookies
-3. Frontend envía JWT en headers de cada request
-4. Backend valida JWT antes de procesar
-
----
-
-## 🗄️ Base de Datos
-
-### Setup PostgreSQL
-
-```bash
-# Crear base de datos
-createdb flexicommerce
-
-# En backend/
-# Ejecutar migraciones
-npm run db:migrate
-
-# Generar Prisma Client
-npm run db:generate
-```
-
----
-
-## 📝 Desarrollo
-
-### Agregar Nueva Feature
-
-1. **Backend**: Crea en `backend/src/modules/feature-name/`
-2. **Frontend**: Crea en `frontend/features/feature-name/`
-3. **Conecta**: API en backend → Service en frontend → Components
-
-### Estructura de un Módulo Backend
-
-```
-backend/src/modules/feature/
-├── controller.ts    # Lógica HTTP
-├── service.ts       # Lógica de negocio
-├── routes.ts        # Rutas Express
-├── types.ts         # TypeScript interfaces
-└── index.ts         # Exportar módulo
-```
-
----
-
-## 🚢 Deployment
-
-### Frontend → Vercel
-```bash
-cd frontend
-# Vercel CLI auto-detecta Next.js
-vercel deploy
-```
-
-### Backend → Railway / Render / Fly.io
-```bash
-cd backend
-# Seguir instrucciones del hosting elegido
-# Build: npm run build
-# Start: npm run start
-```
+| Documento | Contenido |
+|-----------|-----------|
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Guía completa de despliegue, Docker y CI/CD |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Arquitectura detallada del proyecto |
+| [API.md](./API.md) / [openapi.yaml](./openapi.yaml) | Referencia de la API REST |
+| Swagger UI | http://localhost:3001/api/docs (con el backend en modo desarrollo) |
+| [MOBILE_SETUP.md](./MOBILE_SETUP.md) | Configuración de la app móvil con Expo |
+| [postman-collection.json](./postman-collection.json) | Colección de Postman lista para importar |
 
 ---
 
 ## 🤝 Contribuir
 
-1. Fork el repo
-2. Crea rama: `git checkout -b feature/nombre`
-3. Commit cambios: `git commit -am 'Agrega feature'`
-4. Push: `git push origin feature/nombre`
-5. PR
+1. Crea una rama: `git checkout -b feature/nombre`
+2. Haz tus cambios y verifica: `npm test` en `backend/` y `frontend/`
+3. Commit y push — el CI validará todo automáticamente
+4. Abre un Pull Request (los checks de Actions deben pasar)
 
 ---
 
 ## 📄 Licencia
 
-MIT - Ver LICENSE
+MIT
 
 ---
 
-## 👨‍💻 Autor
-
-FlexiCommerce - Plataforma de e-commerce profesional
-
----
-
-**🎉 ¡Proyecto listo para usar! Comienza a desarrollar.** 
-
-¿Dudas? Ver [ARCHITECTURE.md](./ARCHITECTURE.md) o crear un issue.
-# FlexiCommerce
+**Hecho con Next.js, Express, Prisma y mucho ☕ — listo para clonar, levantar con un comando y explorar.**
