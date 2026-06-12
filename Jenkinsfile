@@ -56,6 +56,10 @@ pipeline {
     }
 
     stage('Imágenes Docker') {
+      environment {
+        // Solo para que compose interpole el modelo; JWT_SECRET no se usa en build
+        JWT_SECRET = 'ci-dummy-no-usado-en-build'
+      }
       steps {
         sh 'docker compose build backend frontend'
       }
