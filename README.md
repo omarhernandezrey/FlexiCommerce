@@ -11,6 +11,8 @@
 - [🎯 Descripción](#-descripción)
 - [🏗️ Estructura del Proyecto](#️-estructura-del-proyecto)
 - [🚀 Quick Start](#-quick-start)
+- [🐳 Levantar todo con Docker (recomendado)](#-levantar-todo-con-docker-recomendado)
+- [🤖 CI con Jenkins](#-ci-con-jenkins)
 - [📦 Tecnologías](#-tecnologías)
 - [📖 Documentación](#-documentación)
 
@@ -70,24 +72,23 @@ backend/
 
 ## 🚀 Quick Start
 
+> 💡 **La forma más rápida y confiable es con Docker** — ver [🐳 Levantar todo con Docker](#-levantar-todo-con-docker-recomendado). Esta sección describe el modo manual (sin Docker).
+
 ### Requisitos
-- Node.js 18+
-- npm o yarn
-- PostgreSQL (para backend)
+- Node.js 22+
+- npm
+- PostgreSQL (para backend) — o usa el de Docker
+- Docker + Docker Compose (para la opción recomendada)
 
 ### 1️⃣ Instalación
 
 ```bash
 # Clonar repositorio
-git clone <repo-url>
+git clone git@github.com:omarhernandezrey/FlexiCommerce.git
 cd FlexiCommerce
 
 # Instalar dependencias (monorepo)
 npm install
-
-# O instalar cada parte por separado
-cd frontend && npm install
-cd ../backend && npm install
 ```
 
 ### 2️⃣ Configurar Variables de Entorno
@@ -134,6 +135,85 @@ npm run dev
 - 🌐 Frontend: http://localhost:3000
 - 📡 Backend: http://localhost:3001
 - 🏥 Health Check: http://localhost:3001/api/health
+
+---
+
+## 🐳 Levantar todo con Docker (recomendado)
+
+Todo el stack (frontend, backend, PostgreSQL y Redis) corre en Docker bajo un solo proyecto `flexicommerce`, con migraciones de Prisma automáticas al arrancar.
+
+### 1️⃣ Configurar `.env` (solo la primera vez)
+
+```bash
+cp .env.example .env
+
+# OBLIGATORIO: generar y pegar el JWT_SECRET en .env
+openssl rand -hex 32
+```
+
+El resto de valores del `.env` ya funcionan por defecto. Los puertos son configurables (`FRONTEND_PORT`, `BACKEND_PORT`, `DB_PORT`, etc.) por si alguno está ocupado.
+
+### 2️⃣ Levantar el stack
+
+```bash
+docker compose up -d --build
+```
+
+La primera vez tarda unos minutos (construye las imágenes). Las siguientes veces basta `docker compose up -d` y arranca en segundos.
+
+### 3️⃣ Verificar
+
+```bash
+docker compose ps          # los 4 servicios deben decir "healthy"
+```
+
+| Servicio | URL |
+|----------|-----|
+| 🌐 Frontend | http://localhost:3000 |
+| 📡 Backend API | http://localhost:3001/api/health |
+| 🐘 PostgreSQL | localhost:5434 (user: `flexicommerce`) |
+| 🔴 Redis | localhost:6379 |
+
+### Servicios opcionales (perfiles)
+
+```bash
+docker compose --profile ci up -d          # + Jenkins CI    → http://localhost:8080
+docker compose --profile dev-tools up -d   # + PgAdmin       → http://localhost:5050
+```
+
+### Desarrollo con hot-reload dentro de Docker
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+Monta el código fuente en los contenedores y usa `tsx watch` + `next dev` — los cambios se recargan solos.
+
+### Comandos útiles
+
+```bash
+docker compose logs -f backend   # logs en vivo de un servicio
+docker compose down              # apagar todo (los datos se conservan)
+docker compose build frontend    # reconstruir tras cambiar NEXT_PUBLIC_* en .env
+docker compose exec postgres psql -U flexicommerce -d flexicommerce_dev   # consola SQL
+```
+
+> ⚠️ Las variables `NEXT_PUBLIC_*` se compilan dentro del bundle del frontend en tiempo de build. Si cambias `BACKEND_PORT` o las URLs públicas en `.env`, reconstruye: `docker compose build frontend`.
+
+---
+
+## 🤖 CI con Jenkins
+
+Jenkins corre como servicio opcional del compose (perfil `ci`) con **configuración como código** (`ci/jenkins/`): arranca ya configurado, sin asistente de instalación, y el job de CI se crea solo.
+
+```bash
+docker compose --profile ci up -d --build
+```
+
+- **URL**: http://localhost:8080 — usuario `admin`, contraseña `flexicommerce` (cambiables en `.env` con `JENKINS_ADMIN_USER` / `JENKINS_ADMIN_PASSWORD`)
+- **Job `flexicommerce-ci`** (definido en `Jenkinsfile`): instala dependencias → type-check + tests de backend y frontend en paralelo → construye las imágenes Docker
+- El pipeline corre sobre el **último commit de `main`** del repo local — haz commit antes de ejecutarlo
+- Para ejecutarlo: entra al job en la UI y pulsa **"Build Now"** (o ▶️)
 
 ---
 
