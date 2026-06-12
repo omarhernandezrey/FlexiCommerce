@@ -130,6 +130,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       # Repo local — el job de CI clona desde file:///workspace
       - .:/workspace:ro
+    networks:
+      # En la red del stack para que los smoke tests lleguen a backend/frontend
+      - flexicommerce
     restart: unless-stopped
     profiles:
       - ci
