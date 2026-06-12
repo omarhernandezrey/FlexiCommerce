@@ -27,6 +27,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Sin el cliente generado, @prisma/client no exporta los tipos del schema
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: backend
+
       - name: Lint backend
         run: npm run lint --prefix backend || true
 
