@@ -195,6 +195,21 @@ docker-compose exec backend npx prisma db seed
 
 ## CI/CD Pipeline
 
+### Jenkins (local)
+
+Jenkins corre en Docker como servicio del compose principal (perfil `ci`, build context `ci/jenkins/`), agrupado bajo el mismo proyecto `flexicommerce`:
+
+```bash
+# Levantar Jenkins → http://localhost:8080 (admin / flexicommerce)
+docker compose --profile ci up -d --build
+```
+
+- El job **flexicommerce-ci** se crea automáticamente (JCasC + Job DSL, `ci/jenkins/casc.yaml`)
+- El pipeline (`Jenkinsfile` en la raíz) corre sobre **el último commit de `main`** del repo local (montado en `/workspace`) — commitea antes de ejecutar
+- Stages: dependencias (paralelo) → type-check + tests backend + tests frontend (paralelo) → build de imágenes Docker
+- Credenciales y puerto configurables: `JENKINS_ADMIN_USER`, `JENKINS_ADMIN_PASSWORD`, `JENKINS_PORT`
+- `DOCKER_GID` (build arg) debe coincidir con `stat -c '%g' /var/run/docker.sock`
+
 ### GitHub Actions
 
 Pipeline triggers on:

@@ -9,6 +9,9 @@
 #
 # PgAdmin (opcional):
 #   docker compose --profile dev-tools up -d
+#
+# Jenkins CI (opcional):
+#   docker compose --profile ci up -d --build
 # =============================================================================
 
 name: flexicommerce
@@ -108,6 +111,29 @@ services:
       - flexicommerce
     restart: unless-stopped
 
+  jenkins:
+    build:
+      context: ./ci/jenkins
+      args:
+        # Debe coincidir con: stat -c '%g' /var/run/docker.sock
+        DOCKER_GID: ${DOCKER_GID:-1001}
+    image: flexicommerce-jenkins
+    container_name: flexicommerce-jenkins
+    environment:
+      JENKINS_ADMIN_USER: ${JENKINS_ADMIN_USER:-admin}
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:-flexicommerce}
+    ports:
+      - "${JENKINS_PORT:-8080}:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # Daemon de Docker del host (para construir las imágenes del proyecto)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Repo local — el job de CI clona desde file:///workspace
+      - .:/workspace:ro
+    restart: unless-stopped
+    profiles:
+      - ci
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: flexicommerce-pgadmin
@@ -127,6 +153,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  jenkins_home:
 
 networks:
   flexicommerce:
