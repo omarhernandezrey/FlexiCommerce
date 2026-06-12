@@ -19,8 +19,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
-# Node.js 20
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+# Node.js 22 — debe coincidir con el entorno local: Jest 30 lee jest.config.ts
+# nativamente en Node 22+; en Node 20 exigiría ts-node (no instalado)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
@@ -41,5 +42,6 @@ RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 
 # Configuración como código (admin, seguridad y job de CI)
 COPY casc.yaml /usr/share/jenkins/casc.yaml
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+# ALLOW_LOCAL_CHECKOUT: el job clona del repo local montado en /workspace
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true"
 ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/casc.yaml

@@ -19,21 +19,12 @@ pipeline {
 
   stages {
     stage('Dependencias') {
-      parallel {
-        stage('Backend') {
-          steps {
-            dir('backend') {
-              sh 'npm ci'
-              sh 'npx prisma generate'
-            }
-          }
-        }
-        stage('Frontend') {
-          steps {
-            dir('frontend') {
-              sh 'npm ci'
-            }
-          }
+      steps {
+        // Instalación única desde la raíz: el repo usa npm workspaces y los
+        // npm ci por workspace en paralelo chocarían sobre el mismo node_modules
+        sh 'npm ci'
+        dir('backend') {
+          sh 'npx prisma generate'
         }
       }
     }
