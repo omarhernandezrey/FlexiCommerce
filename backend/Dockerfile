@@ -4,7 +4,7 @@
 # =============================================================================
 
 # ---- Base -------------------------------------------------------------------
-FROM node:20-bookworm-slim AS base
+FROM node:26-bookworm-slim AS base
 WORKDIR /app
 # OpenSSL es requerido por el query engine de Prisma en Debian
 RUN apt-get update -y \
