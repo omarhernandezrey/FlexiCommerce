@@ -1,0 +1,50 @@
+# =============================================================================
+# Dependabot — actualizaciones automáticas de dependencias
+# PRs semanales agrupados para reducir ruido.
+# =============================================================================
+version: 2
+updates:
+  # npm — raíz del monorepo (workspaces)
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: npm
+    directory: "/backend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        update-types: ["minor", "patch"]
+
+  # Imágenes base de los Dockerfiles
+  - package-ecosystem: docker
+    directory: "/backend"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+
+  # Versiones de las GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

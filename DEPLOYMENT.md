@@ -212,6 +212,17 @@ docker compose --profile ci up -d --build
 - Credenciales y puerto configurables: `JENKINS_ADMIN_USER`, `JENKINS_ADMIN_PASSWORD`, `JENKINS_PORT`
 - `DOCKER_GID` (build arg) debe coincidir con `stat -c '%g' /var/run/docker.sock`
 
+### CI en la nube — stack moderno
+
+| Herramienta | Archivo | Qué hace |
+|---|---|---|
+| GitHub Actions | `.github/workflows/ci-cd.yml` | Lint, type-check, tests, Trivy, publicación en ghcr.io y verificación de despliegue (compose up + smoke tests) |
+| CodeQL | `.github/workflows/codeql.yml` | Análisis estático de seguridad (SAST), en cada push y semanal |
+| Dependabot | `.github/dependabot.yml` | PRs automáticos de actualización de dependencias (npm, Docker, actions) |
+| CircleCI | `.circleci/config.yml` | CI externo alternativo — activar en https://circleci.com con GitHub y habilitar el repo |
+
+> Nota: Codeship fue descontinuado por CloudBees y Travis CI dejó de ofrecer plan gratuito útil; estas herramientas son el estándar actual de la industria.
+
 ### GitHub Actions
 
 Pipeline triggers on:

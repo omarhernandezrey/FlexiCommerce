@@ -1,0 +1,56 @@
+# =============================================================================
+# FlexiCommerce — CircleCI (CI externo alternativo)
+# Activación: https://circleci.com → Log in with GitHub → Set Up Project.
+# =============================================================================
+version: 2.1
+
+jobs:
+  calidad:
+    docker:
+      - image: cimg/node:22.16
+    resource_class: medium
+    steps:
+      - checkout
+      # Monorepo con npm workspaces: instalación única desde la raíz
+      - restore_cache:
+          keys:
+            - npm-v1-{{ checksum "package-lock.json" }}
+      - run:
+          name: Instalar dependencias
+          command: npm ci
+      - save_cache:
+          key: npm-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - run:
+          name: Generar cliente de Prisma
+          command: cd backend && npx prisma generate
+      - run:
+          name: Type-check backend
+          command: npm run type-check --prefix backend
+      - run:
+          name: Tests backend
+          command: npm test --prefix backend
+      - run:
+          name: Tests frontend
+          command: npm test --prefix frontend
+
+  imagenes:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - run:
+          name: Build imagen backend
+          command: docker build -t flexicommerce-api ./backend
+      - run:
+          name: Build imagen frontend
+          command: docker build -t flexicommerce-web ./frontend
+
+workflows:
+  ci:
+    jobs:
+      - calidad
+      - imagenes:
+          requires:
+            - calidad

@@ -1,5 +1,8 @@
 # 🛍️ FlexiCommerce
 
+[![CI/CD Pipeline](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/ci-cd.yml)
+[![CodeQL](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/omarhernandezrey/FlexiCommerce/actions/workflows/codeql.yml)
+
 > Plataforma de e-commerce profesional, escalable y moderna
 
 **Estado**: ✅ Arquitectura reorganizada | Frontend + Backend separados | Lista para desarrollo
@@ -219,6 +222,16 @@ docker compose --profile ci up -d --build
   5. **Pruebas funcionales (smoke tests)** — verifica la app desplegada: health check del backend, API consultando la base de datos y frontend respondiendo 200
 - **Disparo automático**: el job revisa el repo cada ~5 min (`pollSCM`) y se ejecuta solo con cada commit nuevo en `main`. También puedes lanzarlo manualmente con **"Build Now"**
 - El pipeline corre sobre el **último commit de `main`** del repo local — haz commit para que tus cambios entren al siguiente build
+
+### Integración continua en la nube
+
+Además del Jenkins local, cada push a `main`/`develop` dispara CI en la nube:
+
+- **GitHub Actions** (`.github/workflows/ci-cd.yml`): lint, type-check, los 80 tests, escaneo de vulnerabilidades con **Trivy**, publicación de imágenes en `ghcr.io` y **verificación de despliegue** (levanta el stack completo con Docker Compose y ejecuta smoke tests contra la app corriendo)
+- **CodeQL** (`.github/workflows/codeql.yml`): análisis estático de seguridad del código (SAST) nativo de GitHub, también programado semanalmente
+- **Dependabot** (`.github/dependabot.yml`): PRs automáticos semanales con actualizaciones de dependencias npm, imágenes Docker y actions
+- **CircleCI** (`.circleci/config.yml`): servicio de CI externo alternativo — para activarlo entra a [circleci.com](https://circleci.com) con GitHub y habilita el repo
+- *Nota*: Travis CI y Codeship quedaron descartados — Codeship fue descontinuado por CloudBees y Travis dejó de ser gratuito/relevante; las herramientas de arriba son el estándar actual
 
 ---
 
